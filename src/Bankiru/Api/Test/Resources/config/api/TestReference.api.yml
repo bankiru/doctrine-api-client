@@ -1,0 +1,19 @@
+Bankiru\Api\Test\Entity\TestReference:
+  type: entity
+  id:
+    id:
+      type: int
+
+  fields:
+    referencePayload:
+      type: string
+      api_field: reference-payload
+
+  manyToOne:
+    owner:
+      target: Bankiru\Api\Test\Entity\TestEntity
+      inversedBy: references
+
+  client:
+    name: test-reference-client
+    entityPath: test-reference

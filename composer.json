@@ -1,0 +1,40 @@
+{
+  "name": "bankiru/doctrine-api-client",
+  "description": "Doctrine-faced RPC API Client",
+  "authors": [
+    {
+      "name": "Pavel Batanov",
+      "email": "batanov@banki.ru"
+    }
+  ],
+  "license": "MIT",
+  "minimum-stability": "stable",
+  "require": {
+    "php": "~5.5|~7.0",
+    "psr/cache": "~1.0",
+    "psr/log": "~1.0",
+    "scaytrase/rpc-common": "~1.0",
+    "doctrine/common": "~2.5",
+    "doctrine/collections": "~1.3",
+    "symfony/yaml": "~2.3|~3.0",
+    "symfony/property-access": "~2.3|~3.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.5|~5.1",
+    "scaytrase/json-rpc-client": "~1.0, >=1.0.1"
+  },
+  "suggest": {
+    "psr/cache-implementation": "For entity cache support",
+    "psr/log-implementation": "For logging support"
+  },
+  "autoload": {
+    "psr-4": {
+      "Bankiru\\Api\\": "src/Bankiru/Api"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0-dev"
+    }
+  }
+}

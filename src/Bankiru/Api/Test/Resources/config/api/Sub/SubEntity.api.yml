@@ -1,0 +1,10 @@
+Bankiru\Api\Test\Entity\Sub\SubEntity:
+  type: entity
+  fields:
+    subPayload:
+      type: string
+      api_field: sub-payload
+    stringPayload:
+      type: string
+      api_field: string-payload
+      nullable: true

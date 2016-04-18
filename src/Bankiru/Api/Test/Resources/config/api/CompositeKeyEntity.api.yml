@@ -1,0 +1,17 @@
+Bankiru\Api\Test\Entity\CompositeKeyEntity:
+  type: entity
+  id:
+    firstKey:
+      type: int
+      api_field: first_key
+    secondKey:
+      type: string
+      api_field: second_key
+
+  fields:
+    payload:
+      type: string
+
+  client:
+    name: test-client
+    entityPath: composite-key-entity
