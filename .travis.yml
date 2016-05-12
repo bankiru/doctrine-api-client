@@ -1,0 +1,35 @@
+language: php
+
+php:
+  - 5.5
+  - 5.6
+  - 7
+  - nightly
+  - hhvm
+
+env:
+  - SYMFONY_VERSION='2.7.*' deps='no'
+  - SYMFONY_VERSION='2.8.*' deps='no'
+  - SYMFONY_VERSION='3.0.*' deps='no'
+  - SYMFONY_VERSION='~3.0@dev' deps='no'
+
+matrix:
+    include:
+      - php: 5.5
+        env: SYMFONY_VERSION='2.7.*' deps='low'
+
+    allow_failures:
+        - php: hhvm
+        - php: nightly
+
+before_install:
+  - travis_retry composer self-update
+
+install:
+    - composer require --no-update symfony/symfony=${SYMFONY_VERSION}
+    - if [ "$deps" = "no" ]; then composer --prefer-source install; fi;
+    - if [ "$deps" = "low" ]; then composer --prefer-source --prefer-lowest --prefer-stable update; fi;
+
+script:
+  - mkdir -p build
+  - phpunit --colors -c phpunit.xml --coverage-text
