@@ -59,7 +59,7 @@ abstract class AbstractEntityManagerTest extends \PHPUnit_Framework_TestCase
     protected function createEntityManager($clients = [self::DEFAULT_CLIENT])
     {
         /** @var IdGeneratorInterface|\PHPUnit_Framework_MockObject_MockObject $idGenerator */
-        $idGenerator = self::getMock(IdGeneratorInterface::class);
+        $idGenerator = $this->getMock(IdGeneratorInterface::class);
         $idGenerator->method('getRequestIdentifier')->willReturn('test');
 
         $this->registry = new ClientRegistry();
