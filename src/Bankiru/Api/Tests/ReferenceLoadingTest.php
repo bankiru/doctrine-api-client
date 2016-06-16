@@ -10,6 +10,7 @@ namespace Bankiru\Api\Tests;
 
 use Bankiru\Api\Test\Entity\TestEntity;
 use Bankiru\Api\Test\Entity\TestReference;
+use Bankiru\Api\Test\Proxy\__CG__\Bankiru\Api\Test\Entity\Sub\SubEntity;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Proxy\Proxy;
 use GuzzleHttp\Psr7\Response;
@@ -201,6 +202,70 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
 
         self::assertEquals($parent, $child->getParent());
         self::assertEquals($parent->getPayload(), $child->getParent()->getPayload());
+    }
+
+    public function testSubEntityRelations()
+    {
+        $repository = $this->getManager()->getRepository(SubEntity::class);
+
+        $this->getResponseMock('test-client')->append(
+            new Response(
+                200,
+                [],
+                json_encode(
+                    [
+                        'jsonrpc' => '2.0',
+                        'id'      => 'test',
+                        'result'  => [
+                            'id'          => '1',
+                            'payload'     => 'test-payload',
+                            'references'  => ['5', '7'],
+                            'sub-payload' => 'sub-payload',
+                        ],
+                    ]
+                )
+            )
+        );
+
+        $this->getResponseMock('test-reference-client')->append(
+            new Response(
+                200,
+                [],
+                json_encode(
+                    [
+                        'jsonrpc' => '2.0',
+                        'id'      => 'test',
+                        'result'  => [
+                            [
+                                'id'                => '5',
+                                'reference-payload' => 'test-payload-5',
+                                'owner'             => '1',
+                            ],
+                            [
+                                'id'                => '7',
+                                'reference-payload' => 'test-payload-7',
+                                'owner'             => '1',
+                            ],
+                        ],
+                    ]
+                )
+            )
+        );
+
+
+        /** @var SubEntity $entity */
+        $entity = $repository->find(1);
+        self::assertSame(1, $entity->getId());
+        self::assertSame('test-payload', $entity->getPayload());
+        self::assertSame('sub-payload', $entity->getSubPayload());
+        self::assertNull($entity->getStringPayload());
+        /** @var TestReference[] $references */
+        $references = $entity->getReferences()->toArray();
+
+        self::assertCount(2, $references);
+        foreach ($references as $reference) {
+            self::assertSame('test-payload-'.$reference->getId(), $reference->getReferencePayload());
+        }
     }
 
     protected function getClientNames()

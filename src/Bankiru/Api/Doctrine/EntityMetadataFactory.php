@@ -8,6 +8,7 @@
 
 namespace Bankiru\Api\Doctrine;
 
+use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Doctrine\Common\Persistence\Mapping\AbstractClassMetadataFactory;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
@@ -192,24 +193,7 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
      */
     private function addInheritedRelations(EntityMetadata $subClass, EntityMetadata $parentClass)
     {
-        //Todo:
-//        foreach ($parentClass->associations as $field => $mapping) {
-//            if ($parentClass->isMappedSuperclass) {
-//                if ($mapping['type'] & ClassMetadata::TO_MANY && !$mapping['isOwningSide']) {
-//                    throw MappingException::illegalToManyAssociationOnMappedSuperclass($parentClass->name, $field);
-//                }
-//                $mapping['sourceEntity'] = $subClass->name;
-//            }
-//
-//            //$subclassMapping = $mapping;
-//            if ( ! isset($mapping['inherited']) && ! $parentClass->isMappedSuperclass) {
-//                $mapping['inherited'] = $parentClass->name;
-//            }
-//            if ( ! isset($mapping['declared'])) {
-//                $mapping['declared'] = $parentClass->name;
-//            }
-//            $subClass->addInheritedAssociationMapping($mapping);
-//        }
+        //Todo: introduce relation inheritance
     }
 
     /**

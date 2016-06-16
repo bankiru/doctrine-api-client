@@ -10,6 +10,7 @@ namespace Bankiru\Api\Doctrine\Mapping;
 
 use Bankiru\Api\Doctrine\EntityRepository;
 use Bankiru\Api\Doctrine\Rpc\Method\MethodProviderInterface;
+use Doctrine\Common\Persistence\Mapping\MappingException;
 use Doctrine\Common\Persistence\Mapping\ReflectionService;
 use Doctrine\Instantiator\Instantiator;
 use Doctrine\Instantiator\InstantiatorInterface;
@@ -399,6 +400,7 @@ class EntityMetadata implements ApiMetadata
      * @return array The updated mapping.
      *
      * @throws MappingException If something is wrong with the mapping.
+     * @throws \LogicException
      */
     protected function _validateAndCompleteAssociationMapping(array $mapping)
     {
@@ -448,7 +450,9 @@ class EntityMetadata implements ApiMetadata
         }
 
         if (isset($mapping['id']) && $mapping['id'] === true && $mapping['type'] & self::TO_MANY) {
-            throw MappingException::illegalToManyIdentifierAssociation($this->name, $mapping['fieldName']);
+            throw new \LogicException(
+                sprintf('Illegal toMany identifier association %s for %s', $mapping['fieldName'], $this->name)
+            );
         }
 
         return $mapping;

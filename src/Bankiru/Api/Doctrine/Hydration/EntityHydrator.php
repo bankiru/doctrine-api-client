@@ -62,7 +62,10 @@ class EntityHydrator
                     );
 
                 }
-                $value = null;
+
+                $property->setValue($entity, null);
+
+                continue;
             }
 
             $type  =
