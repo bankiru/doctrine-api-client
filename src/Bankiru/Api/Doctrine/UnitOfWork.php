@@ -13,13 +13,8 @@ use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Persister\ApiPersister;
 use Bankiru\Api\Doctrine\Persister\EntityPersister;
-use Bankiru\Api\Doctrine\Proxy\ApiCollection;
 use Bankiru\Api\Doctrine\Utility\IdentifierFlattener;
-use Bankiru\Api\Doctrine\Utility\ReflectionPropertiesGetter;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\NotifyPropertyChanged;
-use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\Common\Persistence\ObjectManagerAware;
 use Doctrine\Common\PropertyChangedListener;
 use Doctrine\Common\Proxy\Proxy;
@@ -69,8 +64,6 @@ class UnitOfWork implements PropertyChangedListener
     private $identifierFlattener;
     /** @var  array */
     private $originalEntityData;
-    /** @var ReflectionPropertiesGetter */
-    private $reflectionPropertiesGetter;
 
     /**
      * UnitOfWork constructor.
@@ -81,7 +74,6 @@ class UnitOfWork implements PropertyChangedListener
     {
         $this->manager                    = $manager;
         $this->identifierFlattener        = new IdentifierFlattener($this->manager);
-        $this->reflectionPropertiesGetter = new ReflectionPropertiesGetter(new RuntimeReflectionService());
     }
 
     /**
@@ -408,18 +400,6 @@ class UnitOfWork implements PropertyChangedListener
         }
 
         return false;
-    }
-
-    /**
-     * Tests if an entity is loaded - must either be a loaded proxy or not a proxy
-     *
-     * @param object $entity
-     *
-     * @return bool
-     */
-    private function isLoaded($entity)
-    {
-        return !($entity instanceof Proxy) || $entity->__isInitialized();
     }
 
     /**

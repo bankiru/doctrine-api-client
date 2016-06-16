@@ -125,36 +125,25 @@ class EntityManager implements ApiEntityManager
     public function persist($object)
     {
         throw new \BadMethodCallException('Persisting object is not supported');
-
-        return;
     }
 
     /** {@inheritdoc} */
     public function remove($object)
     {
+        //Todo: support object deletion via API (@scaytrase)
         throw new \BadMethodCallException('Removing object is not supported');
-
-        return; //Todo: support object deletion via API (@scaytrase)
     }
 
     /** {@inheritdoc} */
     public function merge($object)
     {
         throw new \BadMethodCallException('Merge is not supported');
-
-        if (!is_object($object)) {
-            throw new \InvalidArgumentException('Merge support only objects');
-        }
-
-        return $this->getUnitOfWork()->merge($object);
     }
 
     /** {@inheritdoc} */
     public function clear($objectName = null)
     {
         throw new \BadMethodCallException('Clearing EM is not supported');
-
-        return;
     }
 
     /** {@inheritdoc} */
@@ -187,8 +176,6 @@ class EntityManager implements ApiEntityManager
     public function flush()
     {
         throw new \BadMethodCallException('Flush is not supported');
-
-        return;
     }
 
     /** {@inheritdoc} */

@@ -112,7 +112,7 @@ class YmlMetadataDriver extends FileDriver
         if (array_key_exists('id', $element)) {
             // Evaluate identifier settings
             foreach ($element['id'] as $name => $idElement) {
-                if (isset($idElement['associationKey']) && $idElement['associationKey'] == true) {
+                if (isset($idElement['associationKey']) && (bool)$idElement['associationKey'] === true) {
                     $associationIds[$name] = true;
                     continue;
                 }
