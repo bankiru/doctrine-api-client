@@ -114,4 +114,12 @@ class EntityRepository implements ObjectRepository
     {
         return $this->metadata;
     }
+
+    /**
+     * @return EntityManager
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
 }

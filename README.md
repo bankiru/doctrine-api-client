@@ -58,7 +58,6 @@ $registry->add('my-client', $client);
 $configuration = new Configuration();
 $configuration->setMetadataFactory(new EntityMetadataFactory());
 $configuration->setRegistry($this->registry);
-$configuration->setEntityFactoryClass(ProxyFactory::class);
 $configuration->setProxyDir(CACHE_DIR . '/doctrine/proxy/');
 $configuration->setProxyNamespace('MyVendor\Api\Proxy');
 $driver = new MappingDriverChain();
