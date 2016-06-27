@@ -15,6 +15,11 @@ use GuzzleHttp\Psr7\Response;
 
 class CollectionLoadingTest extends AbstractEntityManagerTest
 {
+    protected function getClientNames()
+    {
+        return [self::DEFAULT_CLIENT, 'test-reference-client'];
+    }
+
     public function testLazyCollections()
     {
         $repository = $this->getManager()->getRepository(SubEntity::class);

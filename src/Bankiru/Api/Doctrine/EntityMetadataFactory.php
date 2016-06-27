@@ -193,7 +193,18 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
      */
     private function addInheritedRelations(EntityMetadata $subClass, EntityMetadata $parentClass)
     {
-        //Todo: introduce relation inheritance
+        foreach ($parentClass->associations as $mapping) {
+            if (!isset($mapping['inherited']) && !$parentClass->isMappedSuperclass) {
+                $mapping['inherited'] = $parentClass->name;
+            }
+            if (!isset($mapping['declared'])) {
+                $mapping['declared'] = $parentClass->name;
+            }
+            $subClass->addInheritedAssociationMapping($mapping);
+        }
+//        foreach ($parentClass->associations as $name => $field) {
+//            $subClass->reflFields[$name] = $field;
+//        }
     }
 
     /**

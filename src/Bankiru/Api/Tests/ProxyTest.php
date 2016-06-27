@@ -16,7 +16,7 @@ class ProxyTestAbstract extends AbstractEntityManagerTest
 {
     public function testLazyProxy()
     {
-        $manager    = $this->getManager();
+        $manager = $this->getManager();
 
         $this->getResponseMock()->append(
             new Response(
@@ -91,5 +91,10 @@ class ProxyTestAbstract extends AbstractEntityManagerTest
         self::assertEquals(2, $entity->getId());
         self::assertEquals('test-payload', $entity->getPayload());
         self::assertEquals('sub-payload', $entity->getSubPayload());
+    }
+
+    protected function getClientNames()
+    {
+        return [self::DEFAULT_CLIENT, 'test-reference-client'];
     }
 }

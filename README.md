@@ -3,7 +3,7 @@
 [![Latest Unstable Version](https://poser.pugx.org/bankiru/doctrine-api-client/v/unstable)](https://packagist.org/packages/bankiru/doctrine-api-client) 
 [![License](https://poser.pugx.org/bankiru/doctrine-api-client/license)](https://packagist.org/packages/bankiru/doctrine-api-client)
 
-[![Build Status](https://travis-ci.org/bankiru/doctrine-api-client.svg)](https://travis-ci.org/bankiru/doctrine-api-client)
+[![Build Status](https://travis-ci.org/bankiru/doctrine-api-client.svg)](https://travis-ci.org/bankiru/doctrine-api-client?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/bankiru/doctrine-api-client/badges/quality-score.png)](https://scrutinizer-ci.com/g/bankiru/doctrine-api-client/)
 [![Code Coverage](https://scrutinizer-ci.com/g/bankiru/doctrine-api-client/badges/coverage.png)](https://scrutinizer-ci.com/g/bankiru/doctrine-api-client/)
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/2c1f5c41-86de-4441-9876-b0ee05d012af/mini.png)](https://insight.sensiolabs.com/projects/2c1f5c41-86de-4441-9876-b0ee05d012af)

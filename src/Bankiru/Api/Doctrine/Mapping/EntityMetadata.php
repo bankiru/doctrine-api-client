@@ -277,11 +277,6 @@ class EntityMetadata implements ApiMetadata
         return $this->clientName;
     }
 
-    public function mapReference(array  $mapping)
-    {
-
-    }
-
     public function mapField(array $mapping)
     {
         $this->_validateAndCompleteFieldMapping($mapping);
@@ -498,5 +493,12 @@ class EntityMetadata implements ApiMetadata
         foreach ($id as $idField => $idValue) {
             $this->reflFields[$idField]->setValue($entity, $idValue);
         }
+    }
+
+    public function addInheritedAssociationMapping(array $mapping)
+    {
+        $this->associations[$mapping['field']]   = $mapping;
+        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
+        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
     }
 }

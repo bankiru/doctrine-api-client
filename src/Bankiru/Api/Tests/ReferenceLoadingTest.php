@@ -8,9 +8,9 @@
 
 namespace Bankiru\Api\Tests;
 
+use Bankiru\Api\Test\Entity\Sub\SubEntity;
 use Bankiru\Api\Test\Entity\TestEntity;
 use Bankiru\Api\Test\Entity\TestReference;
-use Bankiru\Api\Test\Proxy\__CG__\Bankiru\Api\Test\Entity\Sub\SubEntity;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Proxy\Proxy;
 use GuzzleHttp\Psr7\Response;

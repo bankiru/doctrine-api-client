@@ -22,6 +22,14 @@ class TestEntity
     private $parent;
 
     /**
+     * TestEntity constructor.
+     */
+    public function __construct()
+    {
+        $this->references = new ArrayCollection();
+    }
+
+    /**
      * @return TestEntity
      */
     public function getParent()
