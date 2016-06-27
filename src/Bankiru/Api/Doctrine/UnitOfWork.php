@@ -8,6 +8,7 @@
 
 namespace Bankiru\Api\Doctrine;
 
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Hydration\EntityHydrator;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
@@ -139,7 +140,7 @@ class UnitOfWork implements PropertyChangedListener
      * @param object|null $unmanagedProxy
      *
      * @return ObjectManagerAware|object
-     * @throws \Doctrine\Common\Persistence\Mapping\MappingException
+     * @throws MappingException
      */
     public function getOrCreateEntity($className, \stdClass $data, $unmanagedProxy = null)
     {

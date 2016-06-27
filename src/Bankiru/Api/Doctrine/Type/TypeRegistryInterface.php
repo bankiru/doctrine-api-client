@@ -7,12 +7,15 @@
  */
 namespace Bankiru\Api\Doctrine\Type;
 
+use Bankiru\Api\Doctrine\Exception\TypeException;
+
 interface TypeRegistryInterface
 {
     /**
      * @param string $type
      *
      * @return Type
+     * @throws TypeException
      */
     public function get($type);
 
@@ -26,6 +29,8 @@ interface TypeRegistryInterface
     /**
      * @param string $type
      * @param Type   $instance
+     *
+     * @throws TypeException
      */
     public function add($type, Type $instance);
 

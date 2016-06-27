@@ -9,9 +9,11 @@
 namespace Bankiru\Api\Doctrine\Hydration;
 
 use Bankiru\Api\Doctrine\EntityManager;
+use Bankiru\Api\Doctrine\Exception\HydrationException;
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
-use Doctrine\Common\Persistence\Mapping\MappingException;
+use Doctrine\Common\Proxy\Proxy;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
@@ -40,6 +42,7 @@ class EntityHydrator
      * @param object|null $entity
      *
      * @return object Hydrated object
+     * @throws HydrationException
      */
     public function hydarate($source, $entity = null)
     {
@@ -57,7 +60,7 @@ class EntityHydrator
                 $value = $acessor->getValue($source, $apiField);
             } catch (NoSuchPropertyException $exception) {
                 if (!$this->metadata->getFieldMapping($fieldName)['nullable']) {
-                    throw new MappingException(
+                    throw new HydrationException(
                         sprintf('Api field %s for property %s does not present in response', $apiField, $fieldName)
                     );
 
@@ -89,7 +92,8 @@ class EntityHydrator
      * @param \StdClass $source
      * @param object    $entity
      *
-     * @return array|\Doctrine\Common\Proxy\Proxy|object
+     * @return array|Proxy|object
+     * @throws HydrationException
      * @throws MappingException
      */
     private function hydrateAssociation($field, $entity, $source)
@@ -113,13 +117,13 @@ class EntityHydrator
                         return null;
                     }
 
-                    throw new MappingException(
+                    throw new HydrationException(
                         sprintf('Api field %s for property %s does not present in response', $apiField, $field)
                     );
                 }
 
                 if ($targetMetadata->isIdentifierComposite()) {
-                    throw new \InvalidArgumentException('Composite references not supported');
+                    throw new HydrationException('Composite references not supported');
                 }
 
                 $targetIdsNames = $targetMetadata->getIdentifierFieldNames();
@@ -138,6 +142,6 @@ class EntityHydrator
             return $targetPersister->getOneToManyCollection($mapping, $entity);
         }
 
-        throw new \LogicException('Invalid metadata association type');
+        throw new MappingException('Invalid metadata association type');
     }
 }

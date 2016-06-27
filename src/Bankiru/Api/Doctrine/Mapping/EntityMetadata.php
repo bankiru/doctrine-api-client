@@ -9,8 +9,8 @@
 namespace Bankiru\Api\Doctrine\Mapping;
 
 use Bankiru\Api\Doctrine\EntityRepository;
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Rpc\Method\MethodProviderInterface;
-use Doctrine\Common\Persistence\Mapping\MappingException;
 use Doctrine\Common\Persistence\Mapping\ReflectionService;
 use Doctrine\Instantiator\Instantiator;
 use Doctrine\Instantiator\InstantiatorInterface;
@@ -86,17 +86,13 @@ class EntityMetadata implements ApiMetadata
         return $this->reflFields;
     }
 
-    /** {@inheritdoc} */
+    /**
+     * {@inheritdoc}
+     */
     public function getReflectionProperty($name)
     {
         if (!array_key_exists($name, $this->reflFields)) {
-            throw new \OutOfBoundsException(
-                sprintf(
-                    'Property "%s" not present within class %s',
-                    $name,
-                    $this->getName()
-                )
-            );
+            throw MappingException::noSuchProperty($name, $this->getName());
         }
 
         return $this->reflFields[$name];
@@ -267,11 +263,14 @@ class EntityMetadata implements ApiMetadata
         }
     }
 
-    /** {@inheritdoc} */
+    /**
+     * {@inheritdoc}
+     * @throws MappingException
+     */
     public function getClientName()
     {
         if (null === $this->clientName) {
-            throw  new \LogicException(sprintf('Client name not specified for %s or any parent', $this->getName()));
+            throw MappingException::invalidClientName($this->getName());
         }
 
         return $this->clientName;
@@ -279,12 +278,12 @@ class EntityMetadata implements ApiMetadata
 
     public function mapField(array $mapping)
     {
-        $this->_validateAndCompleteFieldMapping($mapping);
+        $this->validateAndCompleteFieldMapping($mapping);
         $this->assertFieldNotMapped($mapping['field']);
         $this->fields[$mapping['field']] = $mapping;
     }
 
-    private function _validateAndCompleteFieldMapping(array &$mapping)
+    private function validateAndCompleteFieldMapping(array &$mapping)
     {
         if (!array_key_exists('api_field', $mapping)) {
             $mapping['api_field'] = $mapping['field']; //todo: invent naming strategy
@@ -309,7 +308,7 @@ class EntityMetadata implements ApiMetadata
     /**
      * @param string $fieldName
      *
-     * @throws \LogicException
+     * @throws MappingException
      */
     private function assertFieldNotMapped($fieldName)
     {
@@ -317,7 +316,7 @@ class EntityMetadata implements ApiMetadata
             array_key_exists($fieldName, $this->associations) ||
             array_key_exists($fieldName, $this->identifier)
         ) {
-            throw new \LogicException('Field already mapped');
+            throw new MappingException('Field already mapped');
         }
     }
 
@@ -325,7 +324,7 @@ class EntityMetadata implements ApiMetadata
     public function getFieldMapping($fieldName)
     {
         if (!isset($this->fields[$fieldName])) {
-            throw new \OutOfBoundsException('No mapping for field ' . $fieldName . ' in ' . $this->getName());
+            throw MappingException::unknownField($fieldName, $this->getName());
         }
 
         return $this->fields[$fieldName];
@@ -335,7 +334,7 @@ class EntityMetadata implements ApiMetadata
     public function getAssociationMapping($fieldName)
     {
         if (!isset($this->associations[$fieldName])) {
-            throw new \OutOfBoundsException('No mapping for association ' . $fieldName . ' in ' . $this->getName());
+            throw MappingException::unknownAssociation($fieldName, $this->getName());
         }
 
         return $this->associations[$fieldName];
@@ -379,7 +378,7 @@ class EntityMetadata implements ApiMetadata
 
     public function mapAssociation(array $mapping)
     {
-        $mapping = $this->_validateAndCompleteAssociationMapping($mapping);
+        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
         $this->assertFieldNotMapped($mapping['field']);
         $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
         $this->fieldNames[$mapping['api_field']] = $mapping['field'];
@@ -395,9 +394,8 @@ class EntityMetadata implements ApiMetadata
      * @return array The updated mapping.
      *
      * @throws MappingException If something is wrong with the mapping.
-     * @throws \LogicException
      */
-    protected function _validateAndCompleteAssociationMapping(array $mapping)
+    protected function validateAndCompleteAssociationMapping(array $mapping)
     {
         if (!array_key_exists('api_field', $mapping)) {
             $mapping['api_field'] = $mapping['field'];
@@ -445,7 +443,7 @@ class EntityMetadata implements ApiMetadata
         }
 
         if (isset($mapping['id']) && $mapping['id'] === true && $mapping['type'] & self::TO_MANY) {
-            throw new \LogicException(
+            throw new MappingException(
                 sprintf('Illegal toMany identifier association %s for %s', $mapping['fieldName'], $this->name)
             );
         }

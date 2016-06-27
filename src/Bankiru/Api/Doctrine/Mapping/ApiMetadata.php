@@ -8,6 +8,7 @@
 
 namespace Bankiru\Api\Doctrine\Mapping;
 
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Rpc\Method\MethodProviderInterface;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\ReflectionService;
@@ -59,7 +60,7 @@ interface ApiMetadata extends ClassMetadata
 
     /**
      * @return \ReflectionProperty
-     * @throws \OutOfBoundsException
+     * @throws MappingException
      */
     public function getReflectionProperty($name);
 
@@ -75,14 +76,12 @@ interface ApiMetadata extends ClassMetadata
     /**
      * Gets the mapping of an association.
      *
-     * @see ClassMetadataInfo::$associationMappings
-     *
      * @param string $fieldName The field name that represents the association in
      *                          the object model.
      *
      * @return array The mapping.
      *
-     * @throws \OutOfBoundsException
+     * @throws MappingException
      */
     public function getAssociationMapping($fieldName);
 
@@ -95,7 +94,10 @@ interface ApiMetadata extends ClassMetadata
     /** @return bool */
     public function hasApiField($apiFieldName);
 
-    /** @return array */
+    /**
+     * @return array
+     * @throws MappingException
+     */
     public function getFieldMapping($fieldName);
 
     /** @return bool */

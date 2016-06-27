@@ -8,6 +8,8 @@
 
 namespace Bankiru\Api\Doctrine\Type;
 
+use Bankiru\Api\Doctrine\Exception\TypeException;
+
 class TypeRegistry implements TypeRegistryInterface
 {
     /** @var  Type[] */
@@ -17,7 +19,7 @@ class TypeRegistry implements TypeRegistryInterface
     public function get($type)
     {
         if (!$this->has($type)) {
-            throw new \OutOfBoundsException('No type ' . $type . ' found');
+            throw TypeException::unknown($type);
         }
 
         return $this->types[$type];
@@ -33,7 +35,7 @@ class TypeRegistry implements TypeRegistryInterface
     public function add($type, Type $instance)
     {
         if ($this->has($type)) {
-            throw new \LogicException('Type ' . $type . ' already present');
+            throw TypeException::cannotRedeclare($type);
         }
 
         $this->replace($type, $instance);

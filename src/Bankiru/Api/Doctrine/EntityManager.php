@@ -8,6 +8,7 @@
 
 namespace Bankiru\Api\Doctrine;
 
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Proxy\ProxyFactory;
@@ -82,7 +83,7 @@ class EntityManager implements ApiEntityManager
      * @param array|mixed $id
      *
      * @return array
-     * @throws \LogicException
+     * @throws MappingException
      */
     private function fixScalarId($id, $className)
     {
@@ -94,7 +95,7 @@ class EntityManager implements ApiEntityManager
 
         $identifiers = $this->getClassMetadata($className)->getIdentifierFieldNames();
         if (count($id) !== count($identifiers)) {
-            throw new \LogicException('ID structure does not match mapping');
+            throw MappingException::invalidIdentifierStructure();
         }
 
         return array_combine($identifiers, (array)$id);

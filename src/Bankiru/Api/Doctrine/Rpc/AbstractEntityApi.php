@@ -9,6 +9,7 @@
 namespace Bankiru\Api\Doctrine\Rpc;
 
 use Bankiru\Api\Doctrine\ApiEntityManager;
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Utility\IdentifierFlattener;
 use ScayTrase\Api\Rpc\RpcClientInterface;
@@ -86,7 +87,7 @@ abstract class AbstractEntityApi implements Searcher, Finder, Counter
      * @param array|mixed $id
      *
      * @return array
-     * @throws \LogicException
+     * @throws MappingException
      */
     protected function fixScalarId($id, ApiMetadata $metadata)
     {
@@ -98,7 +99,7 @@ abstract class AbstractEntityApi implements Searcher, Finder, Counter
 
         $identifiers = $metadata->getIdentifierFieldNames();
         if (count($id) !== count($identifiers)) {
-            throw new \LogicException('ID structure does not match mapping');
+            throw MappingException::invalidIdentifierStructure();
         }
 
         return array_combine($identifiers, (array)$id);
