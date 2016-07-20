@@ -23,6 +23,13 @@ class DateTimeType implements Type
     /** {@inheritdoc} */
     public function fromApiValue($value, array $options = [])
     {
-        return \DateTime::createFromFormat('c', $value);
+        if ($value === null) {
+            return $value;
+        }
+
+        $date = new \DateTime();
+        $date->setTimestamp(strtotime($value));
+
+        return $date;
     }
 }
