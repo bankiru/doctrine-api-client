@@ -35,8 +35,7 @@ class ApiCollection extends AbstractLazyCollection
         ApiMetadata $class,
         array $searchArgs,
         Collection $collection = null
-    )
-    {
+    ) {
         $this->initialized = false;
 
         $this->manager    = $manager;

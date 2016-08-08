@@ -30,8 +30,7 @@ class ApiEntityCache
         ApiEntityManager $manager,
         CacheItemPoolInterface $cache,
         LoggerInterface $logger = null
-    )
-    {
+    ) {
         $this->manager = $manager;
         $this->cache   = $cache;
         $this->logger  = $logger;

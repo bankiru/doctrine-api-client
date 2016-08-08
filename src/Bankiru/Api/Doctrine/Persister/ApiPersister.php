@@ -167,12 +167,13 @@ class ApiPersister implements EntityPersister
      *
      * @return object|null The loaded and managed entity instance or NULL if the entity can not be found.
      */
-    public function load(array $criteria,
-                         $entity = null,
-                         $assoc = null,
-                         $limit = null,
-                         array $orderBy = null)
-    {
+    public function load(
+        array $criteria,
+        $entity = null,
+        $assoc = null,
+        $limit = null,
+        array $orderBy = null
+    ) {
         // TODO: Implement load() method.
     }
 
@@ -273,7 +274,7 @@ class ApiPersister implements EntityPersister
         $targetMetadata = $this->manager->getClassMetadata($targetClass);
 
         if ($this->metadata->isIdentifierComposite) {
-            throw new \BadMethodCallException(__METHOD__ . ' on composite reference is not supported');
+            throw new \BadMethodCallException(__METHOD__.' on composite reference is not supported');
         }
 
         $criteria = [

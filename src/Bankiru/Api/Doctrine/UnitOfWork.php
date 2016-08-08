@@ -67,8 +67,8 @@ class UnitOfWork implements PropertyChangedListener
      */
     public function __construct(EntityManager $manager)
     {
-        $this->manager                    = $manager;
-        $this->identifierFlattener        = new IdentifierFlattener($this->manager);
+        $this->manager             = $manager;
+        $this->identifierFlattener = new IdentifierFlattener($this->manager);
     }
 
     /**

@@ -65,12 +65,12 @@ class YmlMetadataDriver extends FileDriver
 
             assert(
                 in_array(Searcher::class, class_implements($metadata->searcher), true),
-                'Searcher ' . $metadata->searcher . ' should implement ' . Searcher::class
+                'Searcher '.$metadata->searcher.' should implement '.Searcher::class
             );
 
             assert(
                 in_array(Finder::class, class_implements($metadata->finder), true),
-                'Finder ' . $metadata->finder . ' should implement ' . Finder::class
+                'Finder '.$metadata->finder.' should implement '.Finder::class
             );
 
             $methodProvider = null;
@@ -82,7 +82,8 @@ class YmlMetadataDriver extends FileDriver
                     array_key_exists('entityPathSeparator', $element['client']) ?
                         $element['client']['entityPathSeparator'] :
                         null;
-                $methodProvider = new EntityMethodProvider($element['client']['entityPath'], $pathSeparator, $methodProvider);
+                $methodProvider =
+                    new EntityMethodProvider($element['client']['entityPath'], $pathSeparator, $methodProvider);
             }
 
             if (null === $methodProvider) {

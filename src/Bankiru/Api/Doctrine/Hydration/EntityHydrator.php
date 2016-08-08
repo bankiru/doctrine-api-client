@@ -122,10 +122,10 @@ class EntityHydrator
 
                 $targetIdsNames = $targetMetadata->getIdentifierFieldNames();
                 $targetIdName   = array_shift($targetIdsNames);
-                $type           =
-                    $this->manager->getConfiguration()
-                                  ->getTypeRegistry()
-                                  ->get($targetMetadata->getTypeOfField($targetIdName));
+                $type           = $this->manager
+                    ->getConfiguration()
+                    ->getTypeRegistry()
+                    ->get($targetMetadata->getTypeOfField($targetIdName));
                 $identifiers    = [$targetIdName => $type->fromApiValue($value)];
             }
 

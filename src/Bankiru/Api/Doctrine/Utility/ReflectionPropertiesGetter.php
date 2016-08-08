@@ -105,13 +105,15 @@ final class ReflectionPropertiesGetter
         $properties = $reflectionClass->getProperties();
 
         return array_filter(
-            array_filter(array_map(
-                             [$this, 'getAccessibleProperty'],
-                             array_combine(
-                                 array_map([$this, 'getLogicalName'], $properties),
-                                 $properties
-                             )
-                         )),
+            array_filter(
+                array_map(
+                    [$this, 'getAccessibleProperty'],
+                    array_combine(
+                        array_map([$this, 'getLogicalName'], $properties),
+                        $properties
+                    )
+                )
+            ),
             [$this, 'isInstanceProperty']
         );
     }
@@ -153,9 +155,9 @@ final class ReflectionPropertiesGetter
         }
 
         if ($property->isProtected()) {
-            return "\0*\0" . $propertyName;
+            return "\0*\0".$propertyName;
         }
 
-        return "\0" . $property->getDeclaringClass()->getName() . "\0" . $propertyName;
+        return "\0".$property->getDeclaringClass()->getName()."\0".$propertyName;
     }
 }

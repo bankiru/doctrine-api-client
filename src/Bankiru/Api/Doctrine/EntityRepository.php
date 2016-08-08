@@ -94,6 +94,14 @@ class EntityRepository implements ObjectRepository
     }
 
     /**
+     * @return EntityManager
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
+    /**
      * @return RpcClientInterface
      */
     protected function getClient()
@@ -107,13 +115,5 @@ class EntityRepository implements ObjectRepository
     protected function getMetadata()
     {
         return $this->metadata;
-    }
-
-    /**
-     * @return EntityManager
-     */
-    public function getManager()
-    {
-        return $this->manager;
     }
 }

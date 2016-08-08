@@ -24,8 +24,7 @@ final class EntityMethodProvider implements MethodProviderInterface
         $entityPath,
         $pathSeparator = self::DEFAULT_PATH_SEPARATOR,
         MethodProviderInterface $chainedProvider = null
-    )
-    {
+    ) {
         $this->entityPath    = $entityPath;
         $this->pathSeparator = (string)$pathSeparator;
         $this->provider      = $chainedProvider;
@@ -46,7 +45,7 @@ final class EntityMethodProvider implements MethodProviderInterface
             return $this->provider->getMethod($method);
         }
 
-        return $this->entityPath . $this->pathSeparator . $method;
+        return $this->entityPath.$this->pathSeparator.$method;
     }
 
     /**

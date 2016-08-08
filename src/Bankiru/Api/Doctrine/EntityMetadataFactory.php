@@ -37,7 +37,6 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
         $this->manager = $manager;
     }
 
-
     /** {@inheritdoc} */
     protected function initialize()
     {
@@ -55,7 +54,7 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
             throw MappingException::unknownAlias($namespaceAlias);
         }
 
-        return $this->aliases[$namespaceAlias] . $simpleClassName;
+        return $this->aliases[$namespaceAlias].$simpleClassName;
     }
 
     /** {@inheritdoc} */

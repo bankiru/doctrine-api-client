@@ -74,12 +74,16 @@ final class IdentifierFlattener
 
                 if ($this->unitOfWork->isInIdentityMap($id[$field])) {
                     $associatedId =
-                        $this->flattenIdentifier($targetClassMetadata,
-                                                 $this->unitOfWork->getEntityIdentifier($id[$field]));
+                        $this->flattenIdentifier(
+                            $targetClassMetadata,
+                            $this->unitOfWork->getEntityIdentifier($id[$field])
+                        );
                 } else {
                     $associatedId =
-                        $this->flattenIdentifier($targetClassMetadata,
-                                                 $targetClassMetadata->getIdentifierValues($id[$field]));
+                        $this->flattenIdentifier(
+                            $targetClassMetadata,
+                            $targetClassMetadata->getIdentifierValues($id[$field])
+                        );
                 }
 
                 $flatId[$field] = implode(' ', $associatedId);

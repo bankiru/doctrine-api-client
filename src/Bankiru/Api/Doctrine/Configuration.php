@@ -35,7 +35,8 @@ class Configuration
     /**
      * Configuration constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->apiCacheLogger = new NullLogger();
     }
 
