@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 03.02.2016
- * Time: 16:15
- */
 
 namespace Bankiru\Api\Doctrine;
 
@@ -415,6 +409,5 @@ class UnitOfWork implements PropertyChangedListener
      */
     public function propertyChanged($sender, $propertyName, $oldValue, $newValue)
     {
-        return;
     }
 }

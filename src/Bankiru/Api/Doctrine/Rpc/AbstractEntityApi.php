@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 11.04.2016
- * Time: 16:58
- */
 
 namespace Bankiru\Api\Doctrine\Rpc;
 
@@ -104,5 +98,4 @@ abstract class AbstractEntityApi implements Searcher, Finder, Counter
 
         return array_combine($identifiers, (array)$id);
     }
-
 }

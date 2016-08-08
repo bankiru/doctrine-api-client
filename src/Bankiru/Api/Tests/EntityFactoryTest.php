@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 02.02.2016
- * Time: 8:52
- */
 
 namespace Bankiru\Api\Tests;
 

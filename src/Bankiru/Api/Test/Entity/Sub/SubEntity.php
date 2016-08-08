@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 02.02.2016
- * Time: 8:34
- */
 
 namespace Bankiru\Api\Test\Entity\Sub;
-
 
 use Bankiru\Api\Test\Entity\TestEntity;
 

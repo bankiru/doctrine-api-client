@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 16.03.2016
- * Time: 18:14
- */
 
 namespace Bankiru\Api\Doctrine\Type;
-
 
 class FloatType implements Type
 {

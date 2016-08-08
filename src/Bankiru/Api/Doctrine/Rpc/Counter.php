@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 22.03.2016
- * Time: 12:53
- */
 
 namespace Bankiru\Api\Doctrine\Rpc;
 

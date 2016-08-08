@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 29.12.2015
- * Time: 16:56
- */
 
 namespace Bankiru\Api\Doctrine\Mapping\Driver;
 

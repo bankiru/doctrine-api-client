@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 16.03.2016
- * Time: 18:10
- */
+
 namespace Bankiru\Api\Doctrine\Type;
 
 use Bankiru\Api\Doctrine\Exception\TypeException;

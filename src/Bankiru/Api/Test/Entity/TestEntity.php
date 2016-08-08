@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 01.02.2016
- * Time: 13:54
- */
 
 namespace Bankiru\Api\Test\Entity;
 
@@ -30,7 +24,7 @@ class TestEntity
     }
 
     /**
-     * @return TestEntity
+     * @return TestReference
      */
     public function getParent()
     {

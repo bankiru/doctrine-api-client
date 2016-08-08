@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 08.02.2016
- * Time: 14:20
- */
 
 namespace Bankiru\Api\Doctrine\Hydration;
 

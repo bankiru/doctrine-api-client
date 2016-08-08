@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 27.06.2016
- * Time: 13:54
- */
 
 namespace Bankiru\Api\Doctrine\Exception;
 

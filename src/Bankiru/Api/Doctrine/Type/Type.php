@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 16.03.2016
- * Time: 17:53
- */
 
 namespace Bankiru\Api\Doctrine\Type;
 

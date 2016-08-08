@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 29.12.2015
- * Time: 9:39
- */
 
 namespace Bankiru\Api\Doctrine;
 
@@ -183,7 +177,6 @@ class EntityManager implements ApiEntityManager
     public function initializeObject($obj)
     {
         // Todo: generate proxy class here (@scaytrase)
-        return;
     }
 
     /** {@inheritdoc} */
