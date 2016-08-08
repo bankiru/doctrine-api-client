@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 05.02.2016
- * Time: 11:48
- */
 
 namespace Bankiru\Api\Doctrine\Proxy;
 

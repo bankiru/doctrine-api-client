@@ -1,25 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 03.02.2016
- * Time: 16:15
- */
 
 namespace Bankiru\Api\Doctrine;
 
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Hydration\EntityHydrator;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Persister\ApiPersister;
 use Bankiru\Api\Doctrine\Persister\EntityPersister;
-use Bankiru\Api\Doctrine\Proxy\ApiCollection;
 use Bankiru\Api\Doctrine\Utility\IdentifierFlattener;
-use Bankiru\Api\Doctrine\Utility\ReflectionPropertiesGetter;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\NotifyPropertyChanged;
-use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\Common\Persistence\ObjectManagerAware;
 use Doctrine\Common\PropertyChangedListener;
 use Doctrine\Common\Proxy\Proxy;
@@ -69,8 +59,6 @@ class UnitOfWork implements PropertyChangedListener
     private $identifierFlattener;
     /** @var  array */
     private $originalEntityData;
-    /** @var ReflectionPropertiesGetter */
-    private $reflectionPropertiesGetter;
 
     /**
      * UnitOfWork constructor.
@@ -81,7 +69,6 @@ class UnitOfWork implements PropertyChangedListener
     {
         $this->manager                    = $manager;
         $this->identifierFlattener        = new IdentifierFlattener($this->manager);
-        $this->reflectionPropertiesGetter = new ReflectionPropertiesGetter(new RuntimeReflectionService());
     }
 
     /**
@@ -147,7 +134,7 @@ class UnitOfWork implements PropertyChangedListener
      * @param object|null $unmanagedProxy
      *
      * @return ObjectManagerAware|object
-     * @throws \Doctrine\Common\Persistence\Mapping\MappingException
+     * @throws MappingException
      */
     public function getOrCreateEntity($className, \stdClass $data, $unmanagedProxy = null)
     {
@@ -411,18 +398,6 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
-     * Tests if an entity is loaded - must either be a loaded proxy or not a proxy
-     *
-     * @param object $entity
-     *
-     * @return bool
-     */
-    private function isLoaded($entity)
-    {
-        return !($entity instanceof Proxy) || $entity->__isInitialized();
-    }
-
-    /**
      * Notifies the listener of a property change.
      *
      * @param object $sender       The object on which the property changed.
@@ -434,6 +409,5 @@ class UnitOfWork implements PropertyChangedListener
      */
     public function propertyChanged($sender, $propertyName, $oldValue, $newValue)
     {
-        return;
     }
 }

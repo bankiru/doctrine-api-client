@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 03.02.2016
- * Time: 15:03
- */
 
 namespace Bankiru\Api\Tests;
 
@@ -15,6 +9,11 @@ use GuzzleHttp\Psr7\Response;
 
 class CollectionLoadingTest extends AbstractEntityManagerTest
 {
+    protected function getClientNames()
+    {
+        return [self::DEFAULT_CLIENT, 'test-reference-client'];
+    }
+
     public function testLazyCollections()
     {
         $repository = $this->getManager()->getRepository(SubEntity::class);

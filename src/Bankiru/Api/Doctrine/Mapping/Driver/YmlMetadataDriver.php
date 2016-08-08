@@ -1,13 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 29.12.2015
- * Time: 16:56
- */
 
 namespace Bankiru\Api\Doctrine\Mapping\Driver;
 
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Rpc\DoctrineApi;
 use Bankiru\Api\Doctrine\Rpc\Finder;
@@ -16,7 +11,6 @@ use Bankiru\Api\Doctrine\Rpc\Method\MethodProvider;
 use Bankiru\Api\Doctrine\Rpc\Searcher;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\FileDriver;
-use Doctrine\Common\Persistence\Mapping\MappingException;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -30,7 +24,6 @@ class YmlMetadataDriver extends FileDriver
      *
      * @return void
      * @throws MappingException
-     * @throws \LogicException
      */
     public function loadMetadataForClass($className, ClassMetadata $metadata)
     {
@@ -89,11 +82,11 @@ class YmlMetadataDriver extends FileDriver
                     array_key_exists('entityPathSeparator', $element['client']) ?
                         $element['client']['entityPathSeparator'] :
                         null;
-                $methodProvider = new EntityMethodProvider($element['client']['entityPath'], $pathSeparator);
+                $methodProvider = new EntityMethodProvider($element['client']['entityPath'], $pathSeparator, $methodProvider);
             }
 
             if (null === $methodProvider) {
-                throw new \LogicException('No methods or entityPath name specified');
+                throw MappingException::noMethods();
             }
 
             $metadata->methodProvider = $methodProvider;
@@ -112,7 +105,7 @@ class YmlMetadataDriver extends FileDriver
         if (array_key_exists('id', $element)) {
             // Evaluate identifier settings
             foreach ($element['id'] as $name => $idElement) {
-                if (isset($idElement['associationKey']) && $idElement['associationKey'] == true) {
+                if (isset($idElement['associationKey']) && (bool)$idElement['associationKey'] === true) {
                     $associationIds[$name] = true;
                     continue;
                 }

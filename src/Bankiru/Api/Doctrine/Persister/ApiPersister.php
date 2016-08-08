@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 02.02.2016
- * Time: 14:30
- */
 
 namespace Bankiru\Api\Doctrine\Persister;
 
@@ -16,6 +10,7 @@ use Bankiru\Api\Doctrine\Rpc\Finder;
 use Bankiru\Api\Doctrine\Rpc\Searcher;
 use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
 class ApiPersister implements EntityPersister
@@ -98,7 +93,7 @@ class ApiPersister implements EntityPersister
      * @param int|null   $limit
      * @param int|null   $offset
      *
-     * @return array
+     * @return Collection
      */
     public function loadAll(array $criteria = [], array $orderBy = null, $limit = null, $offset = null)
     {
@@ -171,8 +166,6 @@ class ApiPersister implements EntityPersister
      * @param array|null  $orderBy  Criteria to order by.
      *
      * @return object|null The loaded and managed entity instance or NULL if the entity can not be found.
-     *
-     * @todo Check identity map? loadById method? Try to guess whether $criteria is the id?
      */
     public function load(array $criteria,
                          $entity = null,
@@ -207,8 +200,6 @@ class ApiPersister implements EntityPersister
         }
 
         return $this->loadById($identifier);
-
-//
     }
 
     public function loadById(array $identifiers, $entity = null)
@@ -251,7 +242,7 @@ class ApiPersister implements EntityPersister
      * @param object                 $sourceEntity
      * @param AbstractLazyCollection $collection The collection to load/fill.
      *
-     * @return array
+     * @return Collection
      */
     public function loadOneToManyCollection(array $assoc, $sourceEntity, AbstractLazyCollection $collection)
     {
@@ -273,7 +264,7 @@ class ApiPersister implements EntityPersister
      *
      * @param int|null $offset
      *
-     * @return array
+     * @return Collection
      */
     public function getOneToManyCollection(array $assoc, $sourceEntity, $limit = null, $offset = null)
     {

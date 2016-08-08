@@ -1,18 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 29.12.2015
- * Time: 15:14
- */
 
 namespace Bankiru\Api\Doctrine;
 
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Doctrine\Common\Persistence\Mapping\AbstractClassMetadataFactory;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
-use Doctrine\Common\Persistence\Mapping\MappingException;
 use Doctrine\Common\Persistence\Mapping\ReflectionService;
 use ReflectionException;
 
@@ -32,7 +26,7 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
             throw new \LogicException(sprintf('Alias "%s" is already registered', $namespaceAlias));
         }
 
-        $this->aliases[$namespaceAlias] = $namespace;
+        $this->aliases[$namespaceAlias] = rtrim($namespace, '\\');
     }
 
     /**
@@ -44,12 +38,7 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
     }
 
 
-    /**
-     * Lazy initialization of this stuff, especially the metadata driver,
-     * since these are not needed at all when a metadata cache is active.
-     *
-     * @return void
-     */
+    /** {@inheritdoc} */
     protected function initialize()
     {
         $this->driver      = $this->manager->getConfiguration()->getDriver();
@@ -57,26 +46,19 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
     }
 
     /**
-     * Gets the fully qualified class-name from the namespace alias.
-     *
-     * @param string $namespaceAlias
-     * @param string $simpleClassName
-     *
-     * @return string
+     * {@inheritdoc}
+     * @throws MappingException
      */
     protected function getFqcnFromAlias($namespaceAlias, $simpleClassName)
     {
-        //todo: expand records like 'Geo:Region'
+        if (!array_key_exists($namespaceAlias, $this->aliases)) {
+            throw MappingException::unknownAlias($namespaceAlias);
+        }
+
+        return $this->aliases[$namespaceAlias] . $simpleClassName;
     }
 
-    /**
-     * Wakes up reflection after ClassMetadata gets unserialized from cache.
-     *
-     * @param ClassMetadata     $class
-     * @param ReflectionService $reflService
-     *
-     * @return void
-     */
+    /** {@inheritdoc} */
     protected function wakeupReflection(ClassMetadata $class, ReflectionService $reflService)
     {
         if (!($class instanceof EntityMetadata)) {
@@ -192,24 +174,15 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
      */
     private function addInheritedRelations(EntityMetadata $subClass, EntityMetadata $parentClass)
     {
-        //Todo:
-//        foreach ($parentClass->associations as $field => $mapping) {
-//            if ($parentClass->isMappedSuperclass) {
-//                if ($mapping['type'] & ClassMetadata::TO_MANY && !$mapping['isOwningSide']) {
-//                    throw MappingException::illegalToManyAssociationOnMappedSuperclass($parentClass->name, $field);
-//                }
-//                $mapping['sourceEntity'] = $subClass->name;
-//            }
-//
-//            //$subclassMapping = $mapping;
-//            if ( ! isset($mapping['inherited']) && ! $parentClass->isMappedSuperclass) {
-//                $mapping['inherited'] = $parentClass->name;
-//            }
-//            if ( ! isset($mapping['declared'])) {
-//                $mapping['declared'] = $parentClass->name;
-//            }
-//            $subClass->addInheritedAssociationMapping($mapping);
-//        }
+        foreach ($parentClass->associations as $mapping) {
+            if (!isset($mapping['inherited']) && !$parentClass->isMappedSuperclass) {
+                $mapping['inherited'] = $parentClass->name;
+            }
+            if (!isset($mapping['declared'])) {
+                $mapping['declared'] = $parentClass->name;
+            }
+            $subClass->addInheritedAssociationMapping($mapping);
+        }
     }
 
     /**

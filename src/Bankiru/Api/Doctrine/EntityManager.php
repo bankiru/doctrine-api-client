@@ -1,13 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 29.12.2015
- * Time: 9:39
- */
 
 namespace Bankiru\Api\Doctrine;
 
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Proxy\ProxyFactory;
@@ -82,7 +77,7 @@ class EntityManager implements ApiEntityManager
      * @param array|mixed $id
      *
      * @return array
-     * @throws \LogicException
+     * @throws MappingException
      */
     private function fixScalarId($id, $className)
     {
@@ -94,7 +89,7 @@ class EntityManager implements ApiEntityManager
 
         $identifiers = $this->getClassMetadata($className)->getIdentifierFieldNames();
         if (count($id) !== count($identifiers)) {
-            throw new \LogicException('ID structure does not match mapping');
+            throw MappingException::invalidIdentifierStructure();
         }
 
         return array_combine($identifiers, (array)$id);
@@ -125,36 +120,25 @@ class EntityManager implements ApiEntityManager
     public function persist($object)
     {
         throw new \BadMethodCallException('Persisting object is not supported');
-
-        return;
     }
 
     /** {@inheritdoc} */
     public function remove($object)
     {
+        //Todo: support object deletion via API (@scaytrase)
         throw new \BadMethodCallException('Removing object is not supported');
-
-        return; //Todo: support object deletion via API (@scaytrase)
     }
 
     /** {@inheritdoc} */
     public function merge($object)
     {
         throw new \BadMethodCallException('Merge is not supported');
-
-        if (!is_object($object)) {
-            throw new \InvalidArgumentException('Merge support only objects');
-        }
-
-        return $this->getUnitOfWork()->merge($object);
     }
 
     /** {@inheritdoc} */
     public function clear($objectName = null)
     {
         throw new \BadMethodCallException('Clearing EM is not supported');
-
-        return;
     }
 
     /** {@inheritdoc} */
@@ -187,15 +171,12 @@ class EntityManager implements ApiEntityManager
     public function flush()
     {
         throw new \BadMethodCallException('Flush is not supported');
-
-        return;
     }
 
     /** {@inheritdoc} */
     public function initializeObject($obj)
     {
         // Todo: generate proxy class here (@scaytrase)
-        return;
     }
 
     /** {@inheritdoc} */

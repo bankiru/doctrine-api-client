@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 11.04.2016
- * Time: 8:57
- */
 
 namespace Bankiru\Api\Doctrine;
 
@@ -91,7 +85,7 @@ class ApiEntityCache
     {
         $flattenIdentifiers = $this->idFlattener->flattenIdentifier($metadata, $identifiers);
 
-        return sha1((sprintf('%s %s', $metadata->getName(), implode(' ', $flattenIdentifiers))));
+        return sha1(sprintf('%s %s', $metadata->getName(), implode(' ', $flattenIdentifiers)));
     }
 
     /**
@@ -100,8 +94,6 @@ class ApiEntityCache
      * @param mixed       $data Entity source data
      * @param ApiMetadata $metadata
      * @param array       $identifiers
-     *
-     * @return bool
      */
     public function set($data, ApiMetadata $metadata, array $identifiers)
     {

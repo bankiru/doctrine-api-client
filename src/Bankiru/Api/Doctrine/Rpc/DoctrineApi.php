@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 29.01.2016
- * Time: 11:56
- */
 
 namespace Bankiru\Api\Doctrine\Rpc;
 
@@ -15,7 +9,7 @@ use ScayTrase\Api\Rpc\RpcClientInterface;
 final class DoctrineApi extends AbstractEntityApi
 {
     /** @var  array */
-    private $critera;
+    private $criteria;
     /** @var  array|null */
     private $order;
     /** @var  int|null */
@@ -38,7 +32,7 @@ final class DoctrineApi extends AbstractEntityApi
      */
     private function getSearchRequestParams()
     {
-        $filter = $this->critera;
+        $filter = $this->criteria;
         $sort   = $this->order;
         $offset = (int)$this->offset;
         $limit  = $this->limit ? (int)$this->limit : null;
@@ -63,9 +57,9 @@ final class DoctrineApi extends AbstractEntityApi
 
     private function configure(array $criteria, array $order = null, $limit = null, $offset = null)
     {
-        $this->critera = $criteria;
-        $this->order   = $order;
-        $this->limit   = $limit;
-        $this->offset  = $offset;
+        $this->criteria = $criteria;
+        $this->order    = $order;
+        $this->limit    = $limit;
+        $this->offset   = $offset;
     }
 }

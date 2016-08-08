@@ -1,23 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 03.02.2016
- * Time: 15:10
- */
 
 namespace Bankiru\Api\Doctrine\Persister;
 
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Doctrine\Common\Collections\AbstractLazyCollection;
+use Doctrine\Common\Collections\Collection;
 
-/**
- * Entity persister interface
- * Define the behavior that should be implemented by all entity persisters.
- *
- * @author Fabio B. Silva <fabio.bat.silva@gmail.com>
- * @since  2.5
- */
 interface EntityPersister
 {
     /**
@@ -68,14 +56,14 @@ interface EntityPersister
      * @param array|null  $orderBy  Criteria to order by.
      *
      * @return object|null The loaded and managed entity instance or NULL if the entity can not be found.
-     *
-     * @todo Check identity map? loadById method? Try to guess whether $criteria is the id?
      */
-    public function load(array $criteria,
-                         $entity = null,
-                         $assoc = null,
-                         $limit = null,
-                         array $orderBy = null);
+    public function load(
+        array $criteria,
+        $entity = null,
+        $assoc = null,
+        $limit = null,
+        array $orderBy = null
+    );
 
     /**
      * Loads an entity by identifier.
@@ -84,8 +72,6 @@ interface EntityPersister
      * @param object|null $entity     The entity to load the data into. If not specified, a new entity is created.
      *
      * @return object The loaded and managed entity instance or NULL if the entity can not be found.
-     *
-     * @todo Check parameters
      */
     public function loadById(array $identifier, $entity = null);
 
@@ -124,7 +110,7 @@ interface EntityPersister
      * @param int|null   $limit
      * @param int|null   $offset
      *
-     * @return array
+     * @return Collection
      */
     public function loadAll(array $criteria = [], array $orderBy = null, $limit = null, $offset = null);
 
@@ -135,7 +121,7 @@ interface EntityPersister
      * @param object                 $sourceEntity
      * @param AbstractLazyCollection $collection The collection to load/fill.
      *
-     * @return array
+     * @return Collection
      */
     public function loadOneToManyCollection(array $assoc, $sourceEntity, AbstractLazyCollection $collection);
 
@@ -148,7 +134,7 @@ interface EntityPersister
      * @param int|null $limit
      * @param int|null $offset
      *
-     * @return array
+     * @return Collection
      */
     public function getOneToManyCollection(array $assoc, $sourceEntity, $limit = null, $offset = null);
 

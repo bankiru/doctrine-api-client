@@ -1,14 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 30.12.2015
- * Time: 8:12
- */
 
 namespace Bankiru\Api\Doctrine\Proxy;
 
 use Bankiru\Api\Doctrine\EntityManager;
+use Bankiru\Api\Doctrine\Exception\FetchException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Persister\ApiPersister;
@@ -59,6 +54,7 @@ class ProxyFactory extends AbstractProxyFactory
      * @param string $className
      *
      * @return ProxyDefinition
+     * @throws FetchException
      */
     protected function createProxyDefinition($className)
     {
@@ -84,6 +80,7 @@ class ProxyFactory extends AbstractProxyFactory
      * @param ApiPersister $persister
      *
      * @return \Closure
+     * @throws FetchException
      */
     private function createInitializer(ApiMetadata $classMetadata, ApiPersister $persister)
     {
@@ -110,7 +107,7 @@ class ProxyFactory extends AbstractProxyFactory
                 $proxy->__setInitializer($initializer);
                 $proxy->__setCloner($cloner);
                 $proxy->__setInitialized(false);
-                throw new \OutOfBoundsException('Entity not found'); // Todo: invent exceptions
+                throw FetchException::notFound();
             }
 
             $proxy->__setInitialized(true);
@@ -127,6 +124,7 @@ class ProxyFactory extends AbstractProxyFactory
      * @param ApiPersister $persister
      *
      * @return \Closure
+     * @throws FetchException
      */
     private function createCloner(ApiMetadata $classMetadata, ApiPersister $persister)
     {
@@ -143,7 +141,7 @@ class ProxyFactory extends AbstractProxyFactory
             $original = $persister->loadById($identifier);
 
             if (null === $original) {
-                throw new \OutOfBoundsException('Entity not found'); // Todo: invent exceptions
+                throw FetchException::notFound();
             }
             foreach ($class->getReflectionClass()->getProperties() as $property) {
                 if (!$class->hasField($property->name) && !$class->hasAssociation($property->name)) {

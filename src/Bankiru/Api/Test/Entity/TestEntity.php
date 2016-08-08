@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 01.02.2016
- * Time: 13:54
- */
 
 namespace Bankiru\Api\Test\Entity;
 
@@ -22,7 +16,15 @@ class TestEntity
     private $parent;
 
     /**
-     * @return TestEntity
+     * TestEntity constructor.
+     */
+    public function __construct()
+    {
+        $this->references = new ArrayCollection();
+    }
+
+    /**
+     * @return TestReference
      */
     public function getParent()
     {

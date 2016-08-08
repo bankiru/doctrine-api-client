@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: batanov.pavel
- * Date: 09.02.2016
- * Time: 13:46
- */
 
 namespace Bankiru\Api\Tests;
 
@@ -37,7 +31,7 @@ class CustomRepositoryTest extends AbstractEntityManagerTest
         /** @var \StdClass $data */
         $data = $repository->doCustomStuff();
 
-        self::assertInstanceOf(\StdClass::class, $data);
+        self::assertInstanceOf(\stdClass::class, $data);
         self::assertEquals('custom-response', $data->customField);
     }
 }
