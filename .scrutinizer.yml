@@ -6,3 +6,7 @@ build:
         coverage:
           file: build/clover.xml
           format: php-clover
+
+filter:
+  excluded_paths:
+    - "src/Bankiru/Api/Tests/"
