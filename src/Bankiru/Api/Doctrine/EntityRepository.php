@@ -76,7 +76,7 @@ class EntityRepository implements ObjectRepository
      */
     public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
     {
-        return new ApiCollection($this->manager, $this->metadata, [$criteria, $orderBy, $limit, $offset]);
+        return (new ApiCollection($this->manager, $this->metadata, [$criteria, $orderBy, $limit, $offset]))->toArray();
     }
 
     /**
@@ -115,5 +115,17 @@ class EntityRepository implements ObjectRepository
     protected function getMetadata()
     {
         return $this->metadata;
+    }
+
+    /**
+     * Hydrates object from given data or merges it to already fetched object
+     *
+     * @param mixed $data
+     *
+     * @return object
+     */
+    protected function hydrateObject($data)
+    {
+        return $this->getManager()->getUnitOfWork()->getOrCreateEntity($this->getClassName(), $data);
     }
 }
