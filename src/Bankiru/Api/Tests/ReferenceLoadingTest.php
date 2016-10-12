@@ -191,8 +191,7 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
         self::assertCount(1, $children);
         /** @var TestEntity $child */
 
-        $childrenArray = $children->toArray();
-        $child         = array_shift($childrenArray);
+        $child         = array_shift($children);
 
         self::assertEquals($parent, $child->getParent());
         self::assertEquals($parent->getPayload(), $child->getParent()->getPayload());

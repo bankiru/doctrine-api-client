@@ -2,7 +2,7 @@
 
 namespace Bankiru\Api\Doctrine\Proxy;
 
-use Bankiru\Api\Doctrine\EntityManager;
+use Bankiru\Api\Doctrine\ApiEntityManager;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -11,7 +11,7 @@ use ScayTrase\Api\Rpc\Exception\RpcExceptionInterface;
 
 class ApiCollection extends AbstractLazyCollection
 {
-    /** @var  EntityManager */
+    /** @var  ApiEntityManager */
     private $manager;
     /** @var ApiMetadata */
     private $metadata;
@@ -25,13 +25,13 @@ class ApiCollection extends AbstractLazyCollection
     /**
      * ApiCollection constructor.
      *
-     * @param EntityManager $manager
-     * @param ApiMetadata   $class
-     * @param array         $searchArgs
-     * @param Collection    $collection
+     * @param ApiEntityManager $manager
+     * @param ApiMetadata      $class
+     * @param array            $searchArgs
+     * @param Collection       $collection
      */
     public function __construct(
-        EntityManager $manager,
+        ApiEntityManager $manager,
         ApiMetadata $class,
         array $searchArgs,
         Collection $collection = null
@@ -46,7 +46,7 @@ class ApiCollection extends AbstractLazyCollection
 
     /**
      * @param object $owner
-     * @param        $assoc
+     * @param array  $assoc
      */
     public function setOwner($owner, array $assoc)
     {
