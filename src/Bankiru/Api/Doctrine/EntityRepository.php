@@ -4,6 +4,7 @@ namespace Bankiru\Api\Doctrine;
 
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Proxy\ApiCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Persistence\ObjectRepository;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
@@ -76,7 +77,7 @@ class EntityRepository implements ObjectRepository
      */
     public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
     {
-        return (new ApiCollection($this->manager, $this->metadata, [$criteria, $orderBy, $limit, $offset]))->toArray();
+        return $this->createLazyCollection($criteria, $orderBy, $limit, $offset)->toArray();
     }
 
     /**
@@ -99,6 +100,19 @@ class EntityRepository implements ObjectRepository
     public function getManager()
     {
         return $this->manager;
+    }
+
+    /**
+     * @param array      $criteria
+     * @param array|null $orderBy
+     * @param int|null   $limit
+     * @param int|null   $offset
+     *
+     * @return Collection
+     */
+    public function createLazyCollection(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+    {
+        return new ApiCollection($this->manager, $this->metadata, [$criteria, $orderBy, $limit, $offset]);
     }
 
     /**

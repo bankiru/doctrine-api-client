@@ -2,6 +2,7 @@
 
 namespace Bankiru\Api\Tests;
 
+use Bankiru\Api\Doctrine\EntityRepository;
 use Bankiru\Api\Doctrine\Proxy\ApiCollection;
 use Bankiru\Api\Test\Entity\Sub\SubEntity;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -11,11 +12,10 @@ class CollectionLoadingTest extends AbstractEntityManagerTest
 {
     public function testLazyCollections()
     {
-        $collection = new ApiCollection(
-            $this->getManager(),
-            $this->getManager()->getClassMetadata(SubEntity::class),
-            ['criteria' => ['subPayload' => 'sub-payload']]
-        );
+        /** @var EntityRepository $repository */
+        $repository = $this->getManager()->getRepository(SubEntity::class);
+        /** @var ApiCollection $collection */
+        $collection = $repository->createLazyCollection(['subPayload' => 'sub-payload']);
 
         self::assertInstanceOf(ApiCollection::class, $collection);
         self::assertFalse($collection->isInitialized());
