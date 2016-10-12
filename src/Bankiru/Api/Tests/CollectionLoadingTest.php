@@ -2,6 +2,7 @@
 
 namespace Bankiru\Api\Tests;
 
+use Bankiru\Api\Doctrine\EntityRepository;
 use Bankiru\Api\Doctrine\Proxy\ApiCollection;
 use Bankiru\Api\Test\Entity\Sub\SubEntity;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -9,22 +10,19 @@ use GuzzleHttp\Psr7\Response;
 
 class CollectionLoadingTest extends AbstractEntityManagerTest
 {
-    protected function getClientNames()
-    {
-        return [self::DEFAULT_CLIENT, 'test-reference-client'];
-    }
-
     public function testLazyCollections()
     {
+        /** @var EntityRepository $repository */
         $repository = $this->getManager()->getRepository(SubEntity::class);
-        /** @var SubEntity[]|ArrayCollection|ApiCollection $entities */
-        $entities = $repository->findBy(['subPayload' => 'sub-payload']);
+        /** @var ApiCollection $collection */
+        $collection = $repository->createLazyCollection(['subPayload' => 'sub-payload']);
 
-        self::assertInstanceOf(ApiCollection::class, $entities);
-        self::assertFalse($entities->isInitialized());
+        self::assertInstanceOf(ApiCollection::class, $collection);
+        self::assertFalse($collection->isInitialized());
 
         try {
-            $entities->count();
+            $collection->count();
+            self::fail('Should fail');
         } catch (\OutOfBoundsException $exception) {
             self::assertEquals('Mock queue is empty', $exception->getMessage());
         }
@@ -69,7 +67,7 @@ class CollectionLoadingTest extends AbstractEntityManagerTest
 
         /** @var SubEntity[]|ArrayCollection $entities */
         $entities = $repository->findBy(['subPayload' => 'sub-payload']);
-        self::assertInstanceOf(\Countable::class, $entities);
+        self::assertInternalType('array', $entities);
         self::assertCount(3, $entities);
 
         foreach ($entities as $entity) {
@@ -82,5 +80,10 @@ class CollectionLoadingTest extends AbstractEntityManagerTest
                 self::assertInternalType('string', $entity->getStringPayload());
             }
         }
+    }
+
+    protected function getClientNames()
+    {
+        return [self::DEFAULT_CLIENT, 'test-reference-client'];
     }
 }
