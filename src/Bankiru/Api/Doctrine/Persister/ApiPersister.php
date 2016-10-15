@@ -2,10 +2,13 @@
 
 namespace Bankiru\Api\Doctrine\Persister;
 
+use Bankiru\Api\Doctrine\ApiEntityManagerAware;
 use Bankiru\Api\Doctrine\EntityManager;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Proxy\ApiCollection;
+use Bankiru\Api\Doctrine\Rpc\CachedFinder;
+use Bankiru\Api\Doctrine\Rpc\Counter;
 use Bankiru\Api\Doctrine\Rpc\Finder;
 use Bankiru\Api\Doctrine\Rpc\Searcher;
 use Doctrine\Common\Collections\AbstractLazyCollection;
@@ -82,6 +85,7 @@ class ApiPersister implements EntityPersister
      */
     public function count($criteria = [])
     {
+        //todo: rewrite with counter
         return count($this->loadAll($criteria));
     }
 
@@ -97,11 +101,8 @@ class ApiPersister implements EntityPersister
      */
     public function loadAll(array $criteria = [], array $orderBy = null, $limit = null, $offset = null)
     {
-        $client = $this->manager->getConfiguration()->getRegistry()->get($this->metadata->getClientName());
-
-        /** @var Searcher $searcher */
-        $searcherClass = $this->metadata->getSearcherClass();
-        $searcher      = new $searcherClass($this->manager);
+        $client   = $this->manager->getConfiguration()->getRegistry()->get($this->metadata->getClientName());
+        $searcher = $this->createSearcher();
 
         $apiCriteria = [];
         foreach ($criteria as $field => $values) {
@@ -157,27 +158,6 @@ class ApiPersister implements EntityPersister
     }
 
     /**
-     * Loads an entity by a list of field criteria.
-     *
-     * @param array       $criteria The criteria by which to load the entity.
-     * @param object|null $entity   The entity to load the data into. If not specified, a new entity is created.
-     * @param array|null  $assoc    The association that connects the entity to load to another entity, if any.
-     * @param int|null    $limit    Limit number of results.
-     * @param array|null  $orderBy  Criteria to order by.
-     *
-     * @return object|null The loaded and managed entity instance or NULL if the entity can not be found.
-     */
-    public function load(
-        array $criteria,
-        $entity = null,
-        $assoc = null,
-        $limit = null,
-        array $orderBy = null
-    ) {
-        // TODO: Implement load() method.
-    }
-
-    /**
      * Loads an entity of this persister's mapped class as part of a single-valued
      * association from another entity.
      *
@@ -205,10 +185,7 @@ class ApiPersister implements EntityPersister
 
     public function loadById(array $identifiers, $entity = null)
     {
-        $finderClass = $this->metadata->getFinderClass();
-        /** @var Finder $finder */
-        $finder = new $finderClass($this->manager);
-        $body   = $finder->find($this->client, $this->metadata, $identifiers);
+        $body = $this->createFinder()->find($this->client, $this->metadata, $identifiers);
 
         if (null === $body) {
             return null;
@@ -299,5 +276,45 @@ class ApiPersister implements EntityPersister
         }
 
         return $this->manager->getReference($mapping['target'], $identifiers);
+    }
+
+    /**
+     * @return Finder
+     */
+    public function createFinder()
+    {
+        $finderClass = $this->metadata->getFinderClass();
+        /** @var Finder $finder */
+        $finder = new $finderClass();
+
+        if ($finder instanceof ApiEntityManagerAware) {
+            $finder->setApiEntityManager($this->manager);
+        }
+
+        return new CachedFinder($finder, $this->manager->getEntityCache());
+    }
+
+    /**
+     * @return Searcher
+     */
+    public function createSearcher()
+    {
+        /** @var Searcher $searcher */
+        $searcherClass = $this->metadata->getSearcherClass();
+        $searcher      = new $searcherClass($this->manager);
+
+        if ($searcher instanceof ApiEntityManagerAware) {
+            $searcher->setApiEntityManager($this->manager);
+        }
+
+        return $searcher;
+    }
+
+    /**
+     * @return Counter
+     */
+    public function createCounter()
+    {
+        throw new \LogicException('No counter');
     }
 }

@@ -3,6 +3,7 @@
 namespace Bankiru\Api\Doctrine;
 
 use Bankiru\Api\ClientRegistryInterface;
+use Bankiru\Api\Doctrine\Cache\CacheConfiguration;
 use Bankiru\Api\Doctrine\Type\TypeRegistryInterface;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriver;
 use Psr\Cache\CacheItemPoolInterface;
@@ -31,6 +32,8 @@ class Configuration
     private $apiCache;
     /** @var  LoggerInterface */
     private $apiCacheLogger;
+    /** @var  CacheConfiguration[] */
+    private $cacheConfigurationCache = [];
 
     /**
      * Configuration constructor.
@@ -78,15 +81,21 @@ class Configuration
      *
      * @param $class
      *
-     * @return array|null Null if cache is not enabled for this class (use implementation defaults)
+     * @return CacheConfiguration
      */
     public function getCacheConfiguration($class)
     {
         if (!array_key_exists($class, $this->cacheConfiguration)) {
-            return null;
+            return CacheConfiguration::disabled();
         }
 
-        return $this->cacheConfiguration[$class];
+        if (!array_key_exists($class, $this->cacheConfigurationCache)) {
+
+            $this->cacheConfigurationCache[$class] = CacheConfiguration::create($this->cacheConfiguration[$class]);
+        }
+
+        return $this->cacheConfigurationCache[$class];
+
     }
 
     /**

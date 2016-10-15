@@ -12,9 +12,9 @@ interface Finder
      *
      * @param RpcClientInterface $client
      * @param ApiMetadata        $metadata
-     * @param array              $identifiers array of identifiers
+     * @param array              $identifier array of identifiers
      *
      * @return \stdClass data for hydration
      */
-    public function find(RpcClientInterface $client, ApiMetadata $metadata, array $identifiers);
+    public function find(RpcClientInterface $client, ApiMetadata $metadata, array $identifier);
 }

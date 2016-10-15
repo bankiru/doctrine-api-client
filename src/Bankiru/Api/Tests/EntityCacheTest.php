@@ -106,6 +106,8 @@ class EntityCacheTest extends AbstractEntityManagerTest
                 $item->get()->willReturn(null);
                 $item->set(Argument::any())->will(function ($args) use ($item) {
                     $item->get()->willReturn($args[0]);
+
+                    return $item;
                 });
                 $item->expiresAfter(Argument::type('int'))->willReturn($item);
                 $item->expiresAfter(Argument::exact(null))->willReturn($item);
