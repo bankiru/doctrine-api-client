@@ -142,4 +142,15 @@ class EntityRepository implements ObjectRepository
     {
         return $this->getManager()->getUnitOfWork()->getOrCreateEntity($this->getClassName(), $data);
     }
+
+    /**
+     * @param string $alias
+     *
+     * @return string
+     * @throws \OutOfBoundsException if no method exist
+     */
+    protected function getClientMethod($alias)
+    {
+        return $this->getMetadata()->getMethodContainer()->getMethod($alias);
+    }
 }

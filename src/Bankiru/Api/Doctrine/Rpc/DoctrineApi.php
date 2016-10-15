@@ -3,63 +3,45 @@
 namespace Bankiru\Api\Doctrine\Rpc;
 
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
-use ScayTrase\Api\Rpc\RpcClientInterface;
 
 /** @internal */
-final class DoctrineApi extends AbstractEntityApi
+final class DoctrineApi extends SingleRequestApi
 {
-    /** @var  array */
-    private $criteria;
-    /** @var  array|null */
-    private $order;
-    /** @var  int|null */
-    private $limit;
-    /** @var  int|null */
-    private $offset;
+    const METHOD_FIND   = 'find';
+    const METHOD_SEARCH = 'search';
+    const METHOD_COUNT  = 'count';
+
+    private static $params = [
+        'criteria',
+        'sort',
+        'limit',
+        'offset',
+    ];
 
     /** {@inheritdoc} */
-    public function search(RpcClientInterface $client, ApiMetadata $metadata, array $parameters)
+    protected function createCountRequest(ApiMetadata $metadata, array $parameters)
     {
-        call_user_func_array([$this, 'configure'], $parameters);
-        $parameters = $this->getSearchRequestParams();
-        $request    = new RpcRequest($metadata->getMethodContainer()->getMethod('search'), $parameters);
-
-        return $client->invoke($request)->getResponse($request)->getBody();
-    }
-
-    /**
-     * @return array
-     */
-    private function getSearchRequestParams()
-    {
-        $filter = $this->criteria;
-        $sort   = $this->order;
-        $offset = (int)$this->offset;
-        $limit  = $this->limit ? (int)$this->limit : null;
-
-        return [
-            'criteria' => $filter,
-            'sort'     => $sort,
-            'limit'    => $limit,
-            'offset'   => $offset,
-        ];
+        return new RpcRequest(
+            $metadata->getMethodContainer()->getMethod(self::METHOD_COUNT),
+            array_combine(self::$params, $parameters)
+        );
     }
 
     /** {@inheritdoc} */
-    public function count(RpcClientInterface $client, ApiMetadata $metadata, array $parameters)
+    protected function createFindRequest(ApiMetadata $metadata, array $identifier)
     {
-        call_user_func_array([$this, 'configure'], $parameters);
-        $parameters = $this->getSearchRequestParams();
-        $request    = new RpcRequest($metadata->getMethodContainer()->getMethod('count'), $parameters);
-
-        return (int)$client->invoke($request)->getResponse($request)->getBody();
+        return new RpcRequest(
+            $metadata->getMethodContainer()->getMethod(self::METHOD_FIND),
+            $identifier
+        );
     }
 
-    private function configure(array $criteria, array $order = null, $limit = null, $offset = null)
+    /** {@inheritdoc} */
+    protected function createSearchRequest(ApiMetadata $metadata, array $parameters)
     {
-        $this->criteria = $criteria;
-        $this->order    = $order;
-        $this->limit    = $limit;
-        $this->offset   = $offset;
+        return new RpcRequest(
+            $metadata->getMethodContainer()->getMethod(self::METHOD_SEARCH),
+            array_combine(self::$params, $parameters)
+        );
     }
 }

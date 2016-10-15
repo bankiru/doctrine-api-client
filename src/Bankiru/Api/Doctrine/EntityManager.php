@@ -2,10 +2,17 @@
 
 namespace Bankiru\Api\Doctrine;
 
+use Bankiru\Api\Doctrine\Cache\ApiEntityCache;
+use Bankiru\Api\Doctrine\Cache\ConfigurationProvider;
+use Bankiru\Api\Doctrine\Cache\LoggingCacheFilter;
+use Bankiru\Api\Doctrine\Cache\Sha1Strategy;
+use Bankiru\Api\Doctrine\Cache\VoidEntityCache;
 use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Proxy\ProxyFactory;
+use Bankiru\Api\Doctrine\Utility\IdentifierFixer;
+use Bankiru\Api\Doctrine\Utility\IdentifierFlattener;
 use Doctrine\Common\Persistence\ObjectRepository;
 
 class EntityManager implements ApiEntityManager
@@ -20,7 +27,7 @@ class EntityManager implements ApiEntityManager
     private $unitOfWork;
     /** @var ProxyFactory */
     private $proxyFactory;
-    /** @var  ApiEntityCache */
+    /** @var  EntityDataCache */
     private $entityCache;
 
     /**
@@ -38,12 +45,17 @@ class EntityManager implements ApiEntityManager
         $this->unitOfWork   = new UnitOfWork($this);
         $this->proxyFactory = new ProxyFactory($this);
 
+        $this->entityCache = new VoidEntityCache();
         if (null !== ($cache = $this->configuration->getApiCache())) {
-            $this->entityCache = new ApiEntityCache(
-                $this,
-                $cache,
-                $this->configuration->getApiCacheLogger()
-            );
+            $this->entityCache =
+                new LoggingCacheFilter(
+                    new ApiEntityCache(
+                        $cache,
+                        new ConfigurationProvider($this->configuration),
+                        new Sha1Strategy(new IdentifierFlattener($this))
+                    ),
+                    $this->configuration->getApiCacheLogger()
+                );
         }
     }
 
@@ -62,37 +74,15 @@ class EntityManager implements ApiEntityManager
     /** {@inheritdoc} */
     public function find($className, $id)
     {
-        $id = $this->fixScalarId($id, $className);
+        $metadata = $this->getClassMetadata($className);
+        $id = IdentifierFixer::fixScalarId($id, $metadata);
 
         /** @var EntityMetadata $metadata */
-        $metadata = $this->getClassMetadata($className);
         if (false !== ($entity = $this->getUnitOfWork()->tryGetById($id, $metadata->rootEntityName))) {
             return $entity instanceof $metadata->name ? $entity : null;
         }
 
         return $this->getUnitOfWork()->getEntityPersister($className)->loadById($id);
-    }
-
-    /**
-     * @param array|mixed $id
-     *
-     * @return array
-     * @throws MappingException
-     */
-    private function fixScalarId($id, $className)
-    {
-        if (is_array($id)) {
-            return $id;
-        }
-
-        $id = (array)$id;
-
-        $identifiers = $this->getClassMetadata($className)->getIdentifierFieldNames();
-        if (count($id) !== count($identifiers)) {
-            throw MappingException::invalidIdentifierStructure();
-        }
-
-        return array_combine($identifiers, (array)$id);
     }
 
     /**
@@ -196,10 +186,10 @@ class EntityManager implements ApiEntityManager
      */
     public function getReference($entityName, $id)
     {
-        $id = $this->fixScalarId($id, $entityName);
-
         /** @var EntityMetadata $metadata */
         $metadata = $this->getClassMetadata($entityName);
+        $id = IdentifierFixer::fixScalarId($id, $metadata);
+
         if (false !== ($entity = $this->getUnitOfWork()->tryGetById($id, $metadata->rootEntityName))) {
             return $entity instanceof $metadata->name ? $entity : null;
         }

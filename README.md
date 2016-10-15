@@ -171,7 +171,7 @@ class MyRepository extends \Bankiru\Api\Doctrine\EntityRepository {
     public function callCustomRpcMethod()
     {
         $request = new \Bankiru\Api\Rpc\RpcRequest(
-            $this->getMetadata()->getMethodContainer()->getMethod('custom'),
+            $this->getClientMethod('custom'),
             ['param1'=>'value1']
         );
         $data = $this->getClient()->invoke([$request])->getResponse($request);
@@ -196,22 +196,20 @@ MyVendor\Api\Entity\MyEntity:
 
 `Searcher` is required to implement the respective `Bankiru\Api\Doctrine\Rpc\Searcher` interface.
 
-### Custom hydrator
-
-`Hydrator` is the object factory which takes the plain ('dehydrated') data and converts it to rich ('hydrated') object with collections, relationship etc. 
-Current Hydrator accepts only plain-list parametrized objects. 
-
 ### Custom field types
 
-You could register additional field types to configuration `TypeRegistry` (`Configuration::getTypeRegistry()`). Just implement the `Type` and register it via `TypeRegistry::add('alias', $type)`
+You could register additional field types to configuration `TypeRegistry` (`Configuration::getTypeRegistry()`). 
+Just implement the `Type` and register it via `TypeRegistry::add('alias', $type)`.
+Doctrine ORM types are simple transformers with no real dependencies available but for
+this implementation we gone a bit further and make the types DI capable, so you can
+register any instance of `Type` as type, so it could be DI-enabled service, with any logic
+you need
 
 ### TBD
 
 * No embeddables
-* No relation inheritance
 
 ### Todo
 
 * Bad `Finder`|`Searcher`|`Counter` instantiation
 * No cache invalidation
-* 

@@ -47,25 +47,6 @@ interface EntityPersister
     public function count($criteria = []);
 
     /**
-     * Loads an entity by a list of field criteria.
-     *
-     * @param array       $criteria The criteria by which to load the entity.
-     * @param object|null $entity   The entity to load the data into. If not specified, a new entity is created.
-     * @param array|null  $assoc    The association that connects the entity to load to another entity, if any.
-     * @param int|null    $limit    Limit number of results.
-     * @param array|null  $orderBy  Criteria to order by.
-     *
-     * @return object|null The loaded and managed entity instance or NULL if the entity can not be found.
-     */
-    public function load(
-        array $criteria,
-        $entity = null,
-        $assoc = null,
-        $limit = null,
-        array $orderBy = null
-    );
-
-    /**
      * Loads an entity by identifier.
      *
      * @param array       $identifier The entity identifier.
