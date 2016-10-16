@@ -63,7 +63,22 @@ class SearchArgumentsTransformer
                 } else {
                     $values = $converter($values);
                 }
+            } else {
+                $caster = function ($value) use ($field) {
+                    $type = $this->manager
+                        ->getConfiguration()
+                        ->getTypeRegistry()->get($this->metadata->getTypeOfField($field));
+
+                    return $type->toApiValue($value);
+                };
+
+                if (is_array($values)) {
+                    $values = array_map($caster, $values);
+                } else {
+                    $values = $caster($values);
+                }
             }
+
             $apiCriteria[$this->metadata->getApiFieldName($field)] = $values;
         }
 
