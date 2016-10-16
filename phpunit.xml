@@ -27,7 +27,8 @@
         <whitelist>
             <directory>./src</directory>
             <exclude>
-                <directory>./vendor</directory>
+                <directory>./Tests/</directory>
+                <directory>./vendor/</directory>
             </exclude>
         </whitelist>
     </filter>

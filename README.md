@@ -181,12 +181,11 @@ class MyRepository extends \Bankiru\Api\Doctrine\EntityRepository {
 } 
 ```
 
-### Custom searcher
+### Custom API communicator
 
-`Searcher` and `SearchTransformer` are the interfaces classes that converts doctrine-faced `findBy` arguments (criteria, order, limit, offset)
-to your custom api query set. This library provides you with the default `DoctrineNativeSearcher` class which translated these arguments to plain criteria array.
+#### Searcher
 
-You can override searcher via `.api.yml` mapping file:
+Interface that perform search query for your API with doctrine arguments
 
 ```yml
 MyVendor\Api\Entity\MyEntity:
@@ -195,6 +194,14 @@ MyVendor\Api\Entity\MyEntity:
 ```
 
 `Searcher` is required to implement the respective `Bankiru\Api\Doctrine\Rpc\Searcher` interface.
+
+#### Finder
+
+#### Counter
+
+#### Creator
+
+#### Patcher
 
 ### Custom field types
 

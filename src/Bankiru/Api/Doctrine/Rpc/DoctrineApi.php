@@ -4,7 +4,12 @@ namespace Bankiru\Api\Doctrine\Rpc;
 
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 
-/** @internal */
+/**
+ * Example implementation for API-capable communicator
+ * following Doctrine arguments layout for objects fetching
+ *
+ * @internal
+ */
 final class DoctrineApi extends SingleRequestApi
 {
     const METHOD_FIND   = 'find';
@@ -19,11 +24,11 @@ final class DoctrineApi extends SingleRequestApi
     ];
 
     /** {@inheritdoc} */
-    protected function createCountRequest(ApiMetadata $metadata, array $parameters)
+    protected function createCountRequest(ApiMetadata $metadata, array $criteria)
     {
         return new RpcRequest(
             $metadata->getMethodContainer()->getMethod(self::METHOD_COUNT),
-            array_combine(self::$params, $parameters)
+            ['criteria' => $criteria]
         );
     }
 

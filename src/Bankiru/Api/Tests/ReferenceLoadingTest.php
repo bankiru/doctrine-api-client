@@ -81,9 +81,22 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
                         'id'      => 'test',
                         'result'  => [
                             'id'         => '1',
-                            'payload'    => 'test-payload',
-                            'references' => ['5', '7'],
+                            'payload'    => 'test-payload'
                         ],
+                    ]
+                )
+            )
+        );
+
+        $this->getResponseMock('test-reference-client')->append(
+            new Response(
+                200,
+                [],
+                json_encode(
+                    [
+                        'jsonrpc' => '2.0',
+                        'id'      => 'test',
+                        'result'  => 2,
                     ]
                 )
             )
@@ -114,7 +127,6 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
             )
         );
 
-
         /** @var TestEntity $entity */
         $entity = $repository->find(1);
 
@@ -122,8 +134,11 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
         self::assertEquals('test-payload', $entity->getPayload());
         self::assertEquals(1, $entity->getId());
         self::assertInstanceOf(\Countable::class, $entity->getReferences());
-        self::assertEquals(1, $this->getResponseMock('test-reference-client')->count());
+        self::assertEquals(2, $this->getResponseMock('test-reference-client')->count());
         self::assertCount(2, $entity->getReferences());
+        self::assertEquals(1, $this->getResponseMock('test-reference-client')->count());
+        foreach ($entity->getReferences() as $reference) {
+        }
         self::assertEquals(0, $this->getResponseMock('test-reference-client')->count());
         self::assertInstanceOf(Collection::class, $entity->getReferences());
 
@@ -132,7 +147,7 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
             self::assertInternalType('int', $reference->getId());
             self::assertInternalType('int', $reference->getOwner()->getId());
             self::assertInstanceOf(TestReference::class, $reference);
-            self::assertEquals('test-payload-' . $reference->getId(), $reference->getReferencePayload());
+            self::assertEquals('test-payload-'.$reference->getId(), $reference->getReferencePayload());
             self::assertEquals($entity, $reference->getOwner());
         }
     }
@@ -191,7 +206,7 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
         self::assertCount(1, $children);
         /** @var TestEntity $child */
 
-        $child         = array_shift($children);
+        $child = array_shift($children);
 
         self::assertEquals($parent, $child->getParent());
         self::assertEquals($parent->getPayload(), $child->getParent()->getPayload());

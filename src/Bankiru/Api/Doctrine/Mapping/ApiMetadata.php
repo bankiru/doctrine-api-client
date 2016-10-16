@@ -114,4 +114,6 @@ interface ApiMetadata extends ClassMetadata
      * @return void
      */
     public function assignIdentifier($entity, array $id);
+
+    public function getCounterClass();
 }
