@@ -7,6 +7,7 @@ use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
+/** @internal */
 abstract class SingleRequestApi implements Counter, Searcher, Finder
 {
     /** {@inheritdoc} */
@@ -45,16 +46,16 @@ abstract class SingleRequestApi implements Counter, Searcher, Finder
             throw ApiCallException::callFailed($response);
         }
 
-        return (array)$response->getBody();
+        return new \ArrayIterator($response->getBody());
     }
 
     /**
      * @param ApiMetadata $metadata
-     * @param array       $parameters
+     * @param array       $criteria
      *
      * @return RpcRequestInterface
      */
-    abstract protected function createCountRequest(ApiMetadata $metadata, array $parameters);
+    abstract protected function createCountRequest(ApiMetadata $metadata, array $criteria);
 
     /**
      * @param ApiMetadata $metadata

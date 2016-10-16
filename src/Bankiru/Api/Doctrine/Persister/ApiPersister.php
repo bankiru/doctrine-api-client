@@ -10,12 +10,14 @@ use Bankiru\Api\Doctrine\Proxy\ApiCollection;
 use Bankiru\Api\Doctrine\Rpc\CachedFinder;
 use Bankiru\Api\Doctrine\Rpc\Counter;
 use Bankiru\Api\Doctrine\Rpc\Finder;
+use Bankiru\Api\Doctrine\Rpc\SearchArgumentsTransformer;
 use Bankiru\Api\Doctrine\Rpc\Searcher;
 use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
+/** @internal */
 class ApiPersister implements EntityPersister
 {
     /** @var  RpcClientInterface */
@@ -85,8 +87,10 @@ class ApiPersister implements EntityPersister
      */
     public function count($criteria = [])
     {
-        //todo: rewrite with counter
-        return count($this->loadAll($criteria));
+        $transformer = new SearchArgumentsTransformer($this->metadata, $this->manager);
+        $parameters  = $transformer->transform($criteria);
+
+        return $this->createCounter()->count($this->getClient(), $this->metadata, $parameters['criteria']);
     }
 
     /**
@@ -101,53 +105,17 @@ class ApiPersister implements EntityPersister
      */
     public function loadAll(array $criteria = [], array $orderBy = null, $limit = null, $offset = null)
     {
-        $client   = $this->manager->getConfiguration()->getRegistry()->get($this->metadata->getClientName());
-        $searcher = $this->createSearcher();
+        $transformer = new SearchArgumentsTransformer($this->metadata, $this->manager);
 
-        $apiCriteria = [];
-        foreach ($criteria as $field => $values) {
-            if ($this->metadata->hasAssociation($field)) {
-                $mapping = $this->metadata->getAssociationMapping($field);
-                /** @var EntityMetadata $target */
-                $target = $this->manager->getClassMetadata($mapping['target']);
-
-                $converter = function ($value) use ($target) {
-                    if (!is_object($value)) {
-                        return $value;
-                    }
-
-                    $ids = $target->getIdentifierValues($value);
-                    if ($target->isIdentifierComposite) {
-                        return $ids;
-                    }
-
-                    return array_shift($ids);
-                };
-
-                if (is_array($values)) {
-                    $values = array_map($converter, $values);
-                } else {
-                    $values = $converter($values);
-                }
-            }
-            $apiCriteria[$this->metadata->getApiFieldName($field)] = $values;
-        }
-
-        $apiOrder = [];
-        foreach ((array)$orderBy as $field => $direction) {
-            $apiOrder[$this->metadata->getApiFieldName($field)] = $direction;
-        }
-
-        $objects = $searcher->search(
-            $client,
+        $objects = $this->createSearcher()->search(
+            $this->getClient(),
             $this->metadata,
-            [
-                $apiCriteria,
-                $apiOrder,
-                $limit,
-                $offset,
-            ]
+            $transformer->transform($criteria, $orderBy, $limit, $offset)
         );
+
+        if (!$objects instanceof \Traversable) {
+            $objects = new \ArrayIterator($objects);
+        }
 
         $entities = [];
         foreach ($objects as $object) {
@@ -315,6 +283,22 @@ class ApiPersister implements EntityPersister
      */
     public function createCounter()
     {
-        throw new \LogicException('No counter');
+        /** @var Counter $counter */
+        $counterClass = $this->metadata->getCounterClass();
+        $counter      = new $counterClass($this->manager);
+
+        if ($counter instanceof ApiEntityManagerAware) {
+            $counter->setApiEntityManager($this->manager);
+        }
+
+        return $counter;
+    }
+
+    /**
+     * @return RpcClientInterface
+     */
+    private function getClient()
+    {
+        return $this->manager->getConfiguration()->getRegistry()->get($this->metadata->getClientName());
     }
 }

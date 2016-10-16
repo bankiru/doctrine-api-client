@@ -21,6 +21,8 @@ class ApiCollection extends AbstractLazyCollection
     private $association;
     /** @var array */
     private $searchArgs;
+    /** @var  int|null */
+    private $lazyCount;
 
     /**
      * ApiCollection constructor.
@@ -52,6 +54,21 @@ class ApiCollection extends AbstractLazyCollection
     {
         $this->owner       = $owner;
         $this->association = $assoc;
+    }
+
+    /** {@inheritdoc} */
+    public function count()
+    {
+        if (!$this->isInitialized()) {
+            if (null === $this->lazyCount) {
+                $persister       = $this->manager->getUnitOfWork()->getEntityPersister($this->metadata->getName());
+                $this->lazyCount = $persister->count($this->searchArgs[0]);
+            }
+
+            return $this->lazyCount;
+        }
+
+        return parent::count();
     }
 
     /**

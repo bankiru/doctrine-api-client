@@ -5,9 +5,6 @@ namespace Bankiru\Api\Doctrine\Rpc;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
 /**
- * Class RpcRequest
- *
- * @package Bankiru\Api\Doctrine\Rpc
  * @internal
  */
 // private

@@ -12,9 +12,9 @@ interface Searcher
      *
      * @param RpcClientInterface $client
      * @param ApiMetadata        $metadata
-     * @param array              $parameters search arguments, returned by SearchTransformer
+     * @param array              $parameters doctrine FindBy transformed arguments
      *
-     * @return \stdClass[] data for hydration
+     * @return \stdClass[]|\Traversable data for hydration
      */
     public function search(RpcClientInterface $client, ApiMetadata $metadata, array $parameters);
 }

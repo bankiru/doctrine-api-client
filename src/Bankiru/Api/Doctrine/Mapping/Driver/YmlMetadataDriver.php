@@ -4,6 +4,7 @@ namespace Bankiru\Api\Doctrine\Mapping\Driver;
 
 use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
+use Bankiru\Api\Doctrine\Rpc\Counter;
 use Bankiru\Api\Doctrine\Rpc\DoctrineApi;
 use Bankiru\Api\Doctrine\Rpc\Finder;
 use Bankiru\Api\Doctrine\Rpc\Method\EntityMethodProvider;
@@ -49,6 +50,9 @@ class YmlMetadataDriver extends FileDriver
         if (null === $metadata->finder) {
             $metadata->finder = DoctrineApi::class;
         }
+        if (null === $metadata->counter) {
+            $metadata->counter = DoctrineApi::class;
+        }
         // Configure client
         if (array_key_exists('client', $element)) {
             if (array_key_exists('name', $element['client'])) {
@@ -63,6 +67,10 @@ class YmlMetadataDriver extends FileDriver
                 $metadata->finder = $element['client']['finder'];
             }
 
+            if (array_key_exists('counter', $element['client'])) {
+                $metadata->counter = $element['client']['counter'];
+            }
+
             assert(
                 in_array(Searcher::class, class_implements($metadata->searcher), true),
                 'Searcher '.$metadata->searcher.' should implement '.Searcher::class
@@ -71,6 +79,11 @@ class YmlMetadataDriver extends FileDriver
             assert(
                 in_array(Finder::class, class_implements($metadata->finder), true),
                 'Finder '.$metadata->finder.' should implement '.Finder::class
+            );
+
+            assert(
+                in_array(Counter::class, class_implements($metadata->counter), true),
+                'Counter '.$metadata->finder.' should implement '.Counter::class
             );
 
             $methodProvider = null;
@@ -126,29 +139,6 @@ class YmlMetadataDriver extends FileDriver
                 }
             }
         }
-    }
-
-    private function fieldToArray($field, $source)
-    {
-        $mapping = [
-            'field'    => $field,
-            'type'     => 'string',
-            'nullable' => true,
-        ];
-
-        if (array_key_exists('type', $source)) {
-            $mapping['type'] = $source['type'];
-        }
-
-        if (array_key_exists('nullable', $source)) {
-            $mapping['nullable'] = $source['nullable'];
-        }
-
-        if (array_key_exists('api_field', $source)) {
-            $mapping['api_field'] = $source['api_field'];
-        }
-
-        return $mapping;
     }
 
     /**
@@ -211,6 +201,29 @@ class YmlMetadataDriver extends FileDriver
     protected function loadMappingFile($file)
     {
         return Yaml::parse(file_get_contents($file));
+    }
+
+    private function fieldToArray($field, $source)
+    {
+        $mapping = [
+            'field'    => $field,
+            'type'     => 'string',
+            'nullable' => true,
+        ];
+
+        if (array_key_exists('type', $source)) {
+            $mapping['type'] = $source['type'];
+        }
+
+        if (array_key_exists('nullable', $source)) {
+            $mapping['nullable'] = $source['nullable'];
+        }
+
+        if (array_key_exists('api_field', $source)) {
+            $mapping['api_field'] = $source['api_field'];
+        }
+
+        return $mapping;
     }
 }
 

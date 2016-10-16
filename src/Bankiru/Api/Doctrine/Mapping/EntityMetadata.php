@@ -51,6 +51,8 @@ class EntityMetadata implements ApiMetadata
     public $searcher;
     /** @var  string */
     public $finder;
+    /** @var  string */
+    public $counter;
     /** @var  InstantiatorInterface */
     private $instantiator;
 
@@ -277,43 +279,6 @@ class EntityMetadata implements ApiMetadata
         $this->fields[$mapping['field']] = $mapping;
     }
 
-    private function validateAndCompleteFieldMapping(array &$mapping)
-    {
-        if (!array_key_exists('api_field', $mapping)) {
-            $mapping['api_field'] = $mapping['field']; //todo: invent naming strategy
-        }
-
-        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
-        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
-
-        // Complete id mapping
-        if (isset($mapping['id']) && $mapping['id'] === true) {
-            if (!in_array($mapping['field'], $this->identifier, true)) {
-                $this->identifier[] = $mapping['field'];
-            }
-            // Check for composite key
-            if (!$this->isIdentifierComposite && count($this->identifier) > 1) {
-                $this->isIdentifierComposite = true;
-            }
-        }
-
-    }
-
-    /**
-     * @param string $fieldName
-     *
-     * @throws MappingException
-     */
-    private function assertFieldNotMapped($fieldName)
-    {
-        if (array_key_exists($fieldName, $this->fields) ||
-            array_key_exists($fieldName, $this->associations) ||
-            array_key_exists($fieldName, $this->identifier)
-        ) {
-            throw new MappingException('Field already mapped');
-        }
-    }
-
     /** {@inheritdoc} */
     public function getFieldMapping($fieldName)
     {
@@ -377,6 +342,60 @@ class EntityMetadata implements ApiMetadata
         $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
         $this->fieldNames[$mapping['api_field']] = $mapping['field'];
         $this->associations[$mapping['field']]   = $mapping;
+    }
+
+    /** {@inheritdoc} */
+    public function newInstance()
+    {
+        return $this->instantiator->instantiate($this->name);
+    }
+
+    public function getSearcherClass()
+    {
+        return $this->searcher;
+    }
+
+    public function getFinderClass()
+    {
+        return $this->finder;
+    }
+
+    public function getCounterClass()
+    {
+        return $this->counter;
+    }
+
+    public function isIdentifierComposite()
+    {
+        return $this->isIdentifierComposite;
+    }
+
+    /** {@inheritdoc} */
+    public function getRootEntityName()
+    {
+        return $this->rootEntityName;
+    }
+
+    /**
+     * Populates the entity identifier of an entity.
+     *
+     * @param object $entity
+     * @param array  $id
+     *
+     * @return void
+     */
+    public function assignIdentifier($entity, array $id)
+    {
+        foreach ($id as $idField => $idValue) {
+            $this->reflFields[$idField]->setValue($entity, $idValue);
+        }
+    }
+
+    public function addInheritedAssociationMapping(array $mapping)
+    {
+        $this->associations[$mapping['field']]   = $mapping;
+        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
+        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
     }
 
     /**
@@ -445,52 +464,40 @@ class EntityMetadata implements ApiMetadata
         return $mapping;
     }
 
-    /** {@inheritdoc} */
-    public function newInstance()
+    private function validateAndCompleteFieldMapping(array &$mapping)
     {
-        return $this->instantiator->instantiate($this->name);
-    }
+        if (!array_key_exists('api_field', $mapping)) {
+            $mapping['api_field'] = $mapping['field']; //todo: invent naming strategy
+        }
 
-    public function getSearcherClass()
-    {
-        return $this->searcher;
-    }
+        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
+        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
 
-    public function getFinderClass()
-    {
-        return $this->finder;
-    }
+        // Complete id mapping
+        if (isset($mapping['id']) && $mapping['id'] === true) {
+            if (!in_array($mapping['field'], $this->identifier, true)) {
+                $this->identifier[] = $mapping['field'];
+            }
+            // Check for composite key
+            if (!$this->isIdentifierComposite && count($this->identifier) > 1) {
+                $this->isIdentifierComposite = true;
+            }
+        }
 
-    public function isIdentifierComposite()
-    {
-        return $this->isIdentifierComposite;
-    }
-
-    /** {@inheritdoc} */
-    public function getRootEntityName()
-    {
-        return $this->rootEntityName;
     }
 
     /**
-     * Populates the entity identifier of an entity.
+     * @param string $fieldName
      *
-     * @param object $entity
-     * @param array  $id
-     *
-     * @return void
+     * @throws MappingException
      */
-    public function assignIdentifier($entity, array $id)
+    private function assertFieldNotMapped($fieldName)
     {
-        foreach ($id as $idField => $idValue) {
-            $this->reflFields[$idField]->setValue($entity, $idValue);
+        if (array_key_exists($fieldName, $this->fields) ||
+            array_key_exists($fieldName, $this->associations) ||
+            array_key_exists($fieldName, $this->identifier)
+        ) {
+            throw new MappingException('Field already mapped');
         }
-    }
-
-    public function addInheritedAssociationMapping(array $mapping)
-    {
-        $this->associations[$mapping['field']]   = $mapping;
-        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
-        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
     }
 }
