@@ -12,10 +12,10 @@ interface Patcher
      *
      * @param RpcClientInterface $client
      * @param ApiMetadata        $metadata
-     * @param object             $entity Instance of metadata-described entity
+     * @param array              $data   Instance of metadata-described entity
      * @param string[]           $fields List of modified fields
      *
      * @return int objects count
      */
-    public function patch(RpcClientInterface $client, ApiMetadata $metadata, $entity, array $fields);
+    public function patch(RpcClientInterface $client, ApiMetadata $metadata, array $data, array $fields);
 }
