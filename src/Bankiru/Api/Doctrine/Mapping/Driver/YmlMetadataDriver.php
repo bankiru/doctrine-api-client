@@ -5,10 +5,14 @@ namespace Bankiru\Api\Doctrine\Mapping\Driver;
 use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Rpc\Counter;
+use Bankiru\Api\Doctrine\Rpc\Creator;
+use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
 use Bankiru\Api\Doctrine\Rpc\DoctrineApi;
 use Bankiru\Api\Doctrine\Rpc\Finder;
 use Bankiru\Api\Doctrine\Rpc\Method\EntityMethodProvider;
 use Bankiru\Api\Doctrine\Rpc\Method\MethodProvider;
+use Bankiru\Api\Doctrine\Rpc\Patcher;
+use Bankiru\Api\Doctrine\Rpc\Remover;
 use Bankiru\Api\Doctrine\Rpc\Searcher;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\Common\Persistence\Mapping\Driver\FileDriver;
@@ -53,38 +57,36 @@ class YmlMetadataDriver extends FileDriver
         if (null === $metadata->counter) {
             $metadata->counter = DoctrineApi::class;
         }
+        if (null === $metadata->creator) {
+            $metadata->creator = DoctrineApi::class;
+        }
+        if (null === $metadata->patcher) {
+            $metadata->patcher = DoctrineApi::class;
+        }
+        if (null === $metadata->remover) {
+            $metadata->remover = DoctrineApi::class;
+        }
+
         // Configure client
         if (array_key_exists('client', $element)) {
             if (array_key_exists('name', $element['client'])) {
                 $metadata->clientName = $element['client']['name'];
             }
 
-            if (array_key_exists('searcher', $element['client'])) {
-                $metadata->searcher = $element['client']['searcher'];
+            if (array_key_exists('api', $element['client'])) {
+                assert(
+                    in_array(CrudsApiInterface::class, class_implements($element['client']['api']), true),
+                    'Api should implement '.CrudsApiInterface::class
+                );
+                $metadata->searcher = $element['client']['api'];
+                $metadata->finder   = $element['client']['api'];
+                $metadata->counter  = $element['client']['api'];
+                $metadata->creator  = $element['client']['api'];
+                $metadata->patcher  = $element['client']['api'];
+                $metadata->remover  = $element['client']['api'];
+            } else {
+                $this->configureApi($metadata, $element);
             }
-
-            if (array_key_exists('finder', $element['client'])) {
-                $metadata->finder = $element['client']['finder'];
-            }
-
-            if (array_key_exists('counter', $element['client'])) {
-                $metadata->counter = $element['client']['counter'];
-            }
-
-            assert(
-                in_array(Searcher::class, class_implements($metadata->searcher), true),
-                'Searcher '.$metadata->searcher.' should implement '.Searcher::class
-            );
-
-            assert(
-                in_array(Finder::class, class_implements($metadata->finder), true),
-                'Finder '.$metadata->finder.' should implement '.Finder::class
-            );
-
-            assert(
-                in_array(Counter::class, class_implements($metadata->counter), true),
-                'Counter '.$metadata->finder.' should implement '.Counter::class
-            );
 
             $methodProvider = null;
             if (array_key_exists('methods', $element['client'])) {
@@ -224,6 +226,31 @@ class YmlMetadataDriver extends FileDriver
         }
 
         return $mapping;
+    }
+
+    /**
+     * @param EntityMetadata $metadata
+     * @param array          $element
+     */
+    private function configureApi(EntityMetadata $metadata, array $element)
+    {
+        $this->configureApiPart('finder', Finder::class, $metadata, $element);
+        $this->configureApiPart('counter', Counter::class, $metadata, $element);
+        $this->configureApiPart('searcher', Searcher::class, $metadata, $element);
+        $this->configureApiPart('creator', Creator::class, $metadata, $element);
+        $this->configureApiPart('patcher', Patcher::class, $metadata, $element);
+        $this->configureApiPart('remover', Remover::class, $metadata, $element);
+    }
+
+    private function configureApiPart($part, $className, EntityMetadata $metadata, array $element)
+    {
+        if (array_key_exists($part, $element['client'])) {
+            $metadata->$part = $element['client'][$part];
+            assert(
+                in_array($className, class_implements($metadata->$part), true),
+                ucfirst($part).' '.$metadata->$part.' should implement '.$className
+            );
+        }
     }
 }
 

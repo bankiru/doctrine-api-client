@@ -17,43 +17,49 @@ class EntityMetadata implements ApiMetadata
      * @var \ReflectionProperty[]
      */
     public $reflFields = [];
-    /** @var  string */
+    /** @var string */
     public $name;
-    /** @var  string */
+    /** @var string */
     public $namespace;
-    /** @var  string */
+    /** @var string */
     public $rootEntityName;
-    /** @var  string[] */
+    /** @var string[] */
     public $identifier = [];
-    /** @var  array */
+    /** @var array */
     public $fields = [];
-    /** @var  array */
+    /** @var array */
     public $associations = [];
-    /** @var  string */
+    /** @var string */
     public $repositoryClass = EntityRepository::class;
-    /** @var  \ReflectionClass */
+    /** @var \ReflectionClass */
     public $reflClass;
-    /** @var  MethodProviderInterface */
+    /** @var MethodProviderInterface */
     public $methodProvider;
-    /** @var  string */
+    /** @var string */
     public $clientName;
     /** @var string[] */
     public $apiFieldNames = [];
-    /** @var  string[] */
+    /** @var string[] */
     public $fieldNames = [];
-    /** @var  bool */
+    /** @var bool */
     public $isMappedSuperclass = false;
-    /** @var  bool */
+    /** @var bool */
     public $containsForeignIdentifier;
-    /** @var  bool */
+    /** @var bool */
     public $isIdentifierComposite = false;
-    /** @var  string */
+    /** @var string */
     public $searcher;
-    /** @var  string */
+    /** @var string */
     public $finder;
-    /** @var  string */
+    /** @var string */
     public $counter;
-    /** @var  InstantiatorInterface */
+    /** @var string */
+    public $creator;
+    /** @var string */
+    public $patcher;
+    /** @var string */
+    public $remover;
+    /** @var InstantiatorInterface */
     private $instantiator;
 
     /**
