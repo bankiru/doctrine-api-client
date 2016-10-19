@@ -2,20 +2,16 @@
 
 namespace Bankiru\Api\Doctrine\Rpc;
 
-use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
-use ScayTrase\Api\Rpc\RpcClientInterface;
-
-interface Patcher
+interface Patcher extends EntityApiInterface
 {
     /**
      * Performs update of the entity. If API does not support PATCH-like request - just ignore fields argument
      *
-     * @param RpcClientInterface $client
-     * @param ApiMetadata        $metadata
-     * @param array              $data   Instance of metadata-described entity
-     * @param string[]           $fields List of modified fields
+     * @param array    $identifier
+     * @param array    $data   Instance of metadata-described entity
+     * @param string[] $fields List of modified fields
      *
-     * @return int objects count
+     * @return void
      */
-    public function patch(RpcClientInterface $client, ApiMetadata $metadata, array $data, array $fields);
+    public function patch(array $identifier, array $data, array $fields);
 }

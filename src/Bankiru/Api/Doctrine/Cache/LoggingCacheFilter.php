@@ -2,14 +2,13 @@
 
 namespace Bankiru\Api\Doctrine\Cache;
 
-use Bankiru\Api\Doctrine\EntityDataCache;
-use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
+use Bankiru\Api\Doctrine\EntityDataCacheInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-final class LoggingCacheFilter implements EntityDataCache
+final class LoggingCacheFilter implements EntityDataCacheInterface
 {
-    /** @var  EntityDataCache */
+    /** @var  EntityDataCacheInterface */
     private $delegate;
     /** @var  LoggerInterface */
     private $logger;
@@ -17,52 +16,67 @@ final class LoggingCacheFilter implements EntityDataCache
     /**
      * LoggingCacheFilter constructor.
      *
-     * @param EntityDataCache $delegate
-     * @param LoggerInterface $logger
+     * @param EntityDataCacheInterface $delegate
+     * @param LoggerInterface          $logger
      */
-    public function __construct(EntityDataCache $delegate, LoggerInterface $logger = null)
+    public function __construct(EntityDataCacheInterface $delegate, LoggerInterface $logger = null)
     {
         $this->delegate = $delegate;
         $this->logger   = $logger ?: new NullLogger();
     }
 
-
     /** {@inheritdoc} */
-    public function get(ApiMetadata $metadata, array $identifier)
+    public function get(array $identifier)
     {
-        if (!$this->getCacheConfiguration($metadata)->isEnabled()) {
-            $this->logger->debug(sprintf('Skipping entity cache for %s: not configured', $metadata->getName()));
+        if (!$this->getConfiguration()->isEnabled()) {
+            $this->logSkip();
 
             return null;
         }
 
-        $data = $this->delegate->get($metadata, $identifier);
+        $data = $this->delegate->get($identifier);
 
         $this->logger->debug(
             sprintf('Entity cache %s', null === $data ? 'HIT' : 'MISS'),
-            ['class' => $metadata->getName(), 'identifiers' => $identifier]
+            ['class' => $this->getMetadata()->getName(), 'identifiers' => $identifier]
         );
 
         return $data;
     }
 
     /** {@inheritdoc} */
-    public function set($data, ApiMetadata $metadata, array $identifier)
+    public function set(array $identifier, $data)
     {
-        if (!$this->getCacheConfiguration($metadata)->isEnabled()) {
-            $this->logger->debug(sprintf('Skipping entity cache for %s: not configured', $metadata->getName()));
+        if (!$this->getConfiguration()->isEnabled()) {
+            $this->logSkip();
 
             return;
         }
 
-        $this->delegate->set($data, $metadata, $identifier);
+        $this->delegate->set($identifier, $data);
 
-        $this->logger->debug('Storing entity', ['class' => $metadata->getName(), 'identifiers' => $identifier]);
+        $this->logger->debug(
+            'Stored API entity data to cache',
+            ['class' => $this->getMetadata()->getName(), 'identifiers' => $identifier]
+        );
     }
 
     /** {@inheritdoc} */
-    public function getCacheConfiguration(ApiMetadata $metadata)
+    public function getConfiguration()
     {
-        return $this->delegate->getCacheConfiguration($metadata);
+        return $this->delegate->getConfiguration();
+    }
+
+    /** {@inheritdoc} */
+    public function getMetadata()
+    {
+        return $this->delegate->getMetadata();
+    }
+
+    private function logSkip()
+    {
+        $this->logger->debug(
+            sprintf('Skipping entity cache for %s: not configured', $this->getMetadata()->getName())
+        );
     }
 }

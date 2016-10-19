@@ -2,19 +2,14 @@
 
 namespace Bankiru\Api\Doctrine\Rpc;
 
-use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
-use ScayTrase\Api\Rpc\RpcClientInterface;
-
-interface Finder
+interface Finder extends EntityApiInterface
 {
     /**
-     * Performs search with given RPC client and arguments
+     * Retrieves single entity source API data
      *
-     * @param RpcClientInterface $client
-     * @param ApiMetadata        $metadata
-     * @param array              $identifier array of identifiers
+     * @param array $identifier array of identifiers
      *
      * @return \stdClass data for hydration
      */
-    public function find(RpcClientInterface $client, ApiMetadata $metadata, array $identifier);
+    public function find(array $identifier);
 }

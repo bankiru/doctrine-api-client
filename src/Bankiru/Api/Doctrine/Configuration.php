@@ -2,6 +2,7 @@
 
 namespace Bankiru\Api\Doctrine;
 
+use Bankiru\Api\ApiFactoryResolverInterface;
 use Bankiru\Api\ClientRegistryInterface;
 use Bankiru\Api\Doctrine\Cache\CacheConfiguration;
 use Bankiru\Api\Doctrine\Type\TypeRegistryInterface;
@@ -18,6 +19,8 @@ class Configuration
     private $driver;
     /** @var  ClientRegistryInterface */
     private $registry;
+    /** @var  ApiFactoryResolverInterface */
+    private $resolver;
     /** @var  string */
     private $proxyDir;
     /** @var  string */
@@ -43,6 +46,37 @@ class Configuration
         $this->apiCacheLogger = new NullLogger();
     }
 
+    /**
+     * @return ClientRegistryInterface
+     */
+    public function getRegistry()
+    {
+        return $this->registry;
+    }
+
+    /**
+     * @param ClientRegistryInterface $registry
+     */
+    public function setRegistry($registry)
+    {
+        $this->registry = $registry;
+    }
+
+    /**
+     * @return ApiFactoryResolverInterface
+     */
+    public function getResolver()
+    {
+        return $this->resolver;
+    }
+
+    /**
+     * @param ApiFactoryResolverInterface $resolver
+     */
+    public function setResolver(ApiFactoryResolverInterface $resolver)
+    {
+        $this->resolver = $resolver;
+    }
 
     /**
      * @return LoggerInterface
@@ -95,7 +129,6 @@ class Configuration
         }
 
         return $this->cacheConfigurationCache[$class];
-
     }
 
     /**
@@ -173,22 +206,6 @@ class Configuration
     public function setAutogenerateProxies($autogenerateProxies)
     {
         $this->autogenerateProxies = $autogenerateProxies;
-    }
-
-    /**
-     * @return ClientRegistryInterface
-     */
-    public function getRegistry()
-    {
-        return $this->registry;
-    }
-
-    /**
-     * @param ClientRegistryInterface $registry
-     */
-    public function setRegistry(ClientRegistryInterface $registry)
-    {
-        $this->registry = $registry;
     }
 
     /**

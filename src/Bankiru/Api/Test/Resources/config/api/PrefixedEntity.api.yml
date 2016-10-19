@@ -22,4 +22,5 @@ Bankiru\Api\Test\Entity\PrefixedEntity:
   client:
     name: test-client
     entityPath: prefixed-entity
-    api: Bankiru\Api\Test\TestApi
+  api:
+    name: Bankiru\Api\Test\TestApi

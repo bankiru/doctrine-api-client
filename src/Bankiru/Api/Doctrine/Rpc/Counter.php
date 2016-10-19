@@ -2,19 +2,14 @@
 
 namespace Bankiru\Api\Doctrine\Rpc;
 
-use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
-use ScayTrase\Api\Rpc\RpcClientInterface;
-
-interface Counter
+interface Counter extends EntityApiInterface
 {
     /**
-     * Performs search with given RPC client and arguments
+     * Return API entity count with given parameters
      *
-     * @param RpcClientInterface $client
-     * @param ApiMetadata        $metadata
-     * @param array              $parameters search arguments, returned by SearchTransformer
+     * @param array $criteria search criteria
      *
-     * @return int objects count
+     * @return int
      */
-    public function count(RpcClientInterface $client, ApiMetadata $metadata, array $parameters);
+    public function count(array $criteria);
 }

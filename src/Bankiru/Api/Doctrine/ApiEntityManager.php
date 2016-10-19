@@ -39,9 +39,4 @@ interface ApiEntityManager extends ObjectManager
      * @return object The entity reference.
      */
     public function getReference($entityName, $id);
-
-    /**
-     * @return EntityDataCache
-     */
-    public function getEntityCache();
 }
