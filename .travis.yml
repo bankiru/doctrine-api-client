@@ -8,16 +8,16 @@ php:
   - hhvm
 
 env:
-  - SYMFONY_VERSION='2.7.*' deps='no'
-  - SYMFONY_VERSION='2.8.*' deps='no'
-  - SYMFONY_VERSION='3.0.*' deps='no'
-  - SYMFONY_VERSION='3.1.*' deps='no'
-  - SYMFONY_VERSION='~3.2@dev' deps='no'
+  - PACKAGES='symfony/symfony=2.7.*'
+  - PACKAGES='symfony/symfony=2.8.*'
+  - PACKAGES='symfony/symfony=3.0.*'
+  - PACKAGES='symfony/symfony=3.1.*'
+  - PACKAGES='symfony/symfony=~3.2@dev twig/twig:~1.27@dev'
 
 matrix:
     include:
       - php: 5.5
-        env: SYMFONY_VERSION='2.7.*' deps='low'
+        env: PACKAGES='symfony/symfony=2.7.*' deps='low'
 
     allow_failures:
         - php: hhvm
@@ -27,10 +27,10 @@ before_install:
   - travis_retry composer self-update
 
 install:
-    - composer require --no-update symfony/symfony=${SYMFONY_VERSION}
-    - if [ "$deps" = "no" ]; then composer --prefer-source install; fi;
-    - if [ "$deps" = "low" ]; then composer --prefer-source --prefer-lowest --prefer-stable update; fi;
+  - composer require --no-update ${PACKAGES}
+  - if [ "$deps" = "no"] || [ -z "$deps" ]; then composer --prefer-source install; fi;
+  - if [ "$deps" = "low" ]; then composer --prefer-source --prefer-lowest --prefer-stable update; composer --prefer-source install; fi;
 
 script:
   - mkdir -p build
-  - phpunit --colors -c phpunit.xml --coverage-text
+  - vendor/bin/phpunit --colors -c phpunit.xml
