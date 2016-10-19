@@ -26,7 +26,6 @@ final class Sha1Strategy implements KeyStrategyInterface
         $this->prefix    = (string)$prefix;
     }
 
-
     /** {@inheritdoc} */
     public function getEntityPrefix(ApiMetadata $metadata)
     {
@@ -34,7 +33,7 @@ final class Sha1Strategy implements KeyStrategyInterface
     }
 
     /** {@inheritdoc} */
-    public function getEntityKey(ApiMetadata $metadata, $identifier)
+    public function getEntityKey(ApiMetadata $metadata, array $identifier)
     {
         $flattenIdentifiers = $this->flattener->flattenIdentifier($metadata, $identifier);
 

@@ -2,12 +2,17 @@
 
 namespace Bankiru\Api\Doctrine;
 
+use Bankiru\Api\Doctrine\Cache\ApiEntityCache;
+use Bankiru\Api\Doctrine\Cache\EntityCacheAwareInterface;
+use Bankiru\Api\Doctrine\Cache\LoggingCache;
+use Bankiru\Api\Doctrine\Cache\VoidEntityCache;
 use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Hydration\EntityHydrator;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Persister\ApiPersister;
 use Bankiru\Api\Doctrine\Persister\EntityPersister;
+use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
 use Bankiru\Api\Doctrine\Utility\IdentifierFlattener;
 use Doctrine\Common\NotifyPropertyChanged;
 use Doctrine\Common\Persistence\ObjectManagerAware;
@@ -80,19 +85,13 @@ class UnitOfWork implements PropertyChangedListener
             /** @var ApiMetadata $classMetadata */
             $classMetadata = $this->manager->getClassMetadata($className);
 
-            $client = $this->manager->getConfiguration()->getRegistry()->get($classMetadata->getClientName());
+            $api = $this->createApi($classMetadata);
 
-            $this->persisters[$className] = new ApiPersister(
-                $this->manager,
-                $this->manager
-                    ->getConfiguration()
-                    ->getResolver()
-                    ->resolve($classMetadata->getApiName())
-                    ->createApi(
-                        $client,
-                        $classMetadata
-                    )
-            );
+            if ($api instanceof EntityCacheAwareInterface) {
+                $api->setEntityCache($this->createEntityCache($classMetadata));
+            }
+
+            $this->persisters[$className] = new ApiPersister($this->manager, $api);
         }
 
         return $this->persisters[$className];
@@ -419,5 +418,52 @@ class UnitOfWork implements PropertyChangedListener
         }
 
         return $entity;
+    }
+
+    /**
+     * @param $classMetadata
+     *
+     * @return EntityDataCacheInterface
+     */
+    private function createEntityCache($classMetadata)
+    {
+        $configuration = $this->manager->getConfiguration()->getCacheConfiguration($classMetadata->getName());
+        $cache         = new VoidEntityCache($classMetadata);
+        if ($configuration->isEnabled() && $this->manager->getConfiguration()->getApiCache()) {
+            $cache =
+                new LoggingCache(
+                    new ApiEntityCache(
+                        $this->manager->getConfiguration()->getApiCache(),
+                        $classMetadata,
+                        $configuration
+                    ),
+                    $this->manager->getConfiguration()->getApiCacheLogger()
+                );
+
+            return $cache;
+        }
+
+        return $cache;
+    }
+
+    /**
+     * @param $classMetadata
+     *
+     * @return CrudsApiInterface
+     */
+    private function createApi($classMetadata)
+    {
+        $client = $this->manager->getConfiguration()->getRegistry()->get($classMetadata->getClientName());
+
+        $api = $this->manager
+            ->getConfiguration()
+            ->getResolver()
+            ->resolve($classMetadata->getApiName())
+            ->createApi(
+                $client,
+                $classMetadata
+            );
+
+        return $api;
     }
 }

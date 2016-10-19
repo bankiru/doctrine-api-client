@@ -24,5 +24,5 @@ interface KeyStrategyInterface
      *
      * @return string
      */
-    public function getEntityKey(ApiMetadata $metadata, $identifier);
+    public function getEntityKey(ApiMetadata $metadata,array $identifier);
 }
