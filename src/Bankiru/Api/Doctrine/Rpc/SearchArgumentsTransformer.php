@@ -7,7 +7,7 @@ use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 
 /** @internal */
-class SearchArgumentsTransformer
+final class SearchArgumentsTransformer
 {
     /** @var  ApiMetadata */
     private $metadata;
@@ -27,16 +27,13 @@ class SearchArgumentsTransformer
     }
 
     /**
-     * Creates API-ready arguments for search request
+     * Converts doctrine entity criteria to API-ready criteria (converts types and field names)
      *
-     * @param array      $criteria
-     * @param array|null $orderBy
-     * @param int|null   $limit
-     * @param int|null   $offset
+     * @param array $criteria
      *
-     * @return array
+     * @return array API-ready criteria
      */
-    public function transform(array $criteria = [], array $orderBy = null, $limit = null, $offset = null)
+    public function transformCriteria(array $criteria)
     {
         $apiCriteria = [];
         foreach ($criteria as $field => $values) {
@@ -82,16 +79,23 @@ class SearchArgumentsTransformer
             $apiCriteria[$this->metadata->getApiFieldName($field)] = $values;
         }
 
+        return $apiCriteria;
+    }
+
+    /**
+     * Converts doctrine entity order to API-ready order (converts field names)
+     *
+     * @param array $orderBy
+     *
+     * @return array API-ready order
+     */
+    public function transformOrder(array $orderBy = null)
+    {
         $apiOrder = [];
         foreach ((array)$orderBy as $field => $direction) {
             $apiOrder[$this->metadata->getApiFieldName($field)] = $direction;
         }
 
-        return [
-            'criteria' => $apiCriteria,
-            'order'    => $apiOrder,
-            'limit'    => $limit,
-            'offset'   => $offset,
-        ];
+        return $apiOrder;
     }
 }

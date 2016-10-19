@@ -15,4 +15,5 @@ Bankiru\Api\Test\Entity\CompositeKeyEntity:
   client:
     name: test-client
     entityPath: composite-key-entity
-    api: Bankiru\Api\Test\TestApi
+  api:
+    name: Bankiru\Api\Test\TestApi

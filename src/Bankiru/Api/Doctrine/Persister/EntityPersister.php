@@ -3,6 +3,7 @@
 namespace Bankiru\Api\Doctrine\Persister;
 
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
+use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
 use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\Collection;
 
@@ -12,6 +13,11 @@ interface EntityPersister
      * @return ApiMetadata
      */
     public function getClassMetadata();
+
+    /**
+     * @return CrudsApiInterface
+     */
+    public function getCrudsApi();
 
     /**
      * Updates a managed entity. The entity is updated according to its current changeset

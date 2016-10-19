@@ -17,4 +17,6 @@ Bankiru\Api\Test\Entity\TestReference:
   client:
     name: test-reference-client
     entityPath: test-reference
-    api: Bankiru\Api\Test\TestApi
+  api:
+    name: Bankiru\Api\Test\TestApi
+

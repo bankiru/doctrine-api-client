@@ -20,9 +20,24 @@ class MappingException extends BaseMappingException implements DoctrineApiExcept
         );
     }
 
-    public static function invalidClientName($class)
+    public static function noClientSpecified($class)
     {
-        return new self(sprintf('Client name not specified for %s or any parent', $class));
+        return new self(sprintf('Client not specified for %s or any parent', $class));
+    }
+
+    public static function invalidClientSpecified($name, $message)
+    {
+        return new self(sprintf('Could not resolve client "%s": %s', $name, $message));
+    }
+
+    public static function noApiSpecified($class)
+    {
+        return new self(sprintf('API not specified for %s or any parent', $class));
+    }
+
+    public static function invalidApiSpecified($name, $message)
+    {
+        return new self(sprintf('Could not resolve API "%s": %s', $name, $message));
     }
 
     public static function unknownField($field, $class)

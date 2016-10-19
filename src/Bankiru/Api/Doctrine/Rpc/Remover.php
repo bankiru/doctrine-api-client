@@ -2,17 +2,14 @@
 
 namespace Bankiru\Api\Doctrine\Rpc;
 
-use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
-use ScayTrase\Api\Rpc\RpcClientInterface;
-
-interface Remover
+interface Remover extends EntityApiInterface
 {
     /**
-     * Creates the entity via API request. Should receive the ID back as a part of response
+     * Removes the entity via API
      *
-     * @param RpcClientInterface $client
-     * @param ApiMetadata        $metadata
-     * @param array              $identifier Instance of metadata-described entity
+     * @param array $identifier identifiers
+     *
+     * @return bool Whether operation was successful
      */
-    public function remove(RpcClientInterface $client, ApiMetadata $metadata, array $identifier);
+    public function remove(array $identifier);
 }

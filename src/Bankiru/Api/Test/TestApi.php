@@ -2,19 +2,42 @@
 
 namespace Bankiru\Api\Test;
 
+use Bankiru\Api\Doctrine\ApiFactory\StaticApiFactoryInterface;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
 use Bankiru\Api\Doctrine\Rpc\RpcRequest;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
-final class TestApi implements CrudsApiInterface
+final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface
 {
-    /** {@inheritdoc} */
-    public function count(RpcClientInterface $client, ApiMetadata $metadata, array $parameters)
-    {
-        $request = new RpcRequest('count', $parameters);
+    /** @var  RpcClientInterface */
+    private $client;
+    /** @var  ApiMetadata */
+    private $metadata;
 
-        return (int)$client->invoke($request)->getResponse($request)->getBody();
+    /**
+     * TestApi constructor.
+     *
+     * @param RpcClientInterface $client
+     * @param ApiMetadata        $metadata
+     */
+    public function __construct(RpcClientInterface $client, ApiMetadata $metadata)
+    {
+        $this->client   = $client;
+        $this->metadata = $metadata;
+    }
+
+    public static function createApi(RpcClientInterface $client, ApiMetadata $metadata)
+    {
+        return new static($client, $metadata);
+    }
+
+    /** {@inheritdoc} */
+    public function count(array $criteria)
+    {
+        $request = new RpcRequest('count', $criteria);
+
+        return (int)$this->client->invoke($request)->getResponse($request)->getBody();
     }
 
     /** {@inheritdoc} */
@@ -26,34 +49,54 @@ final class TestApi implements CrudsApiInterface
     }
 
     /** {@inheritdoc} */
-    public function find(RpcClientInterface $client, ApiMetadata $metadata, array $identifier)
+    public function find(array $identifier)
     {
         $request = new RpcRequest('find', $identifier);
 
-        return $client->invoke($request)->getResponse($request)->getBody();
+        return $this->client->invoke($request)->getResponse($request)->getBody();
     }
 
     /** {@inheritdoc} */
-    public function patch(RpcClientInterface $client, ApiMetadata $metadata, array $data, array $fields)
+    public function patch(array $identifier, array $data, array $fields)
     {
         $request = new RpcRequest('patch', array_intersect_key($data, array_flip($fields)));
 
-        return $client->invoke($request)->getResponse($request)->isSuccessful();
+        return $this->client->invoke($request)->getResponse($request)->isSuccessful();
     }
 
     /** {@inheritdoc} */
-    public function search(RpcClientInterface $client, ApiMetadata $metadata, array $parameters)
+    public function search(array $criteria = [], array $orderBy = null, $limit = null, $offset = null)
     {
-        $request = new RpcRequest('search', $parameters);
+        $request = new RpcRequest(
+            'search',
+            [
+                'criteria' => $criteria,
+                'order'    => $orderBy,
+                'limit'    => $limit,
+                'offset'   => $offset,
+            ]
+        );
 
-        return new \ArrayIterator($client->invoke($request)->getResponse($request)->getBody());
+        return new \ArrayIterator($this->client->invoke($request)->getResponse($request)->getBody());
     }
 
     /** {@inheritdoc} */
-    public function remove(RpcClientInterface $client, ApiMetadata $metadata, array $identifier)
+    public function remove(array $identifier)
     {
         $request = new RpcRequest('remove', $identifier);
 
-        return $client->invoke($request)->getResponse($request)->isSuccessful();
+        return $this->client->invoke($request)->getResponse($request)->isSuccessful();
+    }
+
+    /** @return RpcClientInterface */
+    public function getClient()
+    {
+        return $this->client;
+    }
+
+    /** @return ApiMetadata */
+    public function getMetadata()
+    {
+        return $this->metadata;
     }
 }

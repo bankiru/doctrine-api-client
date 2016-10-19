@@ -8,9 +8,19 @@ class CacheConfiguration
     private $ttl;
     /** @var bool */
     private $enabled = false;
+    /** @var KeyStrategyInterface */
+    private $strategy;
 
     private function __construct()
     {
+    }
+
+    /**
+     * @return KeyStrategyInterface
+     */
+    public function getStrategy()
+    {
+        return $this->strategy;
     }
 
     /**
@@ -20,9 +30,10 @@ class CacheConfiguration
      */
     public static function create(array $data)
     {
-        $configuration          = new static();
-        $configuration->ttl     = $data['ttl'];
-        $configuration->enabled = $data['enabled'];
+        $configuration           = new static();
+        $configuration->ttl      = $data['ttl'];
+        $configuration->enabled  = $data['enabled'];
+        $configuration->strategy = $data['strategy'];
 
         return $configuration;
     }

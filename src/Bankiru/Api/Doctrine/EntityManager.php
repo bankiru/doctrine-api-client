@@ -2,17 +2,10 @@
 
 namespace Bankiru\Api\Doctrine;
 
-use Bankiru\Api\Doctrine\Cache\ApiEntityCache;
-use Bankiru\Api\Doctrine\Cache\ConfigurationProvider;
-use Bankiru\Api\Doctrine\Cache\LoggingCacheFilter;
-use Bankiru\Api\Doctrine\Cache\Sha1Strategy;
-use Bankiru\Api\Doctrine\Cache\VoidEntityCache;
-use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Proxy\ProxyFactory;
 use Bankiru\Api\Doctrine\Utility\IdentifierFixer;
-use Bankiru\Api\Doctrine\Utility\IdentifierFlattener;
 use Doctrine\Common\Persistence\ObjectRepository;
 
 class EntityManager implements ApiEntityManager
@@ -27,8 +20,6 @@ class EntityManager implements ApiEntityManager
     private $unitOfWork;
     /** @var ProxyFactory */
     private $proxyFactory;
-    /** @var  EntityDataCache */
-    private $entityCache;
 
     /**
      * EntityManager constructor.
@@ -44,19 +35,6 @@ class EntityManager implements ApiEntityManager
 
         $this->unitOfWork   = new UnitOfWork($this);
         $this->proxyFactory = new ProxyFactory($this);
-
-        $this->entityCache = new VoidEntityCache();
-        if (null !== ($cache = $this->configuration->getApiCache())) {
-            $this->entityCache =
-                new LoggingCacheFilter(
-                    new ApiEntityCache(
-                        $cache,
-                        new ConfigurationProvider($this->configuration),
-                        new Sha1Strategy(new IdentifierFlattener($this))
-                    ),
-                    $this->configuration->getApiCacheLogger()
-                );
-        }
     }
 
     /** {@inheritdoc} */
@@ -65,11 +43,6 @@ class EntityManager implements ApiEntityManager
         return $this->configuration;
     }
 
-    /** {@inheritdoc} */
-    public function getEntityCache()
-    {
-        return $this->entityCache;
-    }
 
     /** {@inheritdoc} */
     public function find($className, $id)

@@ -37,6 +37,8 @@ class EntityMetadata implements ApiMetadata
     public $methodProvider;
     /** @var string */
     public $clientName;
+    /** @var string */
+    public $apiName;
     /** @var string[] */
     public $apiFieldNames = [];
     /** @var string[] */
@@ -47,18 +49,6 @@ class EntityMetadata implements ApiMetadata
     public $containsForeignIdentifier;
     /** @var bool */
     public $isIdentifierComposite = false;
-    /** @var string */
-    public $searcher;
-    /** @var string */
-    public $finder;
-    /** @var string */
-    public $counter;
-    /** @var string */
-    public $creator;
-    /** @var string */
-    public $patcher;
-    /** @var string */
-    public $remover;
     /** @var InstantiatorInterface */
     private $instantiator;
 
@@ -265,14 +255,21 @@ class EntityMetadata implements ApiMetadata
         }
     }
 
-    /**
-     * {@inheritdoc}
-     * @throws MappingException
-     */
+    /** {@inheritdoc} */
+    public function getApiName()
+    {
+        if (null === $this->apiName) {
+            throw MappingException::noApiSpecified($this->getName());
+        }
+
+        return $this->apiName;
+    }
+
+    /** {@inheritdoc} */
     public function getClientName()
     {
         if (null === $this->clientName) {
-            throw MappingException::invalidClientName($this->getName());
+            throw MappingException::noClientSpecified($this->getName());
         }
 
         return $this->clientName;
@@ -354,21 +351,6 @@ class EntityMetadata implements ApiMetadata
     public function newInstance()
     {
         return $this->instantiator->instantiate($this->name);
-    }
-
-    public function getSearcherClass()
-    {
-        return $this->searcher;
-    }
-
-    public function getFinderClass()
-    {
-        return $this->finder;
-    }
-
-    public function getCounterClass()
-    {
-        return $this->counter;
     }
 
     public function isIdentifierComposite()
@@ -489,7 +471,6 @@ class EntityMetadata implements ApiMetadata
                 $this->isIdentifierComposite = true;
             }
         }
-
     }
 
     /**

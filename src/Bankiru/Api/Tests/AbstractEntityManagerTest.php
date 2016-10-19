@@ -3,27 +3,27 @@
 namespace Bankiru\Api\Tests;
 
 use Bankiru\Api\ClientRegistry;
+use Bankiru\Api\ClientRegistryInterface;
+use Bankiru\Api\ConstructorFactoryResolver;
 use Bankiru\Api\Doctrine\ApiEntityManager;
 use Bankiru\Api\Doctrine\Configuration;
 use Bankiru\Api\Doctrine\EntityManager;
 use Bankiru\Api\Doctrine\EntityMetadataFactory;
 use Bankiru\Api\Doctrine\Mapping\Driver\YmlMetadataDriver;
-use Bankiru\Api\Doctrine\Proxy\ProxyFactory;
 use Bankiru\Api\Doctrine\Type\BaseTypeRegistry;
 use Bankiru\Api\Doctrine\Type\TypeRegistry;
 use Bankiru\Api\Test\TestClient;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\Common\Persistence\Mapping\Driver\SymfonyFileLocator;
-use Doctrine\Common\Persistence\ObjectManager;
 use GuzzleHttp\Handler\MockHandler;
 use ScayTrase\Api\IdGenerator\IdGeneratorInterface;
 
 abstract class AbstractEntityManagerTest extends \PHPUnit_Framework_TestCase
 {
     const DEFAULT_CLIENT = 'test-client';
+    /** @var  ClientRegistryInterface */
     private $registry;
-
-    /** @var  ObjectManager */
+    /** @var  ApiEntityManager */
     private $manager;
     /** @var  MockHandler[] */
     private $mocks = [];
@@ -105,6 +105,7 @@ abstract class AbstractEntityManagerTest extends \PHPUnit_Framework_TestCase
         $configuration->setMetadataFactory(new EntityMetadataFactory());
         $configuration->setRegistry($this->registry);
         $configuration->setTypeRegistry(new BaseTypeRegistry(new TypeRegistry()));
+        $configuration->setResolver(new ConstructorFactoryResolver());
         $configuration->setProxyDir(CACHE_DIR . '/doctrine/proxy/');
         $configuration->setProxyNamespace('Bankiru\Api\Test\Proxy');
         $driver = new MappingDriverChain();
@@ -115,7 +116,8 @@ abstract class AbstractEntityManagerTest extends \PHPUnit_Framework_TestCase
                         __DIR__ . '/../Test/Resources/config/api/' => 'Bankiru\Api\Test\Entity',
                     ],
                     '.api.yml',
-                    DIRECTORY_SEPARATOR)
+                    DIRECTORY_SEPARATOR
+                )
             ),
             'Bankiru\Api\Test\Entity'
         );

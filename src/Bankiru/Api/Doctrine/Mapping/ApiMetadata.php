@@ -44,6 +44,13 @@ interface ApiMetadata extends ClassMetadata
 
     /**
      * @return string
+     * @throws MappingException
+     */
+    public function getApiName();
+
+    /**
+     * @return string
+     * @throws MappingException
      */
     public function getClientName();
 
@@ -79,12 +86,6 @@ interface ApiMetadata extends ClassMetadata
      */
     public function getAssociationMapping($fieldName);
 
-    /** @return string searcher FQCN */
-    public function getSearcherClass();
-
-    /** @return string finder FQCN */
-    public function getFinderClass();
-
     /** @return bool */
     public function hasApiField($apiFieldName);
 
@@ -114,6 +115,4 @@ interface ApiMetadata extends ClassMetadata
      * @return void
      */
     public function assignIdentifier($entity, array $id);
-
-    public function getCounterClass();
 }

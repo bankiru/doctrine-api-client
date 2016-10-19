@@ -37,7 +37,6 @@ class UnitOfWork implements PropertyChangedListener
      */
     const STATE_REMOVED = 4;
 
-
     /**
      * The (cached) states of any known entities.
      * Keys are object ids (spl_object_hash).
@@ -45,7 +44,6 @@ class UnitOfWork implements PropertyChangedListener
      * @var array
      */
     private $entityStates = [];
-
 
     /** @var  EntityManager */
     private $manager;
@@ -80,8 +78,21 @@ class UnitOfWork implements PropertyChangedListener
     {
         if (!array_key_exists($className, $this->persisters)) {
             /** @var ApiMetadata $classMetadata */
-            $classMetadata                = $this->manager->getClassMetadata($className);
-            $this->persisters[$className] = new ApiPersister($this->manager, $classMetadata);
+            $classMetadata = $this->manager->getClassMetadata($className);
+
+            $client = $this->manager->getConfiguration()->getRegistry()->get($classMetadata->getClientName());
+
+            $this->persisters[$className] = new ApiPersister(
+                $this->manager,
+                $this->manager
+                    ->getConfiguration()
+                    ->getResolver()
+                    ->resolve($classMetadata->getApiName())
+                    ->createApi(
+                        $client,
+                        $classMetadata
+                    )
+            );
         }
 
         return $this->persisters[$className];
@@ -176,23 +187,6 @@ class UnitOfWork implements PropertyChangedListener
         }
 
         $entity = $hydrator->hydarate($data, $entity);
-
-        return $entity;
-    }
-
-
-    /**
-     * @param ApiMetadata $class
-     *
-     * @return \Doctrine\Common\Persistence\ObjectManagerAware|object
-     */
-    private function newInstance(ApiMetadata $class)
-    {
-        $entity = $class->newInstance();
-
-        if ($entity instanceof ObjectManagerAware) {
-            $entity->injectObjectManager($this->manager, $class);
-        }
 
         return $entity;
     }
@@ -409,5 +403,21 @@ class UnitOfWork implements PropertyChangedListener
      */
     public function propertyChanged($sender, $propertyName, $oldValue, $newValue)
     {
+    }
+
+    /**
+     * @param ApiMetadata $class
+     *
+     * @return \Doctrine\Common\Persistence\ObjectManagerAware|object
+     */
+    private function newInstance(ApiMetadata $class)
+    {
+        $entity = $class->newInstance();
+
+        if ($entity instanceof ObjectManagerAware) {
+            $entity->injectObjectManager($this->manager, $class);
+        }
+
+        return $entity;
     }
 }
