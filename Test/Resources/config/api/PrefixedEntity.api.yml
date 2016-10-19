@@ -1,0 +1,26 @@
+Bankiru\Api\Doctrine\Test\Entity\PrefixedEntity:
+  type: entity
+  id:
+    id:
+      type: string
+      api_field: prefix_id
+  fields:
+    payload:
+      type: string
+      api_field: prefix_payload
+
+  oneToMany:
+    children:
+      target: Bankiru\Api\Doctrine\Test\Entity\PrefixedEntity
+      mappedBy: parent
+  manyToOne:
+    parent:
+      api_field: prefix_parent
+      target: Bankiru\Api\Doctrine\Test\Entity\PrefixedEntity
+      inversedBy: children
+
+  client:
+    name: test-client
+    entityPath: prefixed-entity
+  api:
+    name: Bankiru\Api\Doctrine\Test\TestApi

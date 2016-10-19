@@ -19,14 +19,15 @@
 
     <testsuites>
         <testsuite name="Doctrine API Tests">
-            <directory>./src/</directory>
+            <directory>./Tests/</directory>
         </testsuite>
     </testsuites>
 
     <filter>
         <whitelist>
-            <directory>./src</directory>
+            <directory>./</directory>
             <exclude>
+                <directory>./Test/</directory>
                 <directory>./Tests/</directory>
                 <directory>./vendor/</directory>
             </exclude>

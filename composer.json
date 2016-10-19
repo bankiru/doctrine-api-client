@@ -29,7 +29,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Bankiru\\Api\\": "src/Bankiru/Api"
+      "Bankiru\\Api\\Doctrine\\": "./"
     }
   },
   "extra": {

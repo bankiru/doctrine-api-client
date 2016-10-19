@@ -1,0 +1,16 @@
+Bankiru\Api\Doctrine\Test\Entity\CustomEntity:
+  type: entity
+  id:
+    id:
+      type: int
+
+  fields:
+    payload:
+      type: string
+
+  repositoryClass: Bankiru\Api\Doctrine\Test\Repository\CustomTestRepository
+  client:
+    name: test-client
+    entityPath: test-entity
+  api:
+    name: Bankiru\Api\Doctrine\Test\TestApi
