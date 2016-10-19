@@ -1,0 +1,24 @@
+Bankiru\Api\Doctrine\Test\Entity\TestEntity:
+  type: entity
+  id:
+    id:
+      type: int
+
+  fields:
+    payload:
+      type: string
+
+  oneToMany:
+    references:
+      target: Bankiru\Api\Doctrine\Test\Entity\TestReference
+      mappedBy: owner
+  manyToOne:
+    parent:
+      target: Bankiru\Api\Doctrine\Test\Entity\TestEntity
+
+  client:
+    name: test-client
+    entityPath: test-entity
+  api:
+    name: Bankiru\Api\Doctrine\Test\TestApi
+
