@@ -6,7 +6,7 @@ use Bankiru\Api\Doctrine\EntityDataCacheInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-final class LoggingCacheFilter implements EntityDataCacheInterface
+final class LoggingCache implements EntityDataCacheInterface
 {
     /** @var  EntityDataCacheInterface */
     private $delegate;
@@ -14,7 +14,7 @@ final class LoggingCacheFilter implements EntityDataCacheInterface
     private $logger;
 
     /**
-     * LoggingCacheFilter constructor.
+     * LoggingCache constructor.
      *
      * @param EntityDataCacheInterface $delegate
      * @param LoggerInterface          $logger
@@ -28,12 +28,6 @@ final class LoggingCacheFilter implements EntityDataCacheInterface
     /** {@inheritdoc} */
     public function get(array $identifier)
     {
-        if (!$this->getConfiguration()->isEnabled()) {
-            $this->logSkip();
-
-            return null;
-        }
-
         $data = $this->delegate->get($identifier);
 
         $this->logger->debug(
@@ -47,12 +41,6 @@ final class LoggingCacheFilter implements EntityDataCacheInterface
     /** {@inheritdoc} */
     public function set(array $identifier, $data)
     {
-        if (!$this->getConfiguration()->isEnabled()) {
-            $this->logSkip();
-
-            return;
-        }
-
         $this->delegate->set($identifier, $data);
 
         $this->logger->debug(
@@ -62,21 +50,8 @@ final class LoggingCacheFilter implements EntityDataCacheInterface
     }
 
     /** {@inheritdoc} */
-    public function getConfiguration()
-    {
-        return $this->delegate->getConfiguration();
-    }
-
-    /** {@inheritdoc} */
     public function getMetadata()
     {
         return $this->delegate->getMetadata();
-    }
-
-    private function logSkip()
-    {
-        $this->logger->debug(
-            sprintf('Skipping entity cache for %s: not configured', $this->getMetadata()->getName())
-        );
     }
 }

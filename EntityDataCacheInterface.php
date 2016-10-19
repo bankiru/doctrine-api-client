@@ -27,11 +27,6 @@ interface EntityDataCacheInterface
     public function set(array $identifier, $data);
 
     /**
-     * @return CacheConfiguration
-     */
-    public function getConfiguration();
-
-    /**
      * @return ApiMetadata
      */
     public function getMetadata();

@@ -3,17 +3,22 @@
 namespace Bankiru\Api\Doctrine\Test;
 
 use Bankiru\Api\Doctrine\ApiFactory\StaticApiFactoryInterface;
+use Bankiru\Api\Doctrine\Cache\EntityCacheAwareInterface;
+use Bankiru\Api\Doctrine\Cache\VoidEntityCache;
+use Bankiru\Api\Doctrine\EntityDataCacheInterface;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
 use Bankiru\Api\Doctrine\Rpc\RpcRequest;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
-final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface
+final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, EntityCacheAwareInterface
 {
-    /** @var  RpcClientInterface */
+    /** @var RpcClientInterface */
     private $client;
-    /** @var  ApiMetadata */
+    /** @var ApiMetadata */
     private $metadata;
+    /** @var EntityDataCacheInterface */
+    private $cache;
 
     /**
      * TestApi constructor.
@@ -25,6 +30,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface
     {
         $this->client   = $client;
         $this->metadata = $metadata;
+        $this->cache    = new VoidEntityCache($metadata);
     }
 
     public static function createApi(RpcClientInterface $client, ApiMetadata $metadata)
@@ -51,9 +57,17 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface
     /** {@inheritdoc} */
     public function find(array $identifier)
     {
-        $request = new RpcRequest('find', $identifier);
+        $body = $this->cache->get($identifier);
 
-        return $this->client->invoke($request)->getResponse($request)->getBody();
+        if (null !== $body) {
+            return $body;
+        }
+
+        $request = new RpcRequest('find', $identifier);
+        $body = $this->client->invoke($request)->getResponse($request)->getBody();
+        $this->cache->set($identifier, $body);
+
+        return $body;
     }
 
     /** {@inheritdoc} */
@@ -98,5 +112,11 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface
     public function getMetadata()
     {
         return $this->metadata;
+    }
+
+    /** {@inheritdoc} */
+    public function setEntityCache(EntityDataCacheInterface $cache)
+    {
+        $this->cache = $cache;
     }
 }

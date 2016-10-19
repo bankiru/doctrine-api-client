@@ -58,12 +58,6 @@ class ApiEntityCache implements EntityDataCacheInterface
     }
 
     /** {@inheritdoc} */
-    public function getConfiguration()
-    {
-        return $this->configuration;
-    }
-
-    /** {@inheritdoc} */
     public function getMetadata()
     {
         return $this->metadata;
@@ -76,6 +70,6 @@ class ApiEntityCache implements EntityDataCacheInterface
      */
     private function getKey(array $identifier)
     {
-        return $this->getConfiguration()->getStrategy()->getEntityKey($this->metadata, $identifier);
+        return $this->configuration->getStrategy()->getEntityKey($this->metadata, $identifier);
     }
 }

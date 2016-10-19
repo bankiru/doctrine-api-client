@@ -31,9 +31,10 @@ class CacheConfiguration
     public static function create(array $data)
     {
         $configuration           = new static();
-        $configuration->ttl      = $data['ttl'];
-        $configuration->enabled  = $data['enabled'];
-        $configuration->strategy = $data['strategy'];
+        $configuration->ttl      =
+            array_key_exists('enabled', $data) && null !== $data['enabled'] ? (int)$data['ttl'] : null;
+        $configuration->enabled  = array_key_exists('enabled', $data) ? (bool)$data['enabled'] : false;
+        $configuration->strategy = array_key_exists('strategy', $data) ? $data['strategy'] : new ScalarKeyStrategy();
 
         return $configuration;
     }
