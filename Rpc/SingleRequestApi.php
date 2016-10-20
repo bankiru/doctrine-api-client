@@ -3,18 +3,16 @@
 namespace Bankiru\Api\Doctrine\Rpc;
 
 use Bankiru\Api\Doctrine\Exception\ApiCallException;
-use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
-use ScayTrase\Api\Rpc\RpcClientInterface;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
 /** @internal */
-abstract class SingleRequestApi implements Counter, Searcher, Finder
+abstract class SingleRequestApi implements CrudsApiInterface
 {
     /** {@inheritdoc} */
-    public function count(RpcClientInterface $client, ApiMetadata $metadata, array $parameters)
+    public function count(array $criteria = [])
     {
-        $request  = $this->createCountRequest($metadata, $parameters);
-        $response = $client->invoke($request)->getResponse($request);
+        $request  = $this->createCountRequest($criteria);
+        $response = $this->getClient()->invoke($request)->getResponse($request);
 
         if (!$response->isSuccessful()) {
             throw ApiCallException::callFailed($response);
@@ -24,10 +22,10 @@ abstract class SingleRequestApi implements Counter, Searcher, Finder
     }
 
     /** {@inheritdoc} */
-    public function find(RpcClientInterface $client, ApiMetadata $metadata, array $identifier)
+    public function find(array $identifier)
     {
-        $request  = $this->createFindRequest($metadata, $identifier);
-        $response = $client->invoke([$request])->getResponse($request);
+        $request  = $this->createFindRequest($identifier);
+        $response = $this->getClient()->invoke([$request])->getResponse($request);
 
         if (!$response->isSuccessful()) {
             throw ApiCallException::callFailed($response);
@@ -37,10 +35,10 @@ abstract class SingleRequestApi implements Counter, Searcher, Finder
     }
 
     /** {@inheritdoc} */
-    public function search(RpcClientInterface $client, ApiMetadata $metadata, array $parameters)
+    public function search(array $criteria = [], array $orderBy = null, $limit = null, $offset = null)
     {
-        $request  = $this->createSearchRequest($metadata, $parameters);
-        $response = $client->invoke($request)->getResponse($request);
+        $request  = $this->createSearchRequest($criteria, $orderBy, $limit, $offset);
+        $response = $this->getClient()->invoke($request)->getResponse($request);
 
         if (!$response->isSuccessful()) {
             throw ApiCallException::callFailed($response);
@@ -50,26 +48,31 @@ abstract class SingleRequestApi implements Counter, Searcher, Finder
     }
 
     /**
-     * @param ApiMetadata $metadata
-     * @param array       $criteria
+     * @param array $criteria
      *
      * @return RpcRequestInterface
      */
-    abstract protected function createCountRequest(ApiMetadata $metadata, array $criteria);
+    abstract protected function createCountRequest(array $criteria = []);
 
     /**
-     * @param ApiMetadata $metadata
-     * @param array       $identifier
+     * @param array $identifier
      *
      * @return RpcRequestInterface
      */
-    abstract protected function createFindRequest(ApiMetadata $metadata, array $identifier);
+    abstract protected function createFindRequest(array $identifier);
 
     /**
-     * @param ApiMetadata $metadata
-     * @param array       $parameters
+     * @param array      $criteria
+     * @param array|null $orderBy
+     * @param int|null   $limit
+     * @param int|null   $offset
      *
      * @return RpcRequestInterface
      */
-    abstract protected function createSearchRequest(ApiMetadata $metadata, array $parameters);
+    abstract protected function createSearchRequest(
+        array $criteria = [],
+        array $orderBy = null,
+        $limit = null,
+        $offset = null
+    );
 }

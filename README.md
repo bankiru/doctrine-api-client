@@ -154,6 +154,8 @@ MyVendor\Api\Entity\MyEntity:
       type: string
     
   repositoryClass: MyVendor\Api\Repository\MyRepository # This will override repository for MyEntity
+  api:
+    name: Vendor\Api\CrudsApiImpl
   client:
     name: my-client
     # entityPath: my-entity autoconfigures find and search methods for you as following, but it is not overridable
@@ -181,27 +183,7 @@ class MyRepository extends \Bankiru\Api\Doctrine\EntityRepository {
 } 
 ```
 
-### Custom API communicator
-
-#### Searcher
-
-Interface that perform search query for your API with doctrine arguments
-
-```yml
-MyVendor\Api\Entity\MyEntity:
-    client:
-        searcher: Bankiru\Api\Rpc\DoctrineNativeSearcher # The defaults
-```
-
-`Searcher` is required to implement the respective `Bankiru\Api\Doctrine\Rpc\Searcher` interface.
-
-#### Finder
-
-#### Counter
-
-#### Creator
-
-#### Patcher
+### Custom Cruds API
 
 ### Custom field types
 
@@ -216,7 +198,3 @@ you need
 
 * No embeddables
 
-### Todo
-
-* Bad `Finder`|`Searcher`|`Counter` instantiation
-* No cache invalidation
