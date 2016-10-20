@@ -7,7 +7,6 @@ use Bankiru\Api\Doctrine\Test\Entity\TestEntity;
 use Bankiru\Api\Doctrine\Test\Entity\TestReference;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Proxy\Proxy;
-use GuzzleHttp\Psr7\Response;
 
 class ReferenceLoadingTest extends AbstractEntityManagerTest
 {
@@ -16,41 +15,27 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
 
         $repository = $this->getManager()->getRepository(TestEntity::class);
 
-        $this->getResponseMock('test-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'id'         => '1',
-                            'payload'    => 'test-payload',
-                            'references' => [],
-                            'parent'     => '2',
-                        ],
-                    ]
-                )
+        $this->getClient('test-client')->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'         => '1',
+                    'payload'    => 'test-payload',
+                    'references' => [],
+                    'parent'     => '2',
+                ]
             )
         );
 
-        $this->getResponseMock('test-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'id'         => '2',
-                            'payload'    => 'parent-payload',
-                            'references' => [],
-                            'parent'     => 1,
-                        ],
-                    ]
-                )
+        $this->getClient('test-client')->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'         => '2',
+                    'payload'    => 'parent-payload',
+                    'references' => [],
+                    'parent'     => 1,
+                ]
             )
         );
 
@@ -70,45 +55,31 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
     {
         $repository = $this->getManager()->getRepository(TestEntity::class);
 
-        $this->getResponseMock('test-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'id'      => '1',
-                            'payload' => 'test-payload',
-                        ],
-                    ]
-                )
+        $this->getClient('test-client')->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'      => '1',
+                    'payload' => 'test-payload',
+                ]
             )
         );
 
-        $this->getResponseMock('test-reference-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            [
-                                'id'                => '5',
-                                'reference-payload' => 'test-payload-5',
-                                'owner'             => '1',
-                            ],
-                            [
-                                'id'                => '7',
-                                'reference-payload' => 'test-payload-7',
-                                'owner'             => '1',
-                            ],
-                        ],
-                    ]
-                )
+        $this->getClient('test-reference-client')->push(
+            $this->getResponseMock(
+                true,
+                [
+                    (object)[
+                        'id'                => '5',
+                        'reference-payload' => 'test-payload-5',
+                        'owner'             => '1',
+                    ],
+                    (object)[
+                        'id'                => '7',
+                        'reference-payload' => 'test-payload-7',
+                        'owner'             => '1',
+                    ],
+                ]
             )
         );
 
@@ -119,9 +90,9 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
         self::assertEquals('test-payload', $entity->getPayload());
         self::assertEquals(1, $entity->getId());
         self::assertInstanceOf(Collection::class, $entity->getReferences());
-        self::assertEquals(1, $this->getResponseMock('test-reference-client')->count());
+        self::assertEquals(1, $this->getClient('test-reference-client')->count());
         self::assertCount(2, $entity->getReferences());
-        self::assertEquals(0, $this->getResponseMock('test-reference-client')->count());
+        self::assertEquals(0, $this->getClient('test-reference-client')->count());
         foreach ($entity->getReferences() as $reference) {
         }
         self::assertInstanceOf(Collection::class, $entity->getReferences());
@@ -130,7 +101,7 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
             self::assertInternalType('int', $reference->getId());
             self::assertInternalType('int', $reference->getOwner()->getId());
             self::assertInstanceOf(TestReference::class, $reference);
-            self::assertEquals('test-payload-' . $reference->getId(), $reference->getReferencePayload());
+            self::assertEquals('test-payload-'.$reference->getId(), $reference->getReferencePayload());
             self::assertEquals($entity, $reference->getOwner());
         }
     }
@@ -139,21 +110,14 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
     {
         $repository = $this->getManager()->getRepository(TestEntity::class);
 
-        $this->getResponseMock('test-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'id'         => 1,
-                            'payload'    => 'test-payload',
-                            'references' => [],
-                        ],
-                    ]
-                )
+        $this->getClient('test-client')->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'         => 1,
+                    'payload'    => 'test-payload',
+                    'references' => [],
+                ]
             )
         );
 
@@ -163,24 +127,17 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
         self::assertEquals('test-payload', $parent->getPayload());
         self::assertEquals(1, $parent->getId());
 
-        $this->getResponseMock('test-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            [
-                                'id'         => 2,
-                                'payload'    => 'test-child',
-                                'references' => [],
-                                'parent'     => 1,
-                            ],
-                        ],
-                    ]
-                )
+        $this->getClient('test-client')->push(
+            $this->getResponseMock(
+                true,
+                [
+                    (object)[
+                        'id'         => 2,
+                        'payload'    => 'test-child',
+                        'references' => [],
+                        'parent'     => 1,
+                    ],
+                ]
             )
         );
 
@@ -199,47 +156,33 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
     {
         $repository = $this->getManager()->getRepository(SubEntity::class);
 
-        $this->getResponseMock('test-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'id'          => '1',
-                            'payload'     => 'test-payload',
-                            'references'  => ['5', '7'],
-                            'sub-payload' => 'sub-payload',
-                        ],
-                    ]
-                )
+        $this->getClient('test-client')->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'          => '1',
+                    'payload'     => 'test-payload',
+                    'references'  => ['5', '7'],
+                    'sub-payload' => 'sub-payload',
+                ]
             )
         );
 
-        $this->getResponseMock('test-reference-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            [
-                                'id'                => '5',
-                                'reference-payload' => 'test-payload-5',
-                                'owner'             => '1',
-                            ],
-                            [
-                                'id'                => '7',
-                                'reference-payload' => 'test-payload-7',
-                                'owner'             => '1',
-                            ],
-                        ],
-                    ]
-                )
+        $this->getClient('test-reference-client')->push(
+            $this->getResponseMock(
+                true,
+                [
+                    (object)[
+                        'id'                => '5',
+                        'reference-payload' => 'test-payload-5',
+                        'owner'             => '1',
+                    ],
+                    (object)[
+                        'id'                => '7',
+                        'reference-payload' => 'test-payload-7',
+                        'owner'             => '1',
+                    ],
+                ]
             )
         );
 
@@ -254,7 +197,7 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
 
         self::assertCount(2, $references);
         foreach ($references as $reference) {
-            self::assertSame('test-payload-' . $reference->getId(), $reference->getReferencePayload());
+            self::assertSame('test-payload-'.$reference->getId(), $reference->getReferencePayload());
         }
     }
 

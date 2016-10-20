@@ -4,7 +4,6 @@ namespace Bankiru\Api\Doctrine\Tests;
 
 use Bankiru\Api\Doctrine\Test\Entity\Sub\SubEntity;
 use Doctrine\Common\Proxy\Proxy;
-use GuzzleHttp\Psr7\Response;
 
 class ProxyTestAbstract extends AbstractEntityManagerTest
 {
@@ -12,21 +11,14 @@ class ProxyTestAbstract extends AbstractEntityManagerTest
     {
         $manager = $this->getManager();
 
-        $this->getResponseMock()->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'id'          => 2,
-                            'payload'     => 'test-payload',
-                            'sub-payload' => 'sub-payload',
-                        ],
-                    ]
-                )
+        $this->getClient()->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'          => 2,
+                    'payload'     => 'test-payload',
+                    'sub-payload' => 'sub-payload',
+                ]
             )
         );
 
@@ -36,13 +28,13 @@ class ProxyTestAbstract extends AbstractEntityManagerTest
         //Test that entity is a proxy and request was not send
         self::assertInstanceOf(Proxy::class, $entity);
         self::assertFalse($entity->__isInitialized());
-        self::assertGreaterThan(0, $this->getResponseMock()->count());
+        self::assertGreaterThan(0, $this->getClient()->count());
 
         //Test that we can obtain ID and request was still not sent
         self::assertEquals(2, $entity->getId());
         self::assertInstanceOf(Proxy::class, $entity);
         self::assertFalse($entity->__isInitialized());
-        self::assertGreaterThan(0, $this->getResponseMock()->count());
+        self::assertGreaterThan(0, $this->getClient()->count());
 
         //Test that we can obtain data and request was sent
         self::assertInstanceOf(SubEntity::class, $entity);
@@ -52,28 +44,21 @@ class ProxyTestAbstract extends AbstractEntityManagerTest
         //Test that we are still a Proxy object
         self::assertInstanceOf(Proxy::class, $entity);
         self::assertTrue($entity->__isInitialized());
-        self::assertEquals(0, $this->getResponseMock()->count());
+        self::assertEquals(0, $this->getClient()->count());
     }
 
     public function testSimpleProxy()
     {
         $repository = $this->getManager()->getRepository(SubEntity::class);
 
-        $this->getResponseMock()->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'id'          => 2,
-                            'payload'     => 'test-payload',
-                            'sub-payload' => 'sub-payload',
-                        ],
-                    ]
-                )
+        $this->getClient()->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'          => 2,
+                    'payload'     => 'test-payload',
+                    'sub-payload' => 'sub-payload',
+                ]
             )
         );
 

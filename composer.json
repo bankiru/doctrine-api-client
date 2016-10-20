@@ -13,15 +13,14 @@
     "php": "~5.5|~7.0",
     "psr/cache": "~1.0",
     "psr/log": "~1.0",
-    "scaytrase/rpc-common": "~1.0",
+    "scaytrase/rpc-common": "~1.1",
     "doctrine/common": "~2.5",
     "doctrine/collections": "~1.3",
     "symfony/yaml": "~2.3|~3.0",
     "symfony/property-access": "~2.3|~3.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "~4.5 ||~5.1, <5.4",
-    "scaytrase/json-rpc-client": "~1.0, >=1.0.1"
+    "phpunit/phpunit": "~4.5 ||~5.1, <5.4"
   },
   "suggest": {
     "psr/cache-implementation": "For entity cache support",
