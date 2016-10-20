@@ -10,14 +10,10 @@ use Bankiru\Api\Doctrine\ConstructorFactoryResolver;
 use Bankiru\Api\Doctrine\EntityManager;
 use Bankiru\Api\Doctrine\EntityMetadataFactory;
 use Bankiru\Api\Doctrine\Mapping\Driver\YmlMetadataDriver;
-use Bankiru\Api\Doctrine\Test\TestClient;
 use Bankiru\Api\Doctrine\Type\BaseTypeRegistry;
 use Bankiru\Api\Doctrine\Type\TypeRegistry;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\Common\Persistence\Mapping\Driver\SymfonyFileLocator;
-use GuzzleHttp\Handler\MockHandler;
-use ScayTrase\Api\IdGenerator\IdGeneratorInterface;
-use ScayTrase\Api\Rpc\RpcClientInterface;
 use ScayTrase\Api\Rpc\Test\RpcMockClient;
 use ScayTrase\Api\Rpc\Tests\AbstractRpcTest;
 
@@ -105,14 +101,14 @@ abstract class AbstractEntityManagerTest extends AbstractRpcTest
         $configuration->setRegistry($this->registry);
         $configuration->setTypeRegistry(new BaseTypeRegistry(new TypeRegistry()));
         $configuration->setResolver(new ConstructorFactoryResolver());
-        $configuration->setProxyDir(CACHE_DIR . '/doctrine/proxy/');
+        $configuration->setProxyDir(CACHE_DIR.'/doctrine/proxy/');
         $configuration->setProxyNamespace('Bankiru\Api\Doctrine\Test\Proxy');
         $driver = new MappingDriverChain();
         $driver->addDriver(
             new YmlMetadataDriver(
                 new SymfonyFileLocator(
                     [
-                        __DIR__ . '/../Test/Resources/config/api/' => 'Bankiru\Api\Doctrine\Test\Entity',
+                        __DIR__.'/../Test/Resources/config/api/' => 'Bankiru\Api\Doctrine\Test\Entity',
                     ],
                     '.api.yml',
                     DIRECTORY_SEPARATOR
