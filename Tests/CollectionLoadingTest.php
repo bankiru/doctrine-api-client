@@ -10,24 +10,6 @@ use GuzzleHttp\Psr7\Response;
 
 class CollectionLoadingTest extends AbstractEntityManagerTest
 {
-    public function testLazyCollections()
-    {
-        /** @var EntityRepository $repository */
-        $repository = $this->getManager()->getRepository(SubEntity::class);
-        /** @var ApiCollection $collection */
-        $collection = $repository->createLazyCollection(['subPayload' => 'sub-payload']);
-
-        self::assertInstanceOf(ApiCollection::class, $collection);
-        self::assertFalse($collection->isInitialized());
-
-        try {
-            $collection->count();
-            self::fail('Should fail');
-        } catch (\OutOfBoundsException $exception) {
-            self::assertEquals('Mock queue is empty', $exception->getMessage());
-        }
-    }
-
     public function testFindBy()
     {
         $repository = $this->getManager()->getRepository(SubEntity::class);

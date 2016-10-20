@@ -97,7 +97,7 @@ interface EntityPersister
      * @param int|null   $limit
      * @param int|null   $offset
      *
-     * @return Collection
+     * @return array
      */
     public function loadAll(array $criteria = [], array $orderBy = null, $limit = null, $offset = null);
 
@@ -135,5 +135,9 @@ interface EntityPersister
      * @return object
      */
     public function getToOneEntity(array $mapping, $sourceEntity, array $identifiers);
+
+    public function pushNewEntity($entity);
+
+    public function flushNewEntities();
 }
 

@@ -30,7 +30,6 @@ class EntityHydrator
         $this->metadata = $metadata;
     }
 
-
     /**
      * @param \StdClass   $source
      * @param object|null $entity
@@ -44,6 +43,8 @@ class EntityHydrator
             $entity = $this->metadata->getReflectionClass()->newInstance();
         }
 
+        $oid = spl_object_hash($entity);
+
         $acessor = new PropertyAccessor();
         foreach ($this->metadata->getFieldNames() as $fieldName) {
             $property = $this->metadata->getReflectionProperty($fieldName);
@@ -55,9 +56,12 @@ class EntityHydrator
             } catch (NoSuchPropertyException $exception) {
                 if (!$this->metadata->getFieldMapping($fieldName)['nullable']) {
                     throw new HydrationException(
-                        sprintf('Api field %s for property %s does not present in response', $apiField, $fieldName)
+                        sprintf(
+                            'Field %s for property %s does not present in dehydrated data',
+                            $apiField,
+                            $fieldName
+                        )
                     );
-
                 }
 
                 $property->setValue($entity, null);
@@ -99,7 +103,7 @@ class EntityHydrator
         $targetMetadata  = $this->manager->getClassMetadata($mapping['target']);
         $apiField        = $mapping['api_field'];
         $field           = $mapping['field'];
-
+        $oid             = spl_object_hash($entity);
 
         if ($this->metadata->isSingleValuedAssociation($field)) {
             $identifiers = $this->metadata->getIdentifierValues($entity);
@@ -108,6 +112,8 @@ class EntityHydrator
                     $value = $accessor->getValue($source, $apiField);
                 } catch (NoSuchPropertyException $exception) {
                     if ($mapping['nullable']) {
+                        $this->manager->getUnitOfWork()->setOriginalEntityProperty($oid, $field, null);
+
                         return null;
                     }
 
@@ -126,14 +132,23 @@ class EntityHydrator
                     ->getConfiguration()
                     ->getTypeRegistry()
                     ->get($targetMetadata->getTypeOfField($targetIdName));
-                $identifiers    = [$targetIdName => $type->fromApiValue($value)];
+
+                $identifiers = [$targetIdName => $type->fromApiValue($value)];
             }
 
-            return $targetPersister->getToOneEntity($mapping, $entity, $identifiers);
+            $newValue = $targetPersister->getToOneEntity($mapping, $entity, $identifiers);
+
+            $this->manager->getUnitOfWork()->setOriginalEntityProperty($oid, $field, $newValue);
+
+            return $newValue;
         }
 
         if ($this->metadata->isCollectionValuedAssociation($field)) {
-            return $targetPersister->getOneToManyCollection($mapping, $entity);
+            $newValue = $targetPersister->getOneToManyCollection($mapping, $entity);
+
+            $this->manager->getUnitOfWork()->setOriginalEntityProperty($oid, $field, $newValue);
+
+            return $newValue;
         }
 
         throw new MappingException('Invalid metadata association type');
