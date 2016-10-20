@@ -3,7 +3,6 @@
 namespace Bankiru\Api\Doctrine\Tests;
 
 use Bankiru\Api\Doctrine\Test\Entity\CustomEntity;
-use GuzzleHttp\Psr7\Response;
 use Prophecy\Argument;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -15,20 +14,13 @@ class EntityCacheTest extends AbstractEntityManagerTest
 
     public function testEntityCache()
     {
-        $this->getResponseMock()->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'id'      => '1',
-                            'payload' => 'test-payload',
-                        ],
-                    ]
-                )
+        $this->getClient()->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'      => '1',
+                    'payload' => 'test-payload',
+                ]
             )
         );
 
@@ -97,31 +89,37 @@ class EntityCacheTest extends AbstractEntityManagerTest
         static $items = [];
         $cache = $this->prophesize(CacheItemPoolInterface::class);
         $that  = $this;
-        $cache->getItem(Argument::type('string'))->will(function ($args) use (&$items, $that) {
-            $key = $args[0];
-            if (!array_key_exists($key, $items)) {
-                $item = $that->prophesize(CacheItemInterface::class);
-                $item->getKey()->willReturn($key);
-                $item->isHit()->willReturn(false);
-                $item->get()->willReturn(null);
-                $item->set(Argument::any())->will(function ($args) use ($item) {
-                    $item->get()->willReturn($args[0]);
+        $cache->getItem(Argument::type('string'))->will(
+            function ($args) use (&$items, $that) {
+                $key = $args[0];
+                if (!array_key_exists($key, $items)) {
+                    $item = $that->prophesize(CacheItemInterface::class);
+                    $item->getKey()->willReturn($key);
+                    $item->isHit()->willReturn(false);
+                    $item->get()->willReturn(null);
+                    $item->set(Argument::any())->will(
+                        function ($args) use ($item) {
+                            $item->get()->willReturn($args[0]);
 
-                    return $item;
-                });
-                $item->expiresAfter(Argument::type('int'))->willReturn($item);
-                $item->expiresAfter(Argument::exact(null))->willReturn($item);
-                $item->expiresAfter(Argument::type(\DateInterval::class))->willReturn($item);
-                $item->expiresAt(Argument::type(\DateTimeInterface::class))->willReturn($item);
-                $items[$key] = $item;
+                            return $item;
+                        }
+                    );
+                    $item->expiresAfter(Argument::type('int'))->willReturn($item);
+                    $item->expiresAfter(Argument::exact(null))->willReturn($item);
+                    $item->expiresAfter(Argument::type(\DateInterval::class))->willReturn($item);
+                    $item->expiresAt(Argument::type(\DateTimeInterface::class))->willReturn($item);
+                    $items[$key] = $item;
+                }
+
+                return $items[$key]->reveal();
             }
-
-            return $items[$key]->reveal();
-        });
-        $cache->save(Argument::type(CacheItemInterface::class))->will(function ($args) use (&$items) {
-            $item = $args[0];
-            $items[$item->getKey()]->isHit()->willReturn(true);
-        });
+        );
+        $cache->save(Argument::type(CacheItemInterface::class))->will(
+            function ($args) use (&$items) {
+                $item = $args[0];
+                $items[$item->getKey()]->isHit()->willReturn(true);
+            }
+        );
 
         return $cache->reveal();
     }

@@ -5,34 +5,21 @@ namespace Bankiru\Api\Doctrine\Tests;
 use Bankiru\Api\Doctrine\Test\Entity\CompositeKeyEntity;
 use Bankiru\Api\Doctrine\Test\Entity\Sub\SubEntity;
 use Bankiru\Api\Doctrine\Test\Entity\TestEntity;
-use GuzzleHttp\Psr7\Response;
 
 class EntityFactoryTest extends AbstractEntityManagerTest
 {
-    protected function getClientNames()
-    {
-        return array_merge(parent::getClientNames(), ['test-reference-client']);
-    }
-
-
     public function testEntityLoading()
     {
         $repository = $this->getManager()->getRepository(TestEntity::class);
 
-        $this->getResponseMock()->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'id'      => '1',
-                            'payload' => 'test-payload',
-                        ],
-                    ]
-                )
+        $this->getClient()->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'      => '1',
+                    'payload' => 'test-payload',
+                ]
+
             )
         );
 
@@ -48,21 +35,14 @@ class EntityFactoryTest extends AbstractEntityManagerTest
     public function testInheritanceLoading()
     {
         $repository = $this->getManager()->getRepository(SubEntity::class);
-        $this->getResponseMock()->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'id'          => 2,
-                            'payload'     => 'test-payload',
-                            'sub-payload' => 'sub-payload',
-                        ],
-                    ]
-                )
+        $this->getClient()->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'          => 2,
+                    'payload'     => 'test-payload',
+                    'sub-payload' => 'sub-payload',
+                ]
             )
         );
 
@@ -78,21 +58,14 @@ class EntityFactoryTest extends AbstractEntityManagerTest
     public function testCompositeKeyLoading()
     {
         $repository = $this->getManager()->getRepository(CompositeKeyEntity::class);
-        $this->getResponseMock()->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => [
-                            'first_key'  => 2,
-                            'second_key' => 'test',
-                            'payload'    => 'test-payload',
-                        ],
-                    ]
-                )
+        $this->getClient()->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'first_key'  => 2,
+                    'second_key' => 'test',
+                    'payload'    => 'test-payload',
+                ]
             )
         );
 
@@ -103,5 +76,10 @@ class EntityFactoryTest extends AbstractEntityManagerTest
         self::assertEquals(2, $entity->getFirstKey());
         self::assertEquals('test', $entity->getSecondKey());
         self::assertEquals('test-payload', $entity->getPayload());
+    }
+
+    protected function getClientNames()
+    {
+        return array_merge(parent::getClientNames(), ['test-reference-client']);
     }
 }

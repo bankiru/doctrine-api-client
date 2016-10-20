@@ -4,7 +4,6 @@ namespace Bankiru\Api\Doctrine\Tests;
 
 use Bankiru\Api\Doctrine\Test\Entity\TestEntity;
 use Bankiru\Api\Doctrine\Test\Entity\TestReference;
-use GuzzleHttp\Psr7\Response;
 
 class CommitTest extends AbstractEntityManagerTest
 {
@@ -12,19 +11,7 @@ class CommitTest extends AbstractEntityManagerTest
     {
         $entity = new TestReference();
 
-        $this->getResponseMock('test-reference-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => 241,
-                    ]
-                )
-            )
-        );
+        $this->getClient('test-reference-client')->push($this->getResponseMock(true, 241));
 
         $this->getManager()->persist($entity);
         $this->getManager()->flush();
@@ -39,33 +26,9 @@ class CommitTest extends AbstractEntityManagerTest
         $parent = new TestEntity();
         $entity->setOwner($parent);
 
-        $this->getResponseMock()->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => 42,
-                    ]
-                )
-            )
-        );
+        $this->getClient()->push($this->getResponseMock(true, 42));
 
-        $this->getResponseMock('test-reference-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => 241,
-                    ]
-                )
-            )
-        );
+        $this->getClient('test-reference-client')->push($this->getResponseMock(true, 241));
 
         $this->getManager()->persist($entity);
         $this->getManager()->persist($parent);
@@ -88,33 +51,8 @@ class CommitTest extends AbstractEntityManagerTest
 
         $oldParent = $entity->getOwner();
         $newParent = new TestEntity();
-        $this->getResponseMock()->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => 17,
-                    ]
-                )
-            )
-        );
-
-        $this->getResponseMock('test-reference-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => null,
-                    ]
-                )
-            )
-        );
+        $this->getClient()->push($this->getResponseMock(true, 17));
+        $this->getClient('test-reference-client')->push($this->getResponseMock(true, null));
 
         $entity->setOwner($newParent);
 
@@ -137,19 +75,7 @@ class CommitTest extends AbstractEntityManagerTest
     {
         $entity = new TestReference();
 
-        $this->getResponseMock('test-reference-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => 241,
-                    ]
-                )
-            )
-        );
+        $this->getClient('test-reference-client')->push($this->getResponseMock(true, 241));
 
         $this->getManager()->persist($entity);
         $this->getManager()->flush();
@@ -157,19 +83,7 @@ class CommitTest extends AbstractEntityManagerTest
         self::assertNotNull($entity->getId());
         self::assertEquals(241, $entity->getId());
 
-        $this->getResponseMock('test-reference-client')->append(
-            new Response(
-                200,
-                [],
-                json_encode(
-                    [
-                        'jsonrpc' => '2.0',
-                        'id'      => 'test',
-                        'result'  => null,
-                    ]
-                )
-            )
-        );
+        $this->getClient('test-reference-client')->push($this->getResponseMock(true, null));
 
         $this->getManager()->remove($entity);
         $this->getManager()->flush();

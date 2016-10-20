@@ -169,12 +169,11 @@ class UnitOfWork implements PropertyChangedListener
     /**
      * @param             $className
      * @param \stdClass   $data
-     * @param object|null $unmanagedProxy
      *
      * @return ObjectManagerAware|object
      * @throws MappingException
      */
-    public function getOrCreateEntity($className, \stdClass $data, $unmanagedProxy = null)
+    public function getOrCreateEntity($className, \stdClass $data)
     {
         /** @var EntityMetadata $class */
         $class    = $this->manager->getClassMetadata($className);

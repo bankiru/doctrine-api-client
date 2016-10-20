@@ -17,16 +17,19 @@ use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\Common\Persistence\Mapping\Driver\SymfonyFileLocator;
 use GuzzleHttp\Handler\MockHandler;
 use ScayTrase\Api\IdGenerator\IdGeneratorInterface;
+use ScayTrase\Api\Rpc\RpcClientInterface;
+use ScayTrase\Api\Rpc\Test\RpcMockClient;
+use ScayTrase\Api\Rpc\Tests\AbstractRpcTest;
 
-abstract class AbstractEntityManagerTest extends \PHPUnit_Framework_TestCase
+abstract class AbstractEntityManagerTest extends AbstractRpcTest
 {
     const DEFAULT_CLIENT = 'test-client';
     /** @var  ClientRegistryInterface */
     private $registry;
     /** @var  ApiEntityManager */
     private $manager;
-    /** @var  MockHandler[] */
-    private $mocks = [];
+    /** @var  RpcMockClient[] */
+    private $clients = [];
 
     /**
      * @return mixed
@@ -52,13 +55,9 @@ abstract class AbstractEntityManagerTest extends \PHPUnit_Framework_TestCase
 
     protected function createEntityManager($clients = [self::DEFAULT_CLIENT])
     {
-        /** @var IdGeneratorInterface|\PHPUnit_Framework_MockObject_MockObject $idGenerator */
-        $idGenerator = $this->getMock(IdGeneratorInterface::class);
-        $idGenerator->method('getRequestIdentifier')->willReturn('test');
-
         $this->registry = new ClientRegistry();
         foreach ($clients as $name) {
-            $this->registry->add($name, new TestClient($this->getResponseMock($name), $idGenerator));
+            $this->registry->add($name, $this->getClient($name));
         }
 
         $configuration = $this->createConfiguration();
@@ -69,15 +68,15 @@ abstract class AbstractEntityManagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @param string $name
      *
-     * @return MockHandler
+     * @return RpcMockClient
      */
-    protected function getResponseMock($name = self::DEFAULT_CLIENT)
+    protected function getClient($name = self::DEFAULT_CLIENT)
     {
-        if (!array_key_exists($name, $this->mocks)) {
-            $this->mocks[$name] = new MockHandler();
+        if (!array_key_exists($name, $this->clients)) {
+            $this->clients[$name] = new RpcMockClient();
         }
 
-        return $this->mocks[$name];
+        return $this->clients[$name];
     }
 
     protected function getClientNames()
@@ -87,12 +86,12 @@ abstract class AbstractEntityManagerTest extends \PHPUnit_Framework_TestCase
 
     protected function tearDown()
     {
-        foreach ($this->mocks as $name => $mock) {
+        foreach ($this->clients as $name => $mock) {
             self::assertCount(0, $mock, sprintf('Response not used for "%s" client', $name));
         }
 
         $this->manager = null;
-        $this->mocks   = [];
+        $this->clients = [];
         parent::tearDown();
     }
 

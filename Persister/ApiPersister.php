@@ -116,7 +116,7 @@ class ApiPersister implements EntityPersister
             return null;
         }
 
-        return $this->manager->getUnitOfWork()->getOrCreateEntity($this->metadata->getName(), $body, $entity);
+        return $this->manager->getUnitOfWork()->getOrCreateEntity($this->metadata->getName(), $body);
     }
 
     /** {@inheritdoc} */
