@@ -47,11 +47,11 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     }
 
     /** {@inheritdoc} */
-    public function create(RpcClientInterface $client, ApiMetadata $metadata, array $data)
+    public function create(array $data)
     {
         $request = new RpcRequest('create', $data);
 
-        return $client->invoke($request)->getResponse($request)->getBody();
+        return $this->client->invoke($request)->getResponse($request)->getBody();
     }
 
     /** {@inheritdoc} */

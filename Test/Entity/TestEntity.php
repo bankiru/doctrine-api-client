@@ -54,4 +54,12 @@ class TestEntity
     {
         return $this->references;
     }
+
+    /**
+     * @param TestReference $parent
+     */
+    public function setParent(TestReference $parent)
+    {
+        $this->parent = $parent;
+    }
 }

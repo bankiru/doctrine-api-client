@@ -51,6 +51,8 @@ class EntityMetadata implements ApiMetadata
     public $isIdentifierComposite = false;
     /** @var InstantiatorInterface */
     private $instantiator;
+    /** @var  int */
+    private $changeTrackingPolicy = self::CHANGETRACKING_DEFERRED_IMPLICIT;
 
     /**
      * Initializes a new ClassMetadata instance that will hold the object-relational mapping
@@ -163,13 +165,13 @@ class EntityMetadata implements ApiMetadata
     /** {@inheritdoc} */
     public function isSingleValuedAssociation($fieldName)
     {
-        return $this->associations[$fieldName]['type'] & self::TO_ONE;
+        return $this->hasAssociation($fieldName) && $this->associations[$fieldName]['type'] & self::TO_ONE;
     }
 
     /** {@inheritdoc} */
     public function isCollectionValuedAssociation($fieldName)
     {
-        return $this->associations[$fieldName]['type'] & self::TO_MANY;
+        return $this->hasAssociation($fieldName) && $this->associations[$fieldName]['type'] & self::TO_MANY;
     }
 
     /** {@inheritdoc} */
@@ -338,13 +340,25 @@ class EntityMetadata implements ApiMetadata
         return array_key_exists($apiFieldName, $this->fieldNames);
     }
 
-    public function mapAssociation(array $mapping)
+    public function mapOneToMany(array $mapping)
     {
-        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
-        $this->assertFieldNotMapped($mapping['field']);
-        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
-        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
-        $this->associations[$mapping['field']]   = $mapping;
+        $mapping = $this->validateAndCompleteOneToManyMapping($mapping);
+
+        $this->storeMapping($mapping);
+    }
+
+    public function mapManyToOne(array $mapping)
+    {
+        $mapping = $this->validateAndCompleteOneToOneMapping($mapping);
+
+        $this->storeMapping($mapping);
+    }
+
+    public function mapOneToOne(array $mapping)
+    {
+        $mapping = $this->validateAndCompleteOneToOneMapping($mapping);
+
+        $this->storeMapping($mapping);
     }
 
     /** {@inheritdoc} */
@@ -386,6 +400,19 @@ class EntityMetadata implements ApiMetadata
         $this->fieldNames[$mapping['api_field']] = $mapping['field'];
     }
 
+    /** {@inheritdoc} */
+    public function getSubclasses()
+    {
+        //fixme
+        return [];
+    }
+
+    /** {@inheritdoc} */
+    public function getAssociationMappings()
+    {
+        return $this->associations;
+    }
+
     /**
      * Validates & completes the basic mapping information that is common to all
      * association mappings (one-to-one, many-ot-one, one-to-many, many-to-many).
@@ -424,8 +451,22 @@ class EntityMetadata implements ApiMetadata
             $mapping['target'] = ltrim($mapping['target'], '\\');
         }
 
+        if (($mapping['type'] & self::MANY_TO_ONE) > 0 &&
+            isset($mapping['orphanRemoval']) &&
+            $mapping['orphanRemoval'] == true
+        ) {
+            throw new MappingException(
+                sprintf('Illegal orphanRemoval %s for %s', $mapping['field'], $this->name)
+            );
+        }
+
         // Complete id mapping
         if (isset($mapping['id']) && $mapping['id'] === true) {
+            if (isset($mapping['orphanRemoval']) && $mapping['orphanRemoval'] == true) {
+                throw new MappingException(
+                    sprintf('Illegal orphanRemoval on identifier association %s for %s', $mapping['field'], $this->name)
+                );
+            }
 
             if (!in_array($mapping['field'], $this->identifier, true)) {
                 $this->identifier[]              = $mapping['field'];
@@ -445,11 +486,40 @@ class EntityMetadata implements ApiMetadata
 
         if (isset($mapping['id']) && $mapping['id'] === true && $mapping['type'] & self::TO_MANY) {
             throw new MappingException(
-                sprintf('Illegal toMany identifier association %s for %s', $mapping['fieldName'], $this->name)
+                sprintf('Illegal toMany identifier association %s for %s', $mapping['field'], $this->name)
             );
         }
 
+        // Fetch mode. Default fetch mode to LAZY, if not set.
+        if ( ! isset($mapping['fetch'])) {
+            $mapping['fetch'] = self::FETCH_LAZY;
+        }
+
+        // Cascades
+        $cascades    = isset($mapping['cascade']) ? array_map('strtolower', $mapping['cascade']) : [];
+        $allCascades = ['remove', 'persist', 'refresh', 'merge', 'detach'];
+        if (in_array('all', $cascades, true)) {
+            $cascades = $allCascades;
+        } elseif (count($cascades) !== count(array_intersect($cascades, $allCascades))) {
+            throw new MappingException('Invalid cascades: ' . implode(', ', $cascades));
+        }
+        $mapping['cascade']          = $cascades;
+        $mapping['isCascadeRemove']  = in_array('remove', $cascades, true);
+        $mapping['isCascadePersist'] = in_array('persist', $cascades, true);
+        $mapping['isCascadeRefresh'] = in_array('refresh', $cascades, true);
+        $mapping['isCascadeMerge']   = in_array('merge', $cascades, true);
+        $mapping['isCascadeDetach']  = in_array('detach', $cascades, true);
+
         return $mapping;
+    }
+
+    private function storeMapping(array $mapping)
+    {
+        $this->assertFieldNotMapped($mapping['field']);
+
+        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
+        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
+        $this->associations[$mapping['field']]   = $mapping;
     }
 
     private function validateAndCompleteFieldMapping(array &$mapping)
@@ -487,4 +557,105 @@ class EntityMetadata implements ApiMetadata
             throw new MappingException('Field already mapped');
         }
     }
+
+    /**
+     * @param array $mapping
+     *
+     * @return array
+     * @throws MappingException
+     * @throws \InvalidArgumentException
+     */
+    private function validateAndCompleteOneToManyMapping(array $mapping)
+    {
+        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
+
+        // OneToMany-side MUST be inverse (must have mappedBy)
+        if (!isset($mapping['mappedBy'])) {
+            throw new MappingException(
+                sprintf('Many to many requires mapped by: %s', $mapping['field'])
+            );
+        }
+        $mapping['orphanRemoval']   = isset($mapping['orphanRemoval']) && $mapping['orphanRemoval'];
+        $mapping['isCascadeRemove'] = $mapping['orphanRemoval'] || $mapping['isCascadeRemove'];
+        $this->assertMappingOrderBy($mapping);
+
+        return $mapping;
+    }
+
+    /**
+     * @param array $mapping
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function assertMappingOrderBy(array $mapping)
+    {
+        if (array_key_exists('orderBy', $mapping) && !is_array($mapping['orderBy'])) {
+            throw new \InvalidArgumentException(
+                "'orderBy' is expected to be an array, not " . gettype($mapping['orderBy'])
+            );
+        }
+    }
+
+    /**
+     * @param array $mapping
+     *
+     * @return array
+     */
+    private function validateAndCompleteOneToOneMapping(array $mapping)
+    {
+        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
+
+        $mapping['orphanRemoval']   = isset($mapping['orphanRemoval']) && $mapping['orphanRemoval'];
+        $mapping['isCascadeRemove'] = $mapping['orphanRemoval'] || $mapping['isCascadeRemove'];
+        if ($mapping['orphanRemoval']) {
+            unset($mapping['unique']);
+        }
+
+        return $mapping;
+    }
+
+    public function isReadOnly()
+    {
+        return false;
+    }
+
+    /**
+     * Sets the change tracking policy used by this class.
+     *
+     * @param integer $policy
+     *
+     * @return void
+     */
+    public function setChangeTrackingPolicy($policy)
+    {
+        $this->changeTrackingPolicy = $policy;
+    }
+    /**
+     * Whether the change tracking policy of this class is "deferred explicit".
+     *
+     * @return boolean
+     */
+    public function isChangeTrackingDeferredExplicit()
+    {
+        return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_EXPLICIT;
+    }
+    /**
+     * Whether the change tracking policy of this class is "deferred implicit".
+     *
+     * @return boolean
+     */
+    public function isChangeTrackingDeferredImplicit()
+    {
+        return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_IMPLICIT;
+    }
+    /**
+     * Whether the change tracking policy of this class is "notify".
+     *
+     * @return boolean
+     */
+    public function isChangeTrackingNotify()
+    {
+        return $this->changeTrackingPolicy == self::CHANGETRACKING_NOTIFY;
+    }
+
 }

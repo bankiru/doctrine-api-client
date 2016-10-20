@@ -4,9 +4,12 @@ namespace Bankiru\Api\Doctrine;
 
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
+use Bankiru\Api\Doctrine\Proxy\ApiCollection;
 use Bankiru\Api\Doctrine\Proxy\ProxyFactory;
 use Bankiru\Api\Doctrine\Utility\IdentifierFixer;
+use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\Common\Proxy\Proxy;
 
 class EntityManager implements ApiEntityManager
 {
@@ -82,14 +85,18 @@ class EntityManager implements ApiEntityManager
     /** {@inheritdoc} */
     public function persist($object)
     {
-        throw new \BadMethodCallException('Persisting object is not supported');
+        if (!is_object($object)) {
+            throw new \InvalidArgumentException('Not an object to persist');
+        }
+
+        $this->getUnitOfWork()->persist($object);
     }
 
     /** {@inheritdoc} */
     public function remove($object)
     {
-        //Todo: support object deletion via API (@scaytrase)
-        throw new \BadMethodCallException('Removing object is not supported');
+        $this->getUnitOfWork()->getEntityPersister(get_class($object))
+            ->delete($object);
     }
 
     /** {@inheritdoc} */
@@ -101,13 +108,13 @@ class EntityManager implements ApiEntityManager
     /** {@inheritdoc} */
     public function clear($objectName = null)
     {
-        throw new \BadMethodCallException('Clearing EM is not supported');
+        $this->getUnitOfWork()->clear($objectName);
     }
 
     /** {@inheritdoc} */
     public function detach($object)
     {
-        throw new \BadMethodCallException('Detach object is not supported');
+        $this->getUnitOfWork()->detach($object);
     }
 
     /** {@inheritdoc} */
@@ -131,15 +138,19 @@ class EntityManager implements ApiEntityManager
     }
 
     /** {@inheritdoc} */
-    public function flush()
+    public function flush($entity = null)
     {
-        throw new \BadMethodCallException('Flush is not supported');
+        $this->unitOfWork->commit($entity);
     }
 
     /** {@inheritdoc} */
     public function initializeObject($obj)
     {
-        // Todo: generate proxy class here (@scaytrase)
+        if ($obj instanceof Proxy && !$obj->__isInitialized()) {
+            $obj->__load();
+        } elseif ($obj instanceof ApiCollection) {
+            $obj->initialize();
+        }
     }
 
     /** {@inheritdoc} */

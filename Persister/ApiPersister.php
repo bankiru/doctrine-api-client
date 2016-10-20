@@ -3,12 +3,12 @@
 namespace Bankiru\Api\Doctrine\Persister;
 
 use Bankiru\Api\Doctrine\ApiEntityManager;
+use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Proxy\ApiCollection;
 use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
 use Bankiru\Api\Doctrine\Rpc\SearchArgumentsTransformer;
 use Doctrine\Common\Collections\AbstractLazyCollection;
-use Doctrine\Common\Collections\ArrayCollection;
 
 /** @internal */
 class ApiPersister implements EntityPersister
@@ -21,6 +21,8 @@ class ApiPersister implements EntityPersister
     private $manager;
     /** @var CrudsApiInterface */
     private $api;
+    /** @var array */
+    private $pendingInserts = [];
 
     /**
      * ApiPersister constructor.
@@ -51,18 +53,19 @@ class ApiPersister implements EntityPersister
     /** {@inheritdoc} */
     public function update($entity)
     {
-        $data   = [];
-        $fields = [];
+        $data = $this->prepareUpdateData($entity);
 
-        //todo: fill data with raw data for API and fields with modified fields pending to update
-
-        $this->api->patch($data, $fields);
+        $this->api->patch(
+            $this->transformer->transformCriteria($this->metadata->getIdentifierValues($entity)),
+            $data,
+            array_keys($data)
+        );
     }
 
     /** {@inheritdoc} */
     public function delete($entity)
     {
-        return $this->api->remove($this->metadata->getIdentifierValues($entity));
+        return $this->api->remove($this->transformer->transformCriteria($this->metadata->getIdentifierValues($entity)));
     }
 
     /** {@inheritdoc} */
@@ -80,16 +83,13 @@ class ApiPersister implements EntityPersister
             $limit,
             $offset
         );
-        if (!$objects instanceof \Traversable) {
-            $objects = new \ArrayIterator($objects);
-        }
 
         $entities = [];
         foreach ($objects as $object) {
             $entities[] = $this->manager->getUnitOfWork()->getOrCreateEntity($this->metadata->getName(), $object);
         }
 
-        return new ArrayCollection($entities);
+        return $entities;
     }
 
     /** {@inheritdoc} */
@@ -116,9 +116,7 @@ class ApiPersister implements EntityPersister
             return null;
         }
 
-        $entity = $this->manager->getUnitOfWork()->getOrCreateEntity($this->metadata->getName(), $body, $entity);
-
-        return $entity;
+        return $this->manager->getUnitOfWork()->getOrCreateEntity($this->metadata->getName(), $body, $entity);
     }
 
     /** {@inheritdoc} */
@@ -130,10 +128,29 @@ class ApiPersister implements EntityPersister
     /** {@inheritdoc} */
     public function loadOneToManyCollection(array $assoc, $sourceEntity, AbstractLazyCollection $collection)
     {
-        if ($collection instanceof ApiCollection) {
-            foreach ($collection->getIterator() as $entity) {
-                $this->metadata->getReflectionProperty($assoc['mappedBy'])->setValue($entity, $sourceEntity);
+        $criteria = [
+            $assoc['mappedBy'] => $sourceEntity,
+        ];
+
+        $orderBy = isset($assoc['orderBy']) ? $assoc['orderBy'] : [];
+
+        $source = $this->api->search(
+            $this->transformer->transformCriteria($criteria),
+            $this->transformer->transformOrder($orderBy)
+        );
+
+        $target = $this->manager->getClassMetadata($assoc['target']);
+
+        foreach ($source as $object) {
+            $entity = $this->manager->getUnitOfWork()->getOrCreateEntity($target->getName(), $object);
+            if (isset($assoc['orderBy'])) {
+                $index = $target->getReflectionProperty($assoc['orderBy'])->getValue($entity);
+                $collection->set($index, $entity);
+            } else {
+                $collection->add($entity);
             }
+
+            $target->getReflectionProperty($assoc['mappedBy'])->setValue($entity, $sourceEntity);
         }
 
         return $collection;
@@ -150,17 +167,11 @@ class ApiPersister implements EntityPersister
             throw new \BadMethodCallException(__METHOD__ . ' on composite reference is not supported');
         }
 
-        $criteria = [
-            $assoc['mappedBy'] => $sourceEntity,
-        ];
+        $apiCollection = new ApiCollection($this->manager, $targetMetadata);
+        $apiCollection->setOwner($sourceEntity, $assoc);
+        $apiCollection->setInitialized(false);
 
-        $orderBy = isset($assoc['orderBy']) ? $assoc['orderBy'] : [];
-
-        return new ApiCollection(
-            $this->manager,
-            $targetMetadata,
-            [$criteria, $orderBy, $limit, $offset]
-        );
+        return $apiCollection;
     }
 
     /** {@inheritdoc} */
@@ -173,5 +184,98 @@ class ApiPersister implements EntityPersister
         }
 
         return $this->manager->getReference($mapping['target'], $identifiers);
+    }
+
+    public function pushNewEntity($entity)
+    {
+        $this->pendingInserts[] = $entity;
+    }
+
+    public function flushNewEntities()
+    {
+        $result = [];
+        foreach ($this->pendingInserts as $entity) {
+            $result[] = [
+                'generatedId' => $this->getCrudsApi()->create(
+                    $this->transformer->transformCriteria($this->convertEntityToData($entity))
+                ),
+                'entity'      => $entity,
+            ];
+        }
+
+        $this->pendingInserts = [];
+
+        return $result;
+    }
+
+    /**
+     * Prepares the changeset of an entity for database insertion (UPDATE).
+     *
+     * The changeset is obtained from the currently running UnitOfWork.
+     *
+     * During this preparation the array that is passed as the second parameter is filled with
+     * <columnName> => <value> pairs, grouped by table name.
+     *
+     * Example:
+     * <code>
+     * array(
+     *    'foo_table' => array('column1' => 'value1', 'column2' => 'value2', ...),
+     *    'bar_table' => array('columnX' => 'valueX', 'columnY' => 'valueY', ...),
+     *    ...
+     * )
+     * </code>
+     *
+     * @param object $entity The entity for which to prepare the data.
+     *
+     * @return array The prepared data.
+     */
+    protected function prepareUpdateData($entity)
+    {
+        $result = [];
+        $uow    = $this->manager->getUnitOfWork();
+        foreach ($uow->getEntityChangeSet($entity) as $field => $change) {
+            $newVal = $change[1];
+            if (!$this->metadata->hasAssociation($field)) {
+
+                $result[$this->metadata->getApiFieldName($field)] = $newVal;
+                continue;
+            }
+            $assoc = $this->metadata->getAssociationMapping($field);
+            // Only owning side of x-1 associations can have a FK column.
+            if (!$assoc['isOwningSide'] || !($assoc['type'] & ApiMetadata::TO_ONE)) {
+                continue;
+            }
+            if ($newVal !== null) {
+                $oid = spl_object_hash($newVal);
+                if (isset($this->pendingInserts[$oid]) || $uow->isScheduledForInsert($newVal)) {
+                    // The associated entity $newVal is not yet persisted, so we must
+                    // set $newVal = null, in order to insert a null value and schedule an
+                    // extra update on the UnitOfWork.
+                    $uow->scheduleExtraUpdate($entity, [$field => [null, $newVal]]);
+                    $newVal = null;
+                }
+            }
+            $newValId = null;
+            if ($newVal !== null) {
+                $newValId = $uow->getEntityIdentifier($newVal);
+            }
+            $targetClass                                      =
+                $this->manager->getClassMetadata($assoc['target']);
+            $result[$this->metadata->getApiFieldName($field)] = $newValId
+                ? $newValId[$targetClass->getIdentifierFieldNames()[0]]
+                : null;
+        }
+
+        return $result;
+    }
+
+    private function convertEntityToData($entity)
+    {
+        $entityData = [];
+        foreach ($this->metadata->getReflectionProperties() as $name => $property) {
+            $entityData[$name] = $property->getValue($entity);
+        }
+
+        return $entityData;
     }
 }

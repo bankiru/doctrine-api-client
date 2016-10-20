@@ -28,6 +28,22 @@ class TestReference
     }
 
     /**
+     * @param TestEntity $owner
+     */
+    public function setOwner(TestEntity $owner = null)
+    {
+        if ($this->owner) {
+            $this->owner->getReferences()->removeElement($this);
+        }
+
+        $this->owner = $owner;
+
+        if ($this->owner) {
+            $this->owner->getReferences()->add($this);
+        }
+    }
+
+    /**
      * @return string
      */
     public function getReferencePayload()

@@ -3,8 +3,8 @@
 namespace Bankiru\Api\Doctrine\Mapping\Driver;
 
 use Bankiru\Api\Doctrine\Exception\MappingException;
+use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
-use Bankiru\Api\Doctrine\Rpc\DoctrineApi;
 use Bankiru\Api\Doctrine\Rpc\Method\EntityMethodProvider;
 use Bankiru\Api\Doctrine\Rpc\Method\MethodProvider;
 use Doctrine\Common\Persistence\Mapping\ClassMetadata;
@@ -120,7 +120,9 @@ class YmlMetadataDriver extends FileDriver
     {
         $mapping           = $this->fieldToArray($name, $association);
         $mapping['target'] = $association['target'];
-
+        if (isset($association['fetch'])) {
+            $mapping['fetch'] = constant(ApiMetadata::class . '::FETCH_' . $association['fetch']);
+        }
         switch ($type) {
             case 'oneToOne':
                 $mapping['type'] = EntityMetadata::ONE_TO_ONE;
@@ -133,12 +135,14 @@ class YmlMetadataDriver extends FileDriver
                 if (array_key_exists('inversedBy', $association)) {
                     $mapping['inversedBy'] = $association['inversedBy'];
                 }
+                $metadata->mapOneToOne($mapping);
                 break;
             case 'manyToOne':
                 $mapping['type'] = EntityMetadata::MANY_TO_ONE;
                 if (array_key_exists('inversedBy', $association)) {
                     $mapping['inversedBy'] = $association['inversedBy'];
                 }
+                $metadata->mapManyToOne($mapping);
                 break;
             case 'oneToMany':
                 $mapping['type'] = EntityMetadata::ONE_TO_MANY;
@@ -151,10 +155,9 @@ class YmlMetadataDriver extends FileDriver
                 if (array_key_exists('indexBy', $association)) {
                     $mapping['indexBy'] = $association['indexBy'];
                 }
+                $metadata->mapOneToMany($mapping);
                 break;
         }
-
-        $metadata->mapAssociation($mapping);
     }
 
     /**

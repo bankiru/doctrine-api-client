@@ -77,7 +77,9 @@ class EntityRepository implements ObjectRepository
      */
     public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
     {
-        return $this->createLazyCollection($criteria, $orderBy, $limit, $offset)->toArray();
+        $persister = $this->manager->getUnitOfWork()->getEntityPersister($this->getClassName());
+
+        return $persister->loadAll($criteria, $orderBy, $limit, $offset);
     }
 
     /**
@@ -100,19 +102,6 @@ class EntityRepository implements ObjectRepository
     public function getManager()
     {
         return $this->manager;
-    }
-
-    /**
-     * @param array      $criteria
-     * @param array|null $orderBy
-     * @param int|null   $limit
-     * @param int|null   $offset
-     *
-     * @return Collection
-     */
-    public function createLazyCollection(array $criteria, array $orderBy = null, $limit = null, $offset = null)
-    {
-        return new ApiCollection($this->manager, $this->metadata, [$criteria, $orderBy, $limit, $offset]);
     }
 
     /**

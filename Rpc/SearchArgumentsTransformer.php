@@ -5,6 +5,8 @@ namespace Bankiru\Api\Doctrine\Rpc;
 use Bankiru\Api\Doctrine\ApiEntityManager;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
+use Bankiru\Api\Doctrine\Proxy\ApiCollection;
+use Doctrine\Common\Collections\Collection;
 
 /** @internal */
 final class SearchArgumentsTransformer
@@ -55,6 +57,13 @@ final class SearchArgumentsTransformer
                     return array_shift($ids);
                 };
 
+                if ($values instanceof Collection) {
+                    if ($values instanceof ApiCollection && !$values->isInitialized()) {
+                        continue;
+                    }
+                    $values = $values->toArray();
+                }
+                
                 if (is_array($values)) {
                     $values = array_map($converter, $values);
                 } else {
