@@ -4,6 +4,7 @@ namespace Bankiru\Api\Doctrine\Tests;
 
 use Bankiru\Api\Doctrine\Test\Entity\Sub\SubEntity;
 use Doctrine\Common\Collections\ArrayCollection;
+use ScayTrase\Api\Rpc\RpcRequestInterface;
 
 class CollectionLoadingTest extends AbstractEntityManagerTest
 {
@@ -34,7 +35,21 @@ class CollectionLoadingTest extends AbstractEntityManagerTest
                         'string-payload' => 'sub-payload',
                     ],
                 ]
-            )
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-entity/search', $request->getMethod());
+                self::assertEquals(
+                    [
+                        'criteria' => ['sub-payload' => 'sub-payload'],
+                        'order'    => [],
+                        'limit'    => null,
+                        'offset'   => null,
+                    ],
+                    $request->getParameters()
+                );
+
+                return true;
+            }
         );
 
         /** @var SubEntity[]|ArrayCollection $entities */
@@ -45,7 +60,7 @@ class CollectionLoadingTest extends AbstractEntityManagerTest
         foreach ($entities as $entity) {
             self::assertInternalType('int', $entity->getId());
             self::assertInstanceOf(SubEntity::class, $entity);
-            self::assertEquals('test-payload-'.$entity->getId(), $entity->getPayload());
+            self::assertEquals('test-payload-' . $entity->getId(), $entity->getPayload());
             self::assertEquals('sub-payload', $entity->getSubPayload());
 
             if (null !== $entity->getStringPayload()) {

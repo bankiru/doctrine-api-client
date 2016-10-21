@@ -82,8 +82,8 @@ abstract class AbstractEntityManagerTest extends AbstractRpcTest
 
     protected function tearDown()
     {
-        foreach ($this->clients as $name => $mock) {
-            self::assertCount(0, $mock, sprintf('Response not used for "%s" client', $name));
+        foreach ($this->clients as $name => $client) {
+            self::assertCount(0, $client, sprintf('Response not used for "%s" client', $name));
         }
 
         $this->manager = null;

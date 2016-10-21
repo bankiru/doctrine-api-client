@@ -10,6 +10,6 @@ Bankiru\Api\Doctrine\Test\Entity\IndirectIdEntity:
 
   client:
     name: test-client
-    entityPath: test-entity
+    entityPath: indirect-entity
   api:
     name: Bankiru\Api\Doctrine\Test\TestApi

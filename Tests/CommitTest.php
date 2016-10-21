@@ -4,6 +4,7 @@ namespace Bankiru\Api\Doctrine\Tests;
 
 use Bankiru\Api\Doctrine\Test\Entity\TestEntity;
 use Bankiru\Api\Doctrine\Test\Entity\TestReference;
+use ScayTrase\Api\Rpc\RpcRequestInterface;
 
 class CommitTest extends AbstractEntityManagerTest
 {
@@ -11,7 +12,21 @@ class CommitTest extends AbstractEntityManagerTest
     {
         $entity = new TestReference();
 
-        $this->getClient('test-reference-client')->push($this->getResponseMock(true, 241));
+        $this->getClient('test-reference-client')->push(
+            $this->getResponseMock(true, 241),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-reference/create', $request->getMethod());
+                self::assertEquals(
+                    [
+                        'reference-payload' => '',
+                        'owner'             => null,
+                    ],
+                    $request->getParameters()
+                );
+
+                return true;
+            }
+        );
 
         $this->getManager()->persist($entity);
         $this->getManager()->flush();
@@ -88,7 +103,6 @@ class CommitTest extends AbstractEntityManagerTest
         $this->getManager()->remove($entity);
         $this->getManager()->flush();
     }
-
 
     protected function getClientNames()
     {

@@ -7,6 +7,7 @@ use Bankiru\Api\Doctrine\Test\Entity\TestEntity;
 use Bankiru\Api\Doctrine\Test\Entity\TestReference;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Proxy\Proxy;
+use ScayTrase\Api\Rpc\RpcRequestInterface;
 
 class ReferenceLoadingTest extends AbstractEntityManagerTest
 {
@@ -101,7 +102,7 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
             self::assertInternalType('int', $reference->getId());
             self::assertInternalType('int', $reference->getOwner()->getId());
             self::assertInstanceOf(TestReference::class, $reference);
-            self::assertEquals('test-payload-'.$reference->getId(), $reference->getReferencePayload());
+            self::assertEquals('test-payload-' . $reference->getId(), $reference->getReferencePayload());
             self::assertEquals($entity, $reference->getOwner());
         }
     }
@@ -165,7 +166,13 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
                     'references'  => ['5', '7'],
                     'sub-payload' => 'sub-payload',
                 ]
-            )
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-entity/find', $request->getMethod());
+                self::assertEquals(['id' => 1], $request->getParameters());
+
+                return true;
+            }
         );
 
         $this->getClient('test-reference-client')->push(
@@ -183,7 +190,21 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
                         'owner'             => '1',
                     ],
                 ]
-            )
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-reference/search', $request->getMethod());
+                self::assertEquals(
+                    [
+                        'criteria' => ['owner' => 1],
+                        'order'    => [],
+                        'limit'    => null,
+                        'offset'   => null,
+                    ],
+                    $request->getParameters()
+                );
+
+                return true;
+            }
         );
 
         /** @var SubEntity $entity */
@@ -197,7 +218,7 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
 
         self::assertCount(2, $references);
         foreach ($references as $reference) {
-            self::assertSame('test-payload-'.$reference->getId(), $reference->getReferencePayload());
+            self::assertSame('test-payload-' . $reference->getId(), $reference->getReferencePayload());
         }
     }
 

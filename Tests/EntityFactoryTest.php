@@ -5,6 +5,7 @@ namespace Bankiru\Api\Doctrine\Tests;
 use Bankiru\Api\Doctrine\Test\Entity\CompositeKeyEntity;
 use Bankiru\Api\Doctrine\Test\Entity\Sub\SubEntity;
 use Bankiru\Api\Doctrine\Test\Entity\TestEntity;
+use ScayTrase\Api\Rpc\RpcRequestInterface;
 
 class EntityFactoryTest extends AbstractEntityManagerTest
 {
@@ -19,8 +20,13 @@ class EntityFactoryTest extends AbstractEntityManagerTest
                     'id'      => '1',
                     'payload' => 'test-payload',
                 ]
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-entity/find', $request->getMethod());
+                self::assertEquals(['id' => 1], $request->getParameters());
 
-            )
+                return true;
+            }
         );
 
         /** @var TestEntity $entity */
@@ -43,7 +49,13 @@ class EntityFactoryTest extends AbstractEntityManagerTest
                     'payload'     => 'test-payload',
                     'sub-payload' => 'sub-payload',
                 ]
-            )
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-entity/find', $request->getMethod());
+                self::assertEquals(['id' => 2], $request->getParameters());
+
+                return true;
+            }
         );
 
         /** @var SubEntity $entity */
@@ -66,11 +78,17 @@ class EntityFactoryTest extends AbstractEntityManagerTest
                     'second_key' => 'test',
                     'payload'    => 'test-payload',
                 ]
-            )
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('composite-key-entity/find', $request->getMethod());
+                self::assertEquals(['first_key' => 2, 'second_key' => 'test'], $request->getParameters());
+
+                return true;
+            }
         );
 
         /** @var CompositeKeyEntity $entity */
-        $entity = $repository->find(['firstKey' => 2, 'secondKey' => 'test']);
+        $entity = $repository->find(['firstKey' => '2', 'secondKey' => 'test']);
 
         self::assertInstanceOf(CompositeKeyEntity::class, $entity);
         self::assertEquals(2, $entity->getFirstKey());

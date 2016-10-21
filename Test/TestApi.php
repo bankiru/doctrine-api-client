@@ -41,7 +41,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     /** {@inheritdoc} */
     public function count(array $criteria)
     {
-        $request = new RpcRequest('count', $criteria);
+        $request = new RpcRequest($this->getMethod('count'), ['criteria' => $criteria]);
 
         return (int)$this->client->invoke($request)->getResponse($request)->getBody();
     }
@@ -49,7 +49,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     /** {@inheritdoc} */
     public function create(array $data)
     {
-        $request = new RpcRequest('create', $data);
+        $request = new RpcRequest($this->getMethod('create'), $data);
 
         return $this->client->invoke($request)->getResponse($request)->getBody();
     }
@@ -63,8 +63,8 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
             return $body;
         }
 
-        $request = new RpcRequest('find', $identifier);
-        $body = $this->client->invoke($request)->getResponse($request)->getBody();
+        $request = new RpcRequest($this->getMethod('find'), $identifier);
+        $body    = $this->client->invoke($request)->getResponse($request)->getBody();
         $this->cache->set($identifier, $body);
 
         return $body;
@@ -73,7 +73,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     /** {@inheritdoc} */
     public function patch(array $identifier, array $data, array $fields)
     {
-        $request = new RpcRequest('patch', array_intersect_key($data, array_flip($fields)));
+        $request = new RpcRequest($this->getMethod('patch'), array_intersect_key($data, array_flip($fields)));
 
         return $this->client->invoke($request)->getResponse($request)->isSuccessful();
     }
@@ -82,7 +82,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     public function search(array $criteria = [], array $orderBy = null, $limit = null, $offset = null)
     {
         $request = new RpcRequest(
-            'search',
+            $this->getMethod('search'),
             [
                 'criteria' => $criteria,
                 'order'    => $orderBy,
@@ -97,7 +97,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     /** {@inheritdoc} */
     public function remove(array $identifier)
     {
-        $request = new RpcRequest('remove', $identifier);
+        $request = new RpcRequest($this->getMethod('remove'), $identifier);
 
         return $this->client->invoke($request)->getResponse($request)->isSuccessful();
     }
@@ -118,5 +118,15 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     public function setEntityCache(EntityDataCacheInterface $cache)
     {
         $this->cache = $cache;
+    }
+
+    /**
+     * @param string $method
+     *
+     * @return string
+     */
+    private function getMethod($method)
+    {
+        return $this->metadata->getMethodContainer()->getMethod($method);
     }
 }
