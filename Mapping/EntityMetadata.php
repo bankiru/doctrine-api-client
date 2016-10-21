@@ -49,6 +49,8 @@ class EntityMetadata implements ApiMetadata
     public $containsForeignIdentifier;
     /** @var bool */
     public $isIdentifierComposite = false;
+    /** @var int */
+    public $generatorType = self::GENERATOR_TYPE_NATURAL;
     /** @var InstantiatorInterface */
     private $instantiator;
     /** @var  int */
@@ -413,6 +415,82 @@ class EntityMetadata implements ApiMetadata
         return $this->associations;
     }
 
+    public function isReadOnly()
+    {
+        return false;
+    }
+
+    /**
+     * Sets the change tracking policy used by this class.
+     *
+     * @param integer $policy
+     *
+     * @return void
+     */
+    public function setChangeTrackingPolicy($policy)
+    {
+        $this->changeTrackingPolicy = $policy;
+    }
+
+    /**
+     * Whether the change tracking policy of this class is "deferred explicit".
+     *
+     * @return boolean
+     */
+    public function isChangeTrackingDeferredExplicit()
+    {
+        return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_EXPLICIT;
+    }
+
+    /**
+     * Whether the change tracking policy of this class is "deferred implicit".
+     *
+     * @return boolean
+     */
+    public function isChangeTrackingDeferredImplicit()
+    {
+        return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_IMPLICIT;
+    }
+
+    /**
+     * Whether the change tracking policy of this class is "notify".
+     *
+     * @return boolean
+     */
+    public function isChangeTrackingNotify()
+    {
+        return $this->changeTrackingPolicy == self::CHANGETRACKING_NOTIFY;
+    }
+
+    public function mapIdentifier(array $mapping)
+    {
+        $this->setIdGeneratorType($mapping['generator']['strategy']);
+
+        $this->mapField($mapping);
+    }
+
+    /**
+     * Sets the type of Id generator to use for the mapped class.
+     *
+     * @param int $generatorType
+     *
+     * @return void
+     */
+    public function setIdGeneratorType($generatorType)
+    {
+        $this->generatorType = $generatorType;
+    }
+
+    public function isIdentifierNatural()
+    {
+        return $this->generatorType === self::GENERATOR_TYPE_NATURAL;
+    }
+
+    public function isIdentifierRemote()
+    {
+        return $this->generatorType === self::GENERATOR_TYPE_REMOTE;
+    }
+
     /**
      * Validates & completes the basic mapping information that is common to all
      * association mappings (one-to-one, many-ot-one, one-to-many, many-to-many).
@@ -491,7 +569,7 @@ class EntityMetadata implements ApiMetadata
         }
 
         // Fetch mode. Default fetch mode to LAZY, if not set.
-        if ( ! isset($mapping['fetch'])) {
+        if (!isset($mapping['fetch'])) {
             $mapping['fetch'] = self::FETCH_LAZY;
         }
 
@@ -613,49 +691,4 @@ class EntityMetadata implements ApiMetadata
 
         return $mapping;
     }
-
-    public function isReadOnly()
-    {
-        return false;
-    }
-
-    /**
-     * Sets the change tracking policy used by this class.
-     *
-     * @param integer $policy
-     *
-     * @return void
-     */
-    public function setChangeTrackingPolicy($policy)
-    {
-        $this->changeTrackingPolicy = $policy;
-    }
-    /**
-     * Whether the change tracking policy of this class is "deferred explicit".
-     *
-     * @return boolean
-     */
-    public function isChangeTrackingDeferredExplicit()
-    {
-        return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_EXPLICIT;
-    }
-    /**
-     * Whether the change tracking policy of this class is "deferred implicit".
-     *
-     * @return boolean
-     */
-    public function isChangeTrackingDeferredImplicit()
-    {
-        return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_IMPLICIT;
-    }
-    /**
-     * Whether the change tracking policy of this class is "notify".
-     *
-     * @return boolean
-     */
-    public function isChangeTrackingNotify()
-    {
-        return $this->changeTrackingPolicy == self::CHANGETRACKING_NOTIFY;
-    }
-
 }

@@ -43,8 +43,6 @@ class EntityHydrator
             $entity = $this->metadata->getReflectionClass()->newInstance();
         }
 
-        $oid = spl_object_hash($entity);
-
         $acessor = new PropertyAccessor();
         foreach ($this->metadata->getFieldNames() as $fieldName) {
             $property = $this->metadata->getReflectionProperty($fieldName);

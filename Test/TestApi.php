@@ -8,7 +8,6 @@ use Bankiru\Api\Doctrine\Cache\VoidEntityCache;
 use Bankiru\Api\Doctrine\EntityDataCacheInterface;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
-use Bankiru\Api\Doctrine\Rpc\RpcRequest;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
 final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, EntityCacheAwareInterface
@@ -41,7 +40,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     /** {@inheritdoc} */
     public function count(array $criteria)
     {
-        $request = new RpcRequest($this->getMethod('count'), ['criteria' => $criteria]);
+        $request = new RpcRequestMock($this->getMethod('count'), ['criteria' => $criteria]);
 
         return (int)$this->client->invoke($request)->getResponse($request)->getBody();
     }
@@ -49,9 +48,11 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     /** {@inheritdoc} */
     public function create(array $data)
     {
-        $request = new RpcRequest($this->getMethod('create'), $data);
+        $request = new RpcRequestMock($this->getMethod('create'), $data);
 
-        return $this->client->invoke($request)->getResponse($request)->getBody();
+        $id = $this->client->invoke($request)->getResponse($request)->getBody();
+
+        return $this->getMetadata()->isIdentifierNatural() ? null : $id;
     }
 
     /** {@inheritdoc} */
@@ -63,7 +64,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
             return $body;
         }
 
-        $request = new RpcRequest($this->getMethod('find'), $identifier);
+        $request = new RpcRequestMock($this->getMethod('find'), $identifier);
         $body    = $this->client->invoke($request)->getResponse($request)->getBody();
         $this->cache->set($identifier, $body);
 
@@ -71,9 +72,9 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     }
 
     /** {@inheritdoc} */
-    public function patch(array $identifier, array $data, array $fields)
+    public function patch(array $identifier, array $patch, array $data)
     {
-        $request = new RpcRequest($this->getMethod('patch'), array_intersect_key($data, array_flip($fields)));
+        $request = new RpcRequestMock($this->getMethod('patch'), $patch);
 
         return $this->client->invoke($request)->getResponse($request)->isSuccessful();
     }
@@ -81,7 +82,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     /** {@inheritdoc} */
     public function search(array $criteria = [], array $orderBy = null, $limit = null, $offset = null)
     {
-        $request = new RpcRequest(
+        $request = new RpcRequestMock(
             $this->getMethod('search'),
             [
                 'criteria' => $criteria,
@@ -97,7 +98,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
     /** {@inheritdoc} */
     public function remove(array $identifier)
     {
-        $request = new RpcRequest($this->getMethod('remove'), $identifier);
+        $request = new RpcRequestMock($this->getMethod('remove'), $identifier);
 
         return $this->client->invoke($request)->getResponse($request)->isSuccessful();
     }

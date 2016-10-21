@@ -3,13 +3,13 @@
 namespace Bankiru\Api\Doctrine\Test\Repository;
 
 use Bankiru\Api\Doctrine\EntityRepository;
-use Bankiru\Api\Doctrine\Rpc\RpcRequest;
+use Bankiru\Api\Doctrine\Test\RpcRequestMock;
 
 class CustomTestRepository extends EntityRepository
 {
     public function doCustomStuff()
     {
-        $request = new RpcRequest(
+        $request = new RpcRequestMock(
             $this->getMetadata()->getMethodContainer()->getMethod('custom'),
             ['param1'=>'value1']
         );

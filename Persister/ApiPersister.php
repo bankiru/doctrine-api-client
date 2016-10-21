@@ -53,12 +53,13 @@ class ApiPersister implements EntityPersister
     /** {@inheritdoc} */
     public function update($entity)
     {
-        $data = $this->prepareUpdateData($entity);
+        $patch = $this->prepareUpdateData($entity);
+        $data  = $this->convertEntityToData($entity);
 
         $this->api->patch(
             $this->transformer->transformCriteria($this->metadata->getIdentifierValues($entity)),
-            $data,
-            array_keys($data)
+            $patch,
+            $data
         );
     }
 
@@ -205,6 +206,10 @@ class ApiPersister implements EntityPersister
 
         $this->pendingInserts = [];
 
+        if ($this->metadata->isIdentifierNatural()) {
+            return [];
+        }
+
         return $result;
     }
 
@@ -273,6 +278,15 @@ class ApiPersister implements EntityPersister
     {
         $entityData = [];
         foreach ($this->metadata->getReflectionProperties() as $name => $property) {
+            if ($this->metadata->isIdentifier($name) && $this->metadata->isIdentifierRemote()) {
+                continue;
+            }
+            if ($this->metadata->hasAssociation($name)) {
+                $mapping = $this->metadata->getAssociationMapping($name);
+                if (($mapping['type'] & ApiMetadata::TO_MANY) && !$mapping['isOwningSide']) {
+                    continue;
+                }
+            }
             $entityData[$name] = $property->getValue($entity);
         }
 
