@@ -4,6 +4,7 @@ Bankiru\Api\Doctrine\Test\Entity\PrefixedEntity:
     id:
       type: string
       api_field: prefix_id
+      generator: {strategy: REMOTE}
   fields:
     payload:
       type: string

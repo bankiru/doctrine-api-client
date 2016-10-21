@@ -41,9 +41,37 @@ class CommitTest extends AbstractEntityManagerTest
         $parent = new TestEntity();
         $entity->setOwner($parent);
 
-        $this->getClient()->push($this->getResponseMock(true, 42));
+        $this->getClient()->push(
+            $this->getResponseMock(true, 42),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-entity/create', $request->getMethod());
+                self::assertEquals(
+                    [
+                        'payload' => '',
+                        'parent'  => null,
+                    ],
+                    $request->getParameters()
+                );
 
-        $this->getClient('test-reference-client')->push($this->getResponseMock(true, 241));
+                return true;
+            }
+        );
+
+        $this->getClient('test-reference-client')->push(
+            $this->getResponseMock(true, 241),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-reference/create', $request->getMethod());
+                self::assertEquals(
+                    [
+                        'reference-payload' => '',
+                        'owner'             => 42,
+                    ],
+                    $request->getParameters()
+                );
+
+                return true;
+            }
+        );
 
         $this->getManager()->persist($entity);
         $this->getManager()->persist($parent);
@@ -66,8 +94,35 @@ class CommitTest extends AbstractEntityManagerTest
 
         $oldParent = $entity->getOwner();
         $newParent = new TestEntity();
-        $this->getClient()->push($this->getResponseMock(true, 17));
-        $this->getClient('test-reference-client')->push($this->getResponseMock(true, null));
+        $this->getClient()->push(
+            $this->getResponseMock(true, 17),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-entity/create', $request->getMethod());
+                self::assertEquals(
+                    [
+                        'payload' => '',
+                        'parent'  => null,
+                    ],
+                    $request->getParameters()
+                );
+
+                return true;
+            }
+        );
+        $this->getClient('test-reference-client')->push(
+            $this->getResponseMock(true, null),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-reference/patch', $request->getMethod());
+                self::assertEquals(
+                    [
+                        'owner' => 17,
+                    ],
+                    $request->getParameters()
+                );
+
+                return true;
+            }
+        );
 
         $entity->setOwner($newParent);
 

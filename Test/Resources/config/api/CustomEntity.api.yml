@@ -3,7 +3,7 @@ Bankiru\Api\Doctrine\Test\Entity\CustomEntity:
   id:
     id:
       type: int
-
+      generator: {strategy: REMOTE}
   fields:
     payload:
       type: string

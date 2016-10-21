@@ -7,7 +7,6 @@ use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Proxy\ApiCollection;
 use Bankiru\Api\Doctrine\Proxy\ProxyFactory;
 use Bankiru\Api\Doctrine\Utility\IdentifierFixer;
-use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\Common\Proxy\Proxy;
 
@@ -46,12 +45,11 @@ class EntityManager implements ApiEntityManager
         return $this->configuration;
     }
 
-
     /** {@inheritdoc} */
     public function find($className, $id)
     {
         $metadata = $this->getClassMetadata($className);
-        $id = IdentifierFixer::fixScalarId($id, $metadata);
+        $id       = IdentifierFixer::fixScalarId($id, $metadata);
 
         /** @var EntityMetadata $metadata */
         if (false !== ($entity = $this->getUnitOfWork()->tryGetById($id, $metadata->rootEntityName))) {
@@ -96,7 +94,7 @@ class EntityManager implements ApiEntityManager
     public function remove($object)
     {
         $this->getUnitOfWork()->getEntityPersister(get_class($object))
-            ->delete($object);
+             ->delete($object);
     }
 
     /** {@inheritdoc} */
@@ -172,7 +170,7 @@ class EntityManager implements ApiEntityManager
     {
         /** @var EntityMetadata $metadata */
         $metadata = $this->getClassMetadata($entityName);
-        $id = IdentifierFixer::fixScalarId($id, $metadata);
+        $id       = IdentifierFixer::fixScalarId($id, $metadata);
 
         if (false !== ($entity = $this->getUnitOfWork()->tryGetById($id, $metadata->rootEntityName))) {
             return $entity instanceof $metadata->name ? $entity : null;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Bankiru\Api\Doctrine\Rpc;
+namespace Bankiru\Api\Doctrine\Test;
 
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
@@ -8,7 +8,7 @@ use ScayTrase\Api\Rpc\RpcRequestInterface;
  * @internal
  */
 // private
-final class RpcRequest implements RpcRequestInterface
+final class RpcRequestMock implements RpcRequestInterface
 {
     /** @var  string */
     private $method;
@@ -16,7 +16,7 @@ final class RpcRequest implements RpcRequestInterface
     private $parameters;
 
     /**
-     * RpcRequest constructor.
+     * RpcRequestMock constructor.
      *
      * @param string $method
      * @param array  $parameters

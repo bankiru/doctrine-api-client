@@ -2,7 +2,6 @@
 
 namespace Bankiru\Api\Doctrine;
 
-use Bankiru\Api\Doctrine\Cache\CacheConfiguration;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 
 interface EntityDataCacheInterface

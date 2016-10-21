@@ -2,9 +2,6 @@
 
 namespace Bankiru\Api\Doctrine\Rpc;
 
-use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
-use ScayTrase\Api\Rpc\RpcClientInterface;
-
 interface CrudsApiInterface extends EntityApiInterface
 {
     /**
@@ -17,11 +14,12 @@ interface CrudsApiInterface extends EntityApiInterface
     public function count(array $criteria);
 
     /**
-     * Creates the entity via API request. Should receive the ID back as a part of response
+     * Creates the entity via API request.
+     * Should receive the ID back as a part of response if entity uses REMOTE generator strategy for generation
      *
      * @param array $data
      *
-     * @return int objects count
+     * @return int|null objects count
      */
     public function create(array $data);
 
@@ -37,13 +35,14 @@ interface CrudsApiInterface extends EntityApiInterface
     /**
      * Performs update of the entity. If API does not support PATCH-like request - just ignore fields argument
      *
-     * @param array    $identifier
-     * @param array    $data   Instance of metadata-described entity
-     * @param string[] $fields List of modified fields
+     * @param array $identifier
+     * @param array $patch
+     * @param array $entity
      *
-     * @return void
+     * @internal param \string[] $fields List of modified fields
+     *
      */
-    public function patch(array $identifier, array $data, array $fields);
+    public function patch(array $identifier, array $patch, array $entity);
 
     /**
      * Removes the entity via API

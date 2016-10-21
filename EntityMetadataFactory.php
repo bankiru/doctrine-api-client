@@ -54,7 +54,7 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
             throw MappingException::unknownAlias($namespaceAlias);
         }
 
-        return $this->aliases[$namespaceAlias].$simpleClassName;
+        return $this->aliases[$namespaceAlias] . $simpleClassName;
     }
 
     /** {@inheritdoc} */
@@ -123,6 +123,7 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
             $class->apiName        = $parent->apiName;
             $class->clientName     = $parent->clientName;
             $class->methodProvider = $parent->methodProvider;
+            $class->generatorType  = $parent->generatorType;
 
             if ($parent->isMappedSuperclass) {
                 $class->setCustomRepositoryClass($parent->repositoryClass);
@@ -135,6 +136,28 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
         } catch (ReflectionException $e) {
             throw MappingException::nonExistingClass($class->getName());
         }
+    }
+
+    /**
+     * Returns the mapping driver implementation.
+     *
+     * @return \Doctrine\Common\Persistence\Mapping\Driver\MappingDriver
+     */
+    protected function getDriver()
+    {
+        return $this->driver;
+    }
+
+    /**
+     * Creates a new ClassMetadata instance for the given class name.
+     *
+     * @param string $className
+     *
+     * @return ClassMetadata
+     */
+    protected function newClassMetadataInstance($className)
+    {
+        return new EntityMetadata($className);
     }
 
     /**
@@ -182,27 +205,5 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
             }
             $subClass->addInheritedAssociationMapping($mapping);
         }
-    }
-
-    /**
-     * Returns the mapping driver implementation.
-     *
-     * @return \Doctrine\Common\Persistence\Mapping\Driver\MappingDriver
-     */
-    protected function getDriver()
-    {
-        return $this->driver;
-    }
-
-    /**
-     * Creates a new ClassMetadata instance for the given class name.
-     *
-     * @param string $className
-     *
-     * @return ClassMetadata
-     */
-    protected function newClassMetadataInstance($className)
-    {
-        return new EntityMetadata($className);
     }
 }

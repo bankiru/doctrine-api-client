@@ -21,41 +21,17 @@ interface ApiMetadata extends ClassMetadata
     const MANY_TO_ONE = 2;
     /** Combined bitmask for to-one (single-valued) associations. */
     const TO_ONE = 3;
-    /**
-     * Specifies that an association is to be fetched when it is first accessed.
-     */
-    const FETCH_LAZY = 2;
-    /**
-     * Specifies that an association is to be fetched when the owner of the
-     * association is fetched.
-     */
-    const FETCH_EAGER = 3;
-    /**
-     * Specifies that an association is to be fetched lazy (on first access) and that
-     * commands such as Collection#count, Collection#slice are issued directly against
-     * the database if the collection is not yet initialized.
-     */
-    const FETCH_EXTRA_LAZY = 4;
-    /**
-     * DEFERRED_IMPLICIT means that changes of entities are calculated at commit-time
-     * by doing a property-by-property comparison with the original data. This will
-     * be done for all entities that are in MANAGED state at commit-time.
-     *
-     * This is the default change tracking policy.
-     */
+
+    const FETCH_LAZY       = 1;
+    const FETCH_EXTRA_LAZY = 2;
+
     const CHANGETRACKING_DEFERRED_IMPLICIT = 1;
-    /**
-     * DEFERRED_EXPLICIT means that changes of entities are calculated at commit-time
-     * by doing a property-by-property comparison with the original data. This will
-     * be done only for entities that were explicitly saved (through persist() or a cascade).
-     */
     const CHANGETRACKING_DEFERRED_EXPLICIT = 2;
-    /**
-     * NOTIFY means that Doctrine relies on the entities sending out notifications
-     * when their properties change. Such entity classes must implement
-     * the <tt>NotifyPropertyChanged</tt> interface.
-     */
-    const CHANGETRACKING_NOTIFY = 3;
+    const CHANGETRACKING_NOTIFY            = 3;
+
+    const GENERATOR_TYPE_NATURAL = 1;
+    const GENERATOR_TYPE_REMOTE  = 2;
+
     /**
      * @return string
      */
@@ -189,4 +165,14 @@ interface ApiMetadata extends ClassMetadata
      * @return boolean
      */
     public function isChangeTrackingNotify();
+
+    /**
+     * @return bool
+     */
+    public function isIdentifierNatural();
+
+    /**
+     * @return bool
+     */
+    public function isIdentifierRemote();
 }

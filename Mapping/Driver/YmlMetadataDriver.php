@@ -88,6 +88,7 @@ class YmlMetadataDriver extends FileDriver
         $associationIds = [];
         if (array_key_exists('id', $element)) {
             // Evaluate identifier settings
+            $defaults = ['generator' => ['strategy' => 'NATURAL']];
             foreach ($element['id'] as $name => $idElement) {
                 if (isset($idElement['associationKey']) && (bool)$idElement['associationKey'] === true) {
                     $associationIds[$name] = true;
@@ -97,7 +98,12 @@ class YmlMetadataDriver extends FileDriver
                 $mapping = $this->fieldToArray($name, $idElement);
 
                 $mapping['id'] = true;
-                $metadata->mapField($mapping);
+                $idElement     = array_replace_recursive($defaults, $idElement);
+
+                $mapping['generator']['strategy'] =
+                    constant(ApiMetadata::class . '::GENERATOR_TYPE_' . $idElement['generator']['strategy']);
+
+                $metadata->mapIdentifier($mapping);
             }
         }
 

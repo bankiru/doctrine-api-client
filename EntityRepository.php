@@ -3,8 +3,6 @@
 namespace Bankiru\Api\Doctrine;
 
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
-use Bankiru\Api\Doctrine\Proxy\ApiCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Persistence\ObjectRepository;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
