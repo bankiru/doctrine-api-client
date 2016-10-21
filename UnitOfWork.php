@@ -16,9 +16,11 @@ use Bankiru\Api\Doctrine\Persister\EntityPersister;
 use Bankiru\Api\Doctrine\Proxy\ApiCollection;
 use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
 use Bankiru\Api\Doctrine\Utility\IdentifierFlattener;
+use Bankiru\Api\Doctrine\Utility\ReflectionPropertiesGetter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\NotifyPropertyChanged;
+use Doctrine\Common\Persistence\Mapping\RuntimeReflectionService;
 use Doctrine\Common\Persistence\ObjectManagerAware;
 use Doctrine\Common\PropertyChangedListener;
 use Doctrine\Common\Proxy\Proxy;
@@ -90,6 +92,8 @@ class UnitOfWork implements PropertyChangedListener
     private $collectionUpdates = [];
     /** @var  ApiCollection[] */
     private $visitedCollections = [];
+    /** @var ReflectionPropertiesGetter */
+    private $reflectionPropertiesGetter;
 
     /**
      * UnitOfWork constructor.
@@ -98,8 +102,9 @@ class UnitOfWork implements PropertyChangedListener
      */
     public function __construct(EntityManager $manager)
     {
-        $this->manager             = $manager;
-        $this->identifierFlattener = new IdentifierFlattener($this->manager);
+        $this->manager                    = $manager;
+        $this->identifierFlattener        = new IdentifierFlattener($this->manager);
+        $this->reflectionPropertiesGetter = new ReflectionPropertiesGetter(new RuntimeReflectionService());
     }
 
     /**
@@ -1195,6 +1200,47 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
+     * Deletes an entity as part of the current unit of work.
+     *
+     * @param object $entity The entity to remove.
+     *
+     * @return void
+     */
+    public function remove($entity)
+    {
+        $visited = [];
+        $this->doRemove($entity, $visited);
+    }
+
+    /**
+     * Merges the state of the given detached entity into this UnitOfWork.
+     *
+     * @param object $entity
+     *
+     * @return object The managed copy of the entity.
+     */
+    public function merge($entity)
+    {
+        $visited = [];
+
+        return $this->doMerge($entity, $visited);
+    }
+
+    /**
+     * Detaches an entity from the persistence management. It's persistence will
+     * no longer be managed by Doctrine.
+     *
+     * @param object $entity The entity to detach.
+     *
+     * @return void
+     */
+    public function detach($entity)
+    {
+        $visited = [];
+        $this->doDetach($entity, $visited);
+    }
+
+    /**
      * @param ApiMetadata $class
      *
      * @return \Doctrine\Common\Persistence\ObjectManagerAware|object
@@ -1604,45 +1650,6 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
-     * Executes a detach operation on the given entity.
-     *
-     * @param object  $entity
-     * @param array   $visited
-     * @param boolean $noCascade if true, don't cascade detach operation.
-     *
-     * @return void
-     */
-    private function doDetach($entity, array &$visited, $noCascade = false)
-    {
-        $oid = spl_object_hash($entity);
-        if (isset($visited[$oid])) {
-            return; // Prevent infinite recursion
-        }
-        $visited[$oid] = $entity; // mark visited
-        switch ($this->getEntityState($entity, self::STATE_DETACHED)) {
-            case self::STATE_MANAGED:
-                if ($this->isInIdentityMap($entity)) {
-                    $this->removeFromIdentityMap($entity);
-                }
-                unset(
-                    $this->entityInsertions[$oid],
-                    $this->entityUpdates[$oid],
-                    $this->entityDeletions[$oid],
-                    $this->entityIdentifiers[$oid],
-                    $this->entityStates[$oid],
-                    $this->originalEntityData[$oid]
-                );
-                break;
-            case self::STATE_NEW:
-            case self::STATE_DETACHED:
-                return;
-        }
-        if (!$noCascade) {
-            $this->cascadeDetach($entity, $visited);
-        }
-    }
-
-    /**
      * Executes a refresh operation on an entity.
      *
      * @param object $entity  The entity to refresh.
@@ -1650,7 +1657,7 @@ class UnitOfWork implements PropertyChangedListener
      *
      * @return void
      *
-     * @throws ORMInvalidArgumentException If the entity is not MANAGED.
+     * @throws \InvalidArgumentException If the entity is not MANAGED.
      */
     private function doRefresh($entity, array &$visited)
     {
@@ -1659,11 +1666,11 @@ class UnitOfWork implements PropertyChangedListener
             return; // Prevent infinite recursion
         }
         $visited[$oid] = $entity; // mark visited
-        $class         = $this->em->getClassMetadata(get_class($entity));
+        $class         = $this->manager->getClassMetadata(get_class($entity));
         if ($this->getEntityState($entity) !== self::STATE_MANAGED) {
-            throw ORMInvalidArgumentException::entityNotManaged($entity);
+            throw new \InvalidArgumentException('Entity not managed');
         }
-        $this->getEntityPersister($class->name)->refresh(
+        $this->getEntityPersister($class->getName())->refresh(
             array_combine($class->getIdentifierFieldNames(), $this->entityIdentifiers[$oid]),
             $entity
         );
@@ -1680,17 +1687,17 @@ class UnitOfWork implements PropertyChangedListener
      */
     private function cascadeRefresh($entity, array &$visited)
     {
-        $class               = $this->em->getClassMetadata(get_class($entity));
+        $class               = $this->manager->getClassMetadata(get_class($entity));
         $associationMappings = array_filter(
-            $class->associationMappings,
+            $class->getAssociationMappings(),
             function ($assoc) {
                 return $assoc['isCascadeRefresh'];
             }
         );
         foreach ($associationMappings as $assoc) {
-            $relatedEntities = $class->reflFields[$assoc['fieldName']]->getValue($entity);
+            $relatedEntities = $class->getReflectionProperty($assoc['fieldName'])->getValue($entity);
             switch (true) {
-                case ($relatedEntities instanceof PersistentCollection):
+                case ($relatedEntities instanceof ApiCollection):
                     // Unwrap so that foreach() does not initialize
                     $relatedEntities = $relatedEntities->unwrap();
                 // break; is commented intentionally!
@@ -1719,17 +1726,17 @@ class UnitOfWork implements PropertyChangedListener
      */
     private function cascadeDetach($entity, array &$visited)
     {
-        $class               = $this->em->getClassMetadata(get_class($entity));
+        $class               = $this->manager->getClassMetadata(get_class($entity));
         $associationMappings = array_filter(
-            $class->associationMappings,
+            $class->getAssociationMappings(),
             function ($assoc) {
                 return $assoc['isCascadeDetach'];
             }
         );
         foreach ($associationMappings as $assoc) {
-            $relatedEntities = $class->reflFields[$assoc['fieldName']]->getValue($entity);
+            $relatedEntities = $class->getReflectionProperty($assoc['fieldName'])->getValue($entity);
             switch (true) {
-                case ($relatedEntities instanceof PersistentCollection):
+                case ($relatedEntities instanceof ApiCollection):
                     // Unwrap so that foreach() does not initialize
                     $relatedEntities = $relatedEntities->unwrap();
                 // break; is commented intentionally!
@@ -1797,9 +1804,9 @@ class UnitOfWork implements PropertyChangedListener
      */
     private function cascadeRemove($entity, array &$visited)
     {
-        $class               = $this->em->getClassMetadata(get_class($entity));
+        $class               = $this->manager->getClassMetadata(get_class($entity));
         $associationMappings = array_filter(
-            $class->associationMappings,
+            $class->getAssociationMappings(),
             function ($assoc) {
                 return $assoc['isCascadeRemove'];
             }
@@ -1809,7 +1816,7 @@ class UnitOfWork implements PropertyChangedListener
             if ($entity instanceof Proxy && !$entity->__isInitialized__) {
                 $entity->__load();
             }
-            $relatedEntities = $class->reflFields[$assoc['fieldName']]->getValue($entity);
+            $relatedEntities = $class->getReflectionProperty($assoc['fieldName'])->getValue($entity);
             switch (true) {
                 case ($relatedEntities instanceof Collection):
                 case (is_array($relatedEntities)):
@@ -1848,7 +1855,7 @@ class UnitOfWork implements PropertyChangedListener
         $className = $class->getName();
         $persister = $this->getEntityPersister($className);
         foreach ($this->entityDeletions as $oid => $entity) {
-            if ($this->manager->getClassMetadata(get_class($entity))->name !== $className) {
+            if ($this->manager->getClassMetadata(get_class($entity))->getName() !== $className) {
                 continue;
             }
             $persister->delete($entity);
@@ -1870,24 +1877,20 @@ class UnitOfWork implements PropertyChangedListener
     /**
      * @param object $entity
      * @param object $managedCopy
-     *
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws TransactionRequiredException
      */
     private function mergeEntityStateIntoManagedCopy($entity, $managedCopy)
     {
-        $class = $this->em->getClassMetadata(get_class($entity));
-        foreach ($this->reflectionPropertiesGetter->getProperties($class->name) as $prop) {
+        $class = $this->manager->getClassMetadata(get_class($entity));
+        foreach ($this->reflectionPropertiesGetter->getProperties($class->getName()) as $prop) {
             $name = $prop->name;
             $prop->setAccessible(true);
-            if (!isset($class->associationMappings[$name])) {
+            if ($class->hasAssociation($name)) {
                 if (!$class->isIdentifier($name)) {
                     $prop->setValue($managedCopy, $prop->getValue($entity));
                 }
             } else {
-                $assoc2 = $class->associationMappings[$name];
-                if ($assoc2['type'] & ClassMetadata::TO_ONE) {
+                $assoc2 = $class->getAssociationMapping($name);
+                if ($assoc2['type'] & ApiMetadata::TO_ONE) {
                     $other = $prop->getValue($entity);
                     if ($other === null) {
                         $prop->setValue($managedCopy, null);
@@ -1898,12 +1901,12 @@ class UnitOfWork implements PropertyChangedListener
                         }
                         if (!$assoc2['isCascadeMerge']) {
                             if ($this->getEntityState($other) === self::STATE_DETACHED) {
-                                $targetClass = $this->em->getClassMetadata($assoc2['targetEntity']);
+                                $targetClass = $this->manager->getClassMetadata($assoc2['targetEntity']);
                                 $relatedId   = $targetClass->getIdentifierValues($other);
-                                if ($targetClass->subClasses) {
-                                    $other = $this->em->find($targetClass->name, $relatedId);
+                                if ($targetClass->getSubclasses()) {
+                                    $other = $this->manager->find($targetClass->getName(), $relatedId);
                                 } else {
-                                    $other = $this->em->getProxyFactory()->getProxy(
+                                    $other = $this->manager->getProxyFactory()->getProxy(
                                         $assoc2['targetEntity'],
                                         $relatedId
                                     );
@@ -1915,16 +1918,16 @@ class UnitOfWork implements PropertyChangedListener
                     }
                 } else {
                     $mergeCol = $prop->getValue($entity);
-                    if ($mergeCol instanceof PersistentCollection && !$mergeCol->isInitialized()) {
+                    if ($mergeCol instanceof ApiCollection && !$mergeCol->isInitialized()) {
                         // do not merge fields marked lazy that have not been fetched.
                         // keep the lazy persistent collection of the managed copy.
                         continue;
                     }
                     $managedCol = $prop->getValue($managedCopy);
                     if (!$managedCol) {
-                        $managedCol = new PersistentCollection(
-                            $this->em,
-                            $this->em->getClassMetadata($assoc2['targetEntity']),
+                        $managedCol = new ApiCollection(
+                            $this->manager,
+                            $this->manager->getClassMetadata($assoc2['target']),
                             new ArrayCollection
                         );
                         $managedCol->setOwner($managedCopy, $assoc2);
@@ -1937,7 +1940,7 @@ class UnitOfWork implements PropertyChangedListener
                             $managedCol->unwrap()->clear();
                             $managedCol->setDirty(true);
                             if ($assoc2['isOwningSide']
-                                && $assoc2['type'] == ClassMetadata::MANY_TO_MANY
+                                && $assoc2['type'] == ApiMetadata::MANY_TO_MANY
                                 && $class->isChangeTrackingNotify()
                             ) {
                                 $this->scheduleForDirtyCheck($managedCopy);
@@ -1950,6 +1953,210 @@ class UnitOfWork implements PropertyChangedListener
                 // Just treat all properties as changed, there is no other choice.
                 $this->propertyChanged($managedCopy, $name, null, $prop->getValue($managedCopy));
             }
+        }
+    }
+
+    /**
+     * Deletes an entity as part of the current unit of work.
+     *
+     * This method is internally called during delete() cascades as it tracks
+     * the already visited entities to prevent infinite recursions.
+     *
+     * @param object $entity  The entity to delete.
+     * @param array  $visited The map of the already visited entities.
+     *
+     * @return void
+     *
+     * @throws \InvalidArgumentException If the instance is a detached entity.
+     * @throws \UnexpectedValueException
+     */
+    private function doRemove($entity, array &$visited)
+    {
+        $oid = spl_object_hash($entity);
+        if (isset($visited[$oid])) {
+            return; // Prevent infinite recursion
+        }
+        $visited[$oid] = $entity; // mark visited
+        // Cascade first, because scheduleForDelete() removes the entity from the identity map, which
+        // can cause problems when a lazy proxy has to be initialized for the cascade operation.
+        $this->cascadeRemove($entity, $visited);
+        $class       = $this->manager->getClassMetadata(get_class($entity));
+        $entityState = $this->getEntityState($entity);
+        switch ($entityState) {
+            case self::STATE_NEW:
+            case self::STATE_REMOVED:
+                // nothing to do
+                break;
+            case self::STATE_MANAGED:
+                $this->scheduleForDelete($entity);
+                break;
+            case self::STATE_DETACHED:
+                throw new \InvalidArgumentException('Detached entity cannot be removed');
+            default:
+                throw new \UnexpectedValueException("Unexpected entity state: $entityState." . self::objToStr($entity));
+        }
+    }
+
+    /**
+     * Tests if an entity is loaded - must either be a loaded proxy or not a proxy
+     *
+     * @param object $entity
+     *
+     * @return bool
+     */
+    private function isLoaded($entity)
+    {
+        return !($entity instanceof Proxy) || $entity->__isInitialized();
+    }
+
+    /**
+     * Sets/adds associated managed copies into the previous entity's association field
+     *
+     * @param object $entity
+     * @param array  $association
+     * @param object $previousManagedCopy
+     * @param object $managedCopy
+     *
+     * @return void
+     */
+    private function updateAssociationWithMergedEntity($entity, array $association, $previousManagedCopy, $managedCopy)
+    {
+        $assocField = $association['fieldName'];
+        $prevClass  = $this->manager->getClassMetadata(get_class($previousManagedCopy));
+        if ($association['type'] & ApiMetadata::TO_ONE) {
+            $prevClass->getReflectionProperty($assocField)->setValue($previousManagedCopy, $managedCopy);
+
+            return;
+        }
+        /** @var array $value */
+        $value   = $prevClass->getReflectionProperty($assocField)->getValue($previousManagedCopy);
+        $value[] = $managedCopy;
+        if ($association['type'] == ApiMetadata::ONE_TO_MANY) {
+            $class = $this->manager->getClassMetadata(get_class($entity));
+            $class->getReflectionProperty($association['mappedBy'])->setValue($managedCopy, $previousManagedCopy);
+        }
+    }
+
+    /**
+     * Executes a merge operation on an entity.
+     *
+     * @param object      $entity
+     * @param array       $visited
+     * @param object|null $prevManagedCopy
+     * @param array|null  $assoc
+     *
+     * @return object The managed copy of the entity.
+     *
+     * @throws \InvalidArgumentException If the entity instance is NEW.
+     * @throws \OutOfBoundsException
+     */
+    private function doMerge($entity, array &$visited, $prevManagedCopy = null, array $assoc = [])
+    {
+        $oid = spl_object_hash($entity);
+        if (isset($visited[$oid])) {
+            $managedCopy = $visited[$oid];
+            if ($prevManagedCopy !== null) {
+                $this->updateAssociationWithMergedEntity($entity, $assoc, $prevManagedCopy, $managedCopy);
+            }
+
+            return $managedCopy;
+        }
+        $class = $this->manager->getClassMetadata(get_class($entity));
+        // First we assume DETACHED, although it can still be NEW but we can avoid
+        // an extra db-roundtrip this way. If it is not MANAGED but has an identity,
+        // we need to fetch it from the db anyway in order to merge.
+        // MANAGED entities are ignored by the merge operation.
+        $managedCopy = $entity;
+        if ($this->getEntityState($entity, self::STATE_DETACHED) !== self::STATE_MANAGED) {
+            // Try to look the entity up in the identity map.
+            $id = $class->getIdentifierValues($entity);
+            // If there is no ID, it is actually NEW.
+            if (!$id) {
+                $managedCopy = $this->newInstance($class);
+                $this->persistNew($class, $managedCopy);
+            } else {
+                $flatId      = ($class->containsForeignIdentifier())
+                    ? $this->identifierFlattener->flattenIdentifier($class, $id)
+                    : $id;
+                $managedCopy = $this->tryGetById($flatId, $class->getRootEntityName());
+                if ($managedCopy) {
+                    // We have the entity in-memory already, just make sure its not removed.
+                    if ($this->getEntityState($managedCopy) == self::STATE_REMOVED) {
+                        throw new \InvalidArgumentException('Removed entity cannot be merged');
+                    }
+                } else {
+                    // We need to fetch the managed copy in order to merge.
+                    $managedCopy = $this->manager->find($class->getName(), $flatId);
+                }
+                if ($managedCopy === null) {
+                    // If the identifier is ASSIGNED, it is NEW, otherwise an error
+                    // since the managed entity was not found.
+                    if (!$class->isIdentifierNatural()) {
+                        throw new \OutOfBoundsException('Entity not found');
+                    }
+                    $managedCopy = $this->newInstance($class);
+                    $class->setIdentifierValues($managedCopy, $id);
+                    $this->persistNew($class, $managedCopy);
+                }
+            }
+
+            $visited[$oid] = $managedCopy; // mark visited
+            if ($this->isLoaded($entity)) {
+                if ($managedCopy instanceof Proxy && !$managedCopy->__isInitialized()) {
+                    $managedCopy->__load();
+                }
+                $this->mergeEntityStateIntoManagedCopy($entity, $managedCopy);
+            }
+            if ($class->isChangeTrackingDeferredExplicit()) {
+                $this->scheduleForDirtyCheck($entity);
+            }
+        }
+        if ($prevManagedCopy !== null) {
+            $this->updateAssociationWithMergedEntity($entity, $assoc, $prevManagedCopy, $managedCopy);
+        }
+        // Mark the managed copy visited as well
+        $visited[spl_object_hash($managedCopy)] = $managedCopy;
+        $this->cascadeMerge($entity, $managedCopy, $visited);
+
+        return $managedCopy;
+    }
+
+    /**
+     * Executes a detach operation on the given entity.
+     *
+     * @param object  $entity
+     * @param array   $visited
+     * @param boolean $noCascade if true, don't cascade detach operation.
+     *
+     * @return void
+     */
+    private function doDetach($entity, array &$visited, $noCascade = false)
+    {
+        $oid = spl_object_hash($entity);
+        if (isset($visited[$oid])) {
+            return; // Prevent infinite recursion
+        }
+        $visited[$oid] = $entity; // mark visited
+        switch ($this->getEntityState($entity, self::STATE_DETACHED)) {
+            case self::STATE_MANAGED:
+                if ($this->isInIdentityMap($entity)) {
+                    $this->removeFromIdentityMap($entity);
+                }
+                unset(
+                    $this->entityInsertions[$oid],
+                    $this->entityUpdates[$oid],
+                    $this->entityDeletions[$oid],
+                    $this->entityIdentifiers[$oid],
+                    $this->entityStates[$oid],
+                    $this->originalEntityData[$oid]
+                );
+                break;
+            case self::STATE_NEW:
+            case self::STATE_DETACHED:
+                return;
+        }
+        if (!$noCascade) {
+            $this->cascadeDetach($entity, $visited);
         }
     }
 
