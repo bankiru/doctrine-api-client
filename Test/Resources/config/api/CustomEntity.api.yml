@@ -11,6 +11,6 @@ Bankiru\Api\Doctrine\Test\Entity\CustomEntity:
   repositoryClass: Bankiru\Api\Doctrine\Test\Repository\CustomTestRepository
   client:
     name: test-client
-    entityPath: test-entity
+    entityPath: custom-entity
   api:
     name: Bankiru\Api\Doctrine\Test\TestApi

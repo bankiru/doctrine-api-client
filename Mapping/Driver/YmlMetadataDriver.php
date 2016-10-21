@@ -62,16 +62,18 @@ class YmlMetadataDriver extends FileDriver
                 $pathSeparator  =
                     array_key_exists('entityPathSeparator', $element['client']) ?
                         $element['client']['entityPathSeparator'] :
-                        null;
+                        EntityMethodProvider::DEFAULT_PATH_SEPARATOR;
                 $methodProvider =
                     new EntityMethodProvider($element['client']['entityPath'], $pathSeparator, $methodProvider);
             }
 
-            if (null === $methodProvider) {
+            if (null === $methodProvider && null === $metadata->methodProvider) {
                 throw MappingException::noMethods();
             }
 
-            $metadata->methodProvider = $methodProvider;
+            if (null !== $methodProvider) {
+                $metadata->methodProvider = $methodProvider;
+            }
         }
 
         // Configure fields

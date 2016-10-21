@@ -45,7 +45,7 @@ final class EntityMethodProvider implements MethodProviderInterface
             return $this->provider->getMethod($method);
         }
 
-        return $this->entityPath.$this->pathSeparator.$method;
+        return $this->entityPath . $this->pathSeparator . $method;
     }
 
     /**

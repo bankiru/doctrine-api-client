@@ -3,6 +3,7 @@
 namespace Bankiru\Api\Doctrine\Tests;
 
 use Bankiru\Api\Doctrine\Test\Entity\IndirectIdEntity;
+use ScayTrase\Api\Rpc\RpcRequestInterface;
 
 class IndirectFieldsTestAbstract extends AbstractEntityManagerTest
 {
@@ -16,7 +17,13 @@ class IndirectFieldsTestAbstract extends AbstractEntityManagerTest
                     'some-long-api-field-name' => 241,
                     'payload'                  => 'test',
                 ]
-            )
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('indirect-entity/find', $request->getMethod());
+                self::assertEquals(['some-long-api-field-name' => 241], $request->getParameters());
+
+                return true;
+            }
         );
 
         /** @var IndirectIdEntity $entity */

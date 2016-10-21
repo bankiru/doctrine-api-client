@@ -7,6 +7,7 @@ use Prophecy\Argument;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
+use ScayTrase\Api\Rpc\RpcRequestInterface;
 
 class EntityCacheTest extends AbstractEntityManagerTest
 {
@@ -21,13 +22,20 @@ class EntityCacheTest extends AbstractEntityManagerTest
                     'id'      => '1',
                     'payload' => 'test-payload',
                 ]
-            )
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('custom-entity/find', $request->getMethod());
+                self::assertEquals(['id' => 1], $request->getParameters());
+
+                return true;
+            }
         );
 
+        self::assertCount(1, $this->getClient());
         $repository = $this->getManager()->getRepository(CustomEntity::class);
         /** @var CustomEntity $entity */
         $entity = $repository->find(1);
-
+        self::assertCount(0, $this->getClient());
         self::assertInstanceOf(CustomEntity::class, $entity);
         self::assertEquals(1, $entity->getId());
         self::assertInternalType('int', $entity->getId());
