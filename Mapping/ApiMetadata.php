@@ -175,4 +175,16 @@ interface ApiMetadata extends ClassMetadata
      * @return bool
      */
     public function isIdentifierRemote();
+
+    /**
+     * Populates the entity identifier of an entity.
+     *
+     * @param object $entity
+     * @param array  $id
+     *
+     * @return void
+     *
+     * @todo Rename to assignIdentifier()
+     */
+    public function setIdentifierValues($entity, array $id);
 }
