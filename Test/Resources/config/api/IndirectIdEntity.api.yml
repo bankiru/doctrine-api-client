@@ -13,4 +13,4 @@ Bankiru\Api\Doctrine\Test\Entity\IndirectIdEntity:
     name: test-client
     entityPath: indirect-entity
   api:
-    name: Bankiru\Api\Doctrine\Test\TestApi
+    factory: Bankiru\Api\Doctrine\Test\TestApi

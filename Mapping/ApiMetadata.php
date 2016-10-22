@@ -56,7 +56,7 @@ interface ApiMetadata extends ClassMetadata
      * @return string
      * @throws MappingException
      */
-    public function getApiName();
+    public function getApiFactory();
 
     /**
      * @return string

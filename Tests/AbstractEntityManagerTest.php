@@ -3,13 +3,17 @@
 namespace Bankiru\Api\Doctrine\Tests;
 
 use Bankiru\Api\Doctrine\ApiEntityManager;
+use Bankiru\Api\Doctrine\ApiFactory\ApiFactoryRegistryFactory;
+use Bankiru\Api\Doctrine\ApiFactory\ChainApiFactoryRegistry;
+use Bankiru\Api\Doctrine\ApiFactory\StaticApiFactoryDecorator;
+use Bankiru\Api\Doctrine\ApiFactoryRegistryInterface;
 use Bankiru\Api\Doctrine\ClientRegistry;
 use Bankiru\Api\Doctrine\ClientRegistryInterface;
 use Bankiru\Api\Doctrine\Configuration;
-use Bankiru\Api\Doctrine\ConstructorFactoryResolver;
 use Bankiru\Api\Doctrine\EntityManager;
 use Bankiru\Api\Doctrine\EntityMetadataFactory;
 use Bankiru\Api\Doctrine\Mapping\Driver\YmlMetadataDriver;
+use Bankiru\Api\Doctrine\Test\TestApiFactory;
 use Bankiru\Api\Doctrine\Type\BaseTypeRegistry;
 use Bankiru\Api\Doctrine\Type\TypeRegistry;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
@@ -21,18 +25,20 @@ abstract class AbstractEntityManagerTest extends AbstractRpcTest
 {
     const DEFAULT_CLIENT = 'test-client';
     /** @var  ClientRegistryInterface */
-    private $registry;
+    private $clientRegistry;
     /** @var  ApiEntityManager */
     private $manager;
     /** @var  RpcMockClient[] */
     private $clients = [];
+    /** @var  ApiFactoryRegistryInterface */
+    private $factoryRegistry;
 
     /**
      * @return mixed
      */
-    public function getRegistry()
+    public function getClientRegistry()
     {
-        return $this->registry;
+        return $this->clientRegistry;
     }
 
     /**
@@ -51,10 +57,19 @@ abstract class AbstractEntityManagerTest extends AbstractRpcTest
 
     protected function createEntityManager($clients = [self::DEFAULT_CLIENT])
     {
-        $this->registry = new ClientRegistry();
+        $this->clientRegistry = new ClientRegistry();
         foreach ($clients as $name) {
-            $this->registry->add($name, $this->getClient($name));
+            $this->clientRegistry->add($name, $this->getClient($name));
         }
+
+        $this->factoryRegistry = new ChainApiFactoryRegistry();
+
+        $factory = new ApiFactoryRegistryFactory();
+        foreach ($this->getFactoryApis() as $name => $api) {
+            $factory->set($name, $api);
+        }
+        $this->factoryRegistry->add($factory);
+        $this->factoryRegistry->add(new StaticApiFactoryDecorator());
 
         $configuration = $this->createConfiguration();
 
@@ -98,9 +113,9 @@ abstract class AbstractEntityManagerTest extends AbstractRpcTest
     {
         $configuration = new Configuration();
         $configuration->setMetadataFactory(new EntityMetadataFactory());
-        $configuration->setRegistry($this->registry);
+        $configuration->setClientRegistry($this->clientRegistry);
         $configuration->setTypeRegistry(new BaseTypeRegistry(new TypeRegistry()));
-        $configuration->setResolver(new ConstructorFactoryResolver());
+        $configuration->setFactoryRegistry($this->factoryRegistry);
         $configuration->setProxyDir(CACHE_DIR.'/doctrine/proxy/');
         $configuration->setProxyNamespace('Bankiru\Api\Doctrine\Test\Proxy');
         $driver = new MappingDriverChain();
@@ -119,5 +134,10 @@ abstract class AbstractEntityManagerTest extends AbstractRpcTest
         $configuration->setDriver($driver);
 
         return $configuration;
+    }
+
+    protected function getFactoryApis()
+    {
+        return [];
     }
 }

@@ -16,9 +16,9 @@ class Configuration
     /** @var  MappingDriver */
     private $driver;
     /** @var  ClientRegistryInterface */
-    private $registry;
-    /** @var  ApiFactoryResolverInterface */
-    private $resolver;
+    private $clientRegistry;
+    /** @var  ApiFactoryRegistryInterface */
+    private $factoryRegistry;
     /** @var  string */
     private $proxyDir;
     /** @var  string */
@@ -47,33 +47,33 @@ class Configuration
     /**
      * @return ClientRegistryInterface
      */
-    public function getRegistry()
+    public function getClientRegistry()
     {
-        return $this->registry;
+        return $this->clientRegistry;
     }
 
     /**
-     * @param ClientRegistryInterface $registry
+     * @param ClientRegistryInterface $clientRegistry
      */
-    public function setRegistry($registry)
+    public function setClientRegistry($clientRegistry)
     {
-        $this->registry = $registry;
+        $this->clientRegistry = $clientRegistry;
     }
 
     /**
-     * @return ApiFactoryResolverInterface
+     * @return ApiFactoryRegistryInterface
      */
-    public function getResolver()
+    public function getFactoryRegistry()
     {
-        return $this->resolver;
+        return $this->factoryRegistry;
     }
 
     /**
-     * @param ApiFactoryResolverInterface $resolver
+     * @param ApiFactoryRegistryInterface $factoryRegistry
      */
-    public function setResolver(ApiFactoryResolverInterface $resolver)
+    public function setFactoryRegistry(ApiFactoryRegistryInterface $factoryRegistry)
     {
-        $this->resolver = $resolver;
+        $this->factoryRegistry = $factoryRegistry;
     }
 
     /**

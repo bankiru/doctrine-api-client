@@ -16,4 +16,4 @@ Bankiru\Api\Doctrine\Test\Entity\CompositeKeyEntity:
     name: test-client
     entityPath: composite-key-entity
   api:
-    name: Bankiru\Api\Doctrine\Test\TestApi
+    factory: Bankiru\Api\Doctrine\Test\TestApi

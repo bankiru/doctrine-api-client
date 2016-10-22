@@ -43,8 +43,8 @@ class YmlMetadataDriver extends FileDriver
 
         // Configure API
         if (array_key_exists('api', $element)) {
-            if (array_key_exists('name', $element['api'])) {
-                $metadata->apiName = $element['api']['name'];
+            if (array_key_exists('factory', $element['api'])) {
+                $metadata->apiFactory = $element['api']['factory'];
             }
         }
 
