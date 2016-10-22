@@ -108,6 +108,18 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
+     * Helper method to show an object as string.
+     *
+     * @param object $obj
+     *
+     * @return string
+     */
+    private static function objToStr($obj)
+    {
+        return method_exists($obj, '__toString') ? (string)$obj : get_class($obj).'@'.spl_object_hash($obj);
+    }
+
+    /**
      * @param $className
      *
      * @return EntityPersister
@@ -662,8 +674,8 @@ class UnitOfWork implements PropertyChangedListener
         $oid = spl_object_hash($entity);
 
         return isset($this->entityInsertions[$oid])
-               || isset($this->entityUpdates[$oid])
-               || isset($this->entityDeletions[$oid]);
+        || isset($this->entityUpdates[$oid])
+        || isset($this->entityDeletions[$oid]);
     }
 
     /**
@@ -731,11 +743,11 @@ class UnitOfWork implements PropertyChangedListener
             }
         }
         if (!($this->entityInsertions ||
-              $this->entityDeletions ||
-              $this->entityUpdates ||
-              $this->collectionUpdates ||
-              $this->collectionDeletions ||
-              $this->orphanRemovals)
+            $this->entityDeletions ||
+            $this->entityUpdates ||
+            $this->collectionUpdates ||
+            $this->collectionDeletions ||
+            $this->orphanRemovals)
         ) {
             return; // Nothing to do.
         }
@@ -1076,7 +1088,7 @@ class UnitOfWork implements PropertyChangedListener
     public function getCollectionPersister($association)
     {
         $role = isset($association['cache'])
-            ? $association['sourceEntity'] . '::' . $association['fieldName']
+            ? $association['sourceEntity'].'::'.$association['fieldName']
             : $association['type'];
         if (array_key_exists($role, $this->collectionPersisters)) {
             return $this->collectionPersisters[$role];
@@ -1289,13 +1301,13 @@ class UnitOfWork implements PropertyChangedListener
      */
     private function createApi(ApiMetadata $classMetadata)
     {
-        $client = $this->manager->getConfiguration()->getRegistry()->get($classMetadata->getClientName());
+        $client = $this->manager->getConfiguration()->getClientRegistry()->get($classMetadata->getClientName());
 
         $api = $this->manager
             ->getConfiguration()
-            ->getResolver()
-            ->resolve($classMetadata->getApiName())
-            ->createApi(
+            ->getFactoryRegistry()
+            ->create(
+                $classMetadata->getApiFactory(),
                 $client,
                 $classMetadata
             );
@@ -1333,7 +1345,7 @@ class UnitOfWork implements PropertyChangedListener
                 // Can actually not happen right now since we assume STATE_NEW.
                 throw new \InvalidArgumentException('Detached entity cannot be persisted');
             default:
-                throw new \UnexpectedValueException("Unexpected entity state: $entityState." . self::objToStr($entity));
+                throw new \UnexpectedValueException("Unexpected entity state: $entityState.".self::objToStr($entity));
         }
         $this->cascadePersist($entity, $visited);
     }
@@ -1470,18 +1482,6 @@ class UnitOfWork implements PropertyChangedListener
         return $calc->sort();
     }
 
-    /**
-     * Helper method to show an object as string.
-     *
-     * @param object $obj
-     *
-     * @return string
-     */
-    private static function objToStr($obj)
-    {
-        return method_exists($obj, '__toString') ? (string)$obj : get_class($obj) . '@' . spl_object_hash($obj);
-    }
-
     private function getCommitOrderCalculator()
     {
         return new Utility\CommitOrderCalculator();
@@ -1506,7 +1506,7 @@ class UnitOfWork implements PropertyChangedListener
         $state = $this->getEntityState($entity);
         if ($state !== self::STATE_MANAGED && $state !== self::STATE_REMOVED) {
             throw new \InvalidArgumentException(
-                "Entity has to be managed or scheduled for removal for single computation " . self::objToStr($entity)
+                "Entity has to be managed or scheduled for removal for single computation ".self::objToStr($entity)
             );
         }
         $class = $this->manager->getClassMetadata(get_class($entity));
@@ -1993,7 +1993,7 @@ class UnitOfWork implements PropertyChangedListener
             case self::STATE_DETACHED:
                 throw new \InvalidArgumentException('Detached entity cannot be removed');
             default:
-                throw new \UnexpectedValueException("Unexpected entity state: $entityState." . self::objToStr($entity));
+                throw new \UnexpectedValueException("Unexpected entity state: $entityState.".self::objToStr($entity));
         }
     }
 

@@ -10,7 +10,7 @@ use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
-final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, EntityCacheAwareInterface
+final class TestApi implements CrudsApiInterface, EntityCacheAwareInterface, StaticApiFactoryInterface
 {
     /** @var RpcClientInterface */
     private $client;
@@ -32,6 +32,7 @@ final class TestApi implements CrudsApiInterface, StaticApiFactoryInterface, Ent
         $this->cache    = new VoidEntityCache($metadata);
     }
 
+    /** {@inheritdoc} */
     public static function createApi(RpcClientInterface $client, ApiMetadata $metadata)
     {
         return new static($client, $metadata);

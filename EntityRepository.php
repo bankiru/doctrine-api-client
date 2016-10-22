@@ -107,7 +107,7 @@ class EntityRepository implements ObjectRepository
      */
     protected function getClient()
     {
-        return $this->manager->getConfiguration()->getRegistry()->get($this->metadata->getClientName());
+        return $this->manager->getConfiguration()->getClientRegistry()->get($this->metadata->getClientName());
     }
 
     /**

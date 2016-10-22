@@ -38,7 +38,7 @@ class EntityMetadata implements ApiMetadata
     /** @var string */
     public $clientName;
     /** @var string */
-    public $apiName;
+    public $apiFactory;
     /** @var string[] */
     public $apiFieldNames = [];
     /** @var string[] */
@@ -260,13 +260,13 @@ class EntityMetadata implements ApiMetadata
     }
 
     /** {@inheritdoc} */
-    public function getApiName()
+    public function getApiFactory()
     {
-        if (null === $this->apiName) {
+        if (null === $this->apiFactory) {
             throw MappingException::noApiSpecified($this->getName());
         }
 
-        return $this->apiName;
+        return $this->apiFactory;
     }
 
     /** {@inheritdoc} */

@@ -18,5 +18,5 @@ Bankiru\Api\Doctrine\Test\Entity\TestReference:
     name: test-reference-client
     entityPath: test-reference
   api:
-    name: Bankiru\Api\Doctrine\Test\TestApi
+    factory: Bankiru\Api\Doctrine\Test\TestApi
 

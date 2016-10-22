@@ -120,7 +120,7 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
             $this->addInheritedFields($class, $parent);
             $this->addInheritedRelations($class, $parent);
             $class->setIdentifier($parent->identifier);
-            $class->apiName        = $parent->apiName;
+            $class->apiFactory     = $parent->apiFactory;
             $class->clientName     = $parent->clientName;
             $class->methodProvider = $parent->methodProvider;
             $class->generatorType  = $parent->generatorType;

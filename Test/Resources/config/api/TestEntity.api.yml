@@ -20,5 +20,5 @@ Bankiru\Api\Doctrine\Test\Entity\TestEntity:
     name: test-client
     entityPath: test-entity
   api:
-    name: Bankiru\Api\Doctrine\Test\TestApi
+    factory: Bankiru\Api\Doctrine\Test\TestApi
 

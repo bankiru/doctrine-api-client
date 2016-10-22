@@ -10,6 +10,8 @@
 
 # Doctrine-faced RPC Client
 
+Implementation of `doctrine\common` interfaces with RPC interfaces (`scaytrase\rpc-common`)
+
 ## Usage
 
 ```php
@@ -155,7 +157,7 @@ MyVendor\Api\Entity\MyEntity:
     
   repositoryClass: MyVendor\Api\Repository\MyRepository # This will override repository for MyEntity
   api:
-    name: Vendor\Api\CrudsApiImpl
+    name: Vendor\Api\CrudsApiFactory
   client:
     name: my-client
     # entityPath: my-entity autoconfigures find and search methods for you as following, but it is not overridable
