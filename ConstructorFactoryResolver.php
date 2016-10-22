@@ -2,7 +2,7 @@
 
 namespace Bankiru\Api\Doctrine;
 
-use Bankiru\Api\Doctrine\ApiFactory\StaticApiFactory;
+use Bankiru\Api\Doctrine\ApiFactory\StaticApiFactoryFactory;
 
 final class ConstructorFactoryResolver implements ApiFactoryResolverInterface
 {
@@ -13,7 +13,7 @@ final class ConstructorFactoryResolver implements ApiFactoryResolverInterface
     public function resolve($name)
     {
         if (!array_key_exists($name, $this->factories)) {
-            $this->factories[$name] = new StaticApiFactory($name);
+            $this->factories[$name] = new StaticApiFactoryFactory($name);
         }
 
         return $this->factories[$name];

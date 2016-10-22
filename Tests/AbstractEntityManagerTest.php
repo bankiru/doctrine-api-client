@@ -5,7 +5,7 @@ namespace Bankiru\Api\Doctrine\Tests;
 use Bankiru\Api\Doctrine\ApiEntityManager;
 use Bankiru\Api\Doctrine\ApiFactory\ApiFactoryRegistryFactory;
 use Bankiru\Api\Doctrine\ApiFactory\ChainApiFactoryRegistry;
-use Bankiru\Api\Doctrine\ApiFactory\StaticApiFactoryDecorator;
+use Bankiru\Api\Doctrine\ApiFactory\StaticApiFactoryFactory;
 use Bankiru\Api\Doctrine\ApiFactoryRegistryInterface;
 use Bankiru\Api\Doctrine\ClientRegistry;
 use Bankiru\Api\Doctrine\ClientRegistryInterface;
@@ -69,7 +69,7 @@ abstract class AbstractEntityManagerTest extends AbstractRpcTest
             $factory->set($name, $api);
         }
         $this->factoryRegistry->add($factory);
-        $this->factoryRegistry->add(new StaticApiFactoryDecorator());
+        $this->factoryRegistry->add(new StaticApiFactoryFactory());
 
         $configuration = $this->createConfiguration();
 

@@ -7,7 +7,7 @@ use Bankiru\Api\Doctrine\Exception\ApiFactoryRegistryException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
-final class StaticApiFactoryDecorator implements ApiFactoryRegistryInterface
+final class StaticApiFactoryFactory implements ApiFactoryRegistryInterface
 {
     /** {@inheritdoc} */
     public function create($alias, RpcClientInterface $client, ApiMetadata $metadata)
