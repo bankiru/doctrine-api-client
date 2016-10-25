@@ -12,20 +12,20 @@ class ApiEntityCache implements EntityDataCacheInterface
     private $cache;
     /** @var ApiMetadata */
     private $metadata;
-    /** @var CacheConfiguration */
+    /** @var CacheConfigurationInterface */
     private $configuration;
 
     /**
      * ApiEntityCache constructor.
      *
-     * @param CacheItemPoolInterface $cache
-     * @param ApiMetadata            $metadata
-     * @param CacheConfiguration     $configuration
+     * @param CacheItemPoolInterface      $cache
+     * @param ApiMetadata                 $metadata
+     * @param CacheConfigurationInterface $configuration
      */
     public function __construct(
         CacheItemPoolInterface $cache,
         ApiMetadata $metadata,
-        CacheConfiguration $configuration
+        CacheConfigurationInterface $configuration
     ) {
         $this->cache         = $cache;
         $this->metadata      = $metadata;
@@ -61,6 +61,12 @@ class ApiEntityCache implements EntityDataCacheInterface
     public function getMetadata()
     {
         return $this->metadata;
+    }
+
+    /** {@inheritdoc} */
+    public function getConfiguration()
+    {
+        return $this->configuration;
     }
 
     /**

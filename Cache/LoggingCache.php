@@ -54,4 +54,10 @@ final class LoggingCache implements EntityDataCacheInterface
     {
         return $this->delegate->getMetadata();
     }
+
+    /** {@inheritdoc} */
+    public function getConfiguration()
+    {
+        return $this->delegate->getConfiguration();
+    }
 }
