@@ -2,6 +2,8 @@
 
 namespace Bankiru\Api\Doctrine\Cache;
 
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
 class CacheConfiguration
 {
     /** @var int|null */
@@ -10,6 +12,8 @@ class CacheConfiguration
     private $enabled = false;
     /** @var KeyStrategyInterface */
     private $strategy;
+    /** @var  array */
+    private $extra;
 
     private function __construct()
     {
@@ -20,7 +24,7 @@ class CacheConfiguration
      */
     public function getStrategy()
     {
-        return $this->strategy;
+        return $this->enabled ? $this->strategy : null;
     }
 
     /**
@@ -30,11 +34,17 @@ class CacheConfiguration
      */
     public static function create(array $data)
     {
-        $configuration           = new static();
-        $configuration->ttl      =
-            array_key_exists('enabled', $data) && null !== $data['enabled'] ? (int)$data['ttl'] : null;
-        $configuration->enabled  = array_key_exists('enabled', $data) ? (bool)$data['enabled'] : false;
-        $configuration->strategy = array_key_exists('strategy', $data) ? $data['strategy'] : new ScalarKeyStrategy();
+        $resolver = new OptionsResolver();
+        self::configureResolver($resolver);
+        $data = $resolver->resolve($data);
+
+        $configuration = new static();
+
+        $configuration->enabled  = $data['enabled'];
+        $configuration->strategy = $data['strategy'];
+        $configuration->ttl      = $data['ttl'];
+
+        $configuration->extra = $data['extra'] ?: [];
 
         return $configuration;
     }
@@ -57,7 +67,7 @@ class CacheConfiguration
      */
     public function getTtl()
     {
-        return $this->ttl;
+        return $this->enabled ? $this->ttl : null;
     }
 
     /**
@@ -66,5 +76,30 @@ class CacheConfiguration
     public function isEnabled()
     {
         return $this->enabled;
+    }
+
+    public function extra($key)
+    {
+        if (!$this->enabled) {
+            return null;
+        }
+
+        if (!array_key_exists($key, $this->extra)) {
+            return null;
+        }
+
+        return $this->extra[$key];
+    }
+
+    private static function configureResolver(OptionsResolver $resolver)
+    {
+        $resolver->setDefault('enabled', false);
+        $resolver->setAllowedValues('enabled', [false, true]);
+        $resolver->setDefault('ttl', null);
+        $resolver->setAllowedTypes('ttl', ['int', 'null']);
+        $resolver->setDefault('strategy', new ScalarKeyStrategy());
+        $resolver->setAllowedTypes('strategy', KeyStrategyInterface::class);
+        $resolver->setDefault('extra', []);
+        $resolver->setAllowedTypes('extra', ['array', null]);
     }
 }
