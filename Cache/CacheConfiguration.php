@@ -4,7 +4,7 @@ namespace Bankiru\Api\Doctrine\Cache;
 
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class CacheConfiguration
+class CacheConfiguration implements CacheConfigurationInterface
 {
     /** @var int|null */
     private $ttl;
@@ -19,9 +19,7 @@ class CacheConfiguration
     {
     }
 
-    /**
-     * @return KeyStrategyInterface
-     */
+    /** {@inheritdoc} */
     public function getStrategy()
     {
         return $this->enabled ? $this->strategy : null;
@@ -62,22 +60,19 @@ class CacheConfiguration
         return $configuration;
     }
 
-    /**
-     * @return int|null
-     */
+    /** {@inheritdoc} */
     public function getTtl()
     {
         return $this->enabled ? $this->ttl : null;
     }
 
-    /**
-     * @return boolean
-     */
+    /** {@inheritdoc} */
     public function isEnabled()
     {
         return $this->enabled;
     }
 
+    /** {@inheritdoc} */
     public function extra($key)
     {
         if (!$this->enabled) {

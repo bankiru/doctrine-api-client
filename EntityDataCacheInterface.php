@@ -2,6 +2,7 @@
 
 namespace Bankiru\Api\Doctrine;
 
+use Bankiru\Api\Doctrine\Cache\CacheConfigurationInterface;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 
 interface EntityDataCacheInterface
@@ -29,4 +30,9 @@ interface EntityDataCacheInterface
      * @return ApiMetadata
      */
     public function getMetadata();
+
+    /**
+     * @return CacheConfigurationInterface
+     */
+    public function getConfiguration();
 }
