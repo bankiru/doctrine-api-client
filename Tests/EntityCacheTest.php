@@ -52,6 +52,8 @@ class EntityCacheTest extends AbstractEntityManagerTest
         self::assertInternalType('int', $entity->getId());
         self::assertEquals('test-payload', $entity->getPayload());
 
+        $configuration = $this->getManager()->getConfiguration()->getCacheConfiguration(CustomEntity::class);
+        self::assertTrue($configuration->extra('quick_search'));
     }
 
     protected function createConfiguration()
@@ -68,6 +70,7 @@ class EntityCacheTest extends AbstractEntityManagerTest
             [
                 'ttl'     => 900,
                 'enabled' => true,
+                'extra'   => ['quick_search' => true],
             ]
         );
 
