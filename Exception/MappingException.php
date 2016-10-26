@@ -32,12 +32,12 @@ class MappingException extends BaseMappingException implements DoctrineApiExcept
 
     public static function noApiSpecified($class)
     {
-        return new self(sprintf('API not specified for %s or any parent', $class));
+        return new self(sprintf('API factory not specified for %s or any parent', $class));
     }
 
     public static function invalidApiSpecified($name, $message)
     {
-        return new self(sprintf('Could not resolve API "%s": %s', $name, $message));
+        return new self(sprintf('Could not resolve API factory "%s": %s', $name, $message));
     }
 
     public static function unknownField($field, $class)
@@ -58,5 +58,10 @@ class MappingException extends BaseMappingException implements DoctrineApiExcept
     public static function noMethods()
     {
         return new self('No methods or entity-path configured');
+    }
+
+    public static function unknownApiFactory($alias)
+    {
+        return new static(sprintf('Unknown factory to create API: ' . $alias));
     }
 }

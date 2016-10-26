@@ -1,7 +1,7 @@
 <?php
 namespace Bankiru\Api\Doctrine;
 
-use Bankiru\Api\Doctrine\Exception\ApiFactoryRegistryException;
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
 use ScayTrase\Api\Rpc\RpcClientInterface;
@@ -15,7 +15,7 @@ interface ApiFactoryRegistryInterface
      *
      * @return CrudsApiInterface
      *
-     * @throws ApiFactoryRegistryException
+     * @throws MappingException
      */
     public function create($alias, RpcClientInterface $client, ApiMetadata $metadata);
 
