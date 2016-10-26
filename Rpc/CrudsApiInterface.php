@@ -2,14 +2,17 @@
 
 namespace Bankiru\Api\Doctrine\Rpc;
 
+use ScayTrase\Api\Rpc\Exception\RemoteCallFailedException;
+
 interface CrudsApiInterface extends EntityApiInterface
 {
     /**
-     * Return API entity count with given parameters
+     * Return API entity count by given criteria
      *
      * @param array $criteria search criteria
      *
      * @return int
+     * @throws RemoteCallFailedException
      */
     public function count(array $criteria);
 
@@ -20,6 +23,7 @@ interface CrudsApiInterface extends EntityApiInterface
      * @param array $data
      *
      * @return int|null objects count
+     * @throws RemoteCallFailedException
      */
     public function create(array $data);
 
@@ -29,18 +33,18 @@ interface CrudsApiInterface extends EntityApiInterface
      * @param array $identifier array of identifiers
      *
      * @return \stdClass data for hydration
+     * @throws RemoteCallFailedException
      */
     public function find(array $identifier);
 
     /**
-     * Performs update of the entity. If API does not support PATCH-like request - just ignore fields argument
+     * Performs patch-update of the entity
      *
      * @param array $identifier
      * @param array $patch
      * @param array $entity
      *
-     * @internal param \string[] $fields List of modified fields
-     *
+     * @throws RemoteCallFailedException
      */
     public function patch(array $identifier, array $patch, array $entity);
 
@@ -49,7 +53,7 @@ interface CrudsApiInterface extends EntityApiInterface
      *
      * @param array $identifier identifiers
      *
-     * @return bool Whether operation was successful
+     * @throws RemoteCallFailedException
      */
     public function remove(array $identifier);
 
@@ -61,7 +65,8 @@ interface CrudsApiInterface extends EntityApiInterface
      * @param int|null   $limit
      * @param int|null   $offset
      *
-     * @return \Traversable data for hydration
+     * @return \Traversable|\stdClass[] Traversable of \stdClass instances to hydrate objects from
+     * @throws RemoteCallFailedException
      */
     public function search(array $criteria = [], array $orderBy = null, $limit = null, $offset = null);
 }
