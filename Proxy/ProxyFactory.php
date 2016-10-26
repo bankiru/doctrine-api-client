@@ -107,7 +107,7 @@ class ProxyFactory extends AbstractProxyFactory
                 $proxy->__setInitializer($initializer);
                 $proxy->__setCloner($cloner);
                 $proxy->__setInitialized(false);
-                throw FetchException::notFound();
+                throw FetchException::expectedEntity($identifier);
             }
 
             $proxy->__setInitialized(true);
@@ -141,7 +141,7 @@ class ProxyFactory extends AbstractProxyFactory
             $original = $persister->loadById($identifier);
 
             if (null === $original) {
-                throw FetchException::notFound();
+                throw FetchException::expectedEntity($identifier);
             }
             foreach ($class->getReflectionClass()->getProperties() as $property) {
                 if (!$class->hasField($property->name) && !$class->hasAssociation($property->name)) {

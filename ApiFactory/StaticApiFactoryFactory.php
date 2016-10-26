@@ -3,7 +3,7 @@
 namespace Bankiru\Api\Doctrine\ApiFactory;
 
 use Bankiru\Api\Doctrine\ApiFactoryRegistryInterface;
-use Bankiru\Api\Doctrine\Exception\ApiFactoryRegistryException;
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
@@ -14,7 +14,7 @@ final class StaticApiFactoryFactory implements ApiFactoryRegistryInterface
     {
         /** @var StaticApiFactoryInterface $alias */
         if (!$this->has($alias)) {
-            throw ApiFactoryRegistryException::unknown($alias);
+            throw MappingException::unknownApiFactory($alias);
         }
 
         return $alias::createApi($client, $metadata);

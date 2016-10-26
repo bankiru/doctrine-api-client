@@ -3,7 +3,7 @@
 namespace Bankiru\Api\Doctrine\ApiFactory;
 
 use Bankiru\Api\Doctrine\ApiFactoryRegistryInterface;
-use Bankiru\Api\Doctrine\Exception\ApiFactoryRegistryException;
+use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
@@ -31,7 +31,7 @@ final class ChainApiFactoryRegistry implements ApiFactoryRegistryInterface
             }
         }
 
-        throw ApiFactoryRegistryException::unknown($alias);
+        throw MappingException::unknownApiFactory($alias);
     }
 
     /** {@inheritdoc} */

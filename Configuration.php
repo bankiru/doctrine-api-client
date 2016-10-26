@@ -143,6 +143,17 @@ class Configuration
     }
 
     /**
+     *
+     *
+     * @param string                      $class
+     * @param CacheConfigurationInterface $configuration
+     */
+    public function setCacheConfigurationInstance($class, CacheConfigurationInterface $configuration)
+    {
+        $this->cacheConfigurationCache[$class] = $configuration;
+    }
+
+    /**
      * @return TypeRegistryInterface
      */
     public function getTypeRegistry()

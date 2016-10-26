@@ -2,7 +2,7 @@
 
 namespace Bankiru\Api\Doctrine\Exception;
 
-class TypeException extends \LogicException implements DoctrineApiException
+class TypeException extends MappingException
 {
     public static function cannotRedeclare($type)
     {
