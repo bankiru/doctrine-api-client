@@ -9,7 +9,7 @@ final class ScalarKeyStrategy implements KeyStrategyInterface
     /** {@inheritdoc} */
     public function getEntityPrefix(ApiMetadata $metadata)
     {
-        return $metadata->getName();
+        return str_replace('\\', '__', $metadata->getName());
     }
 
     /** {@inheritdoc} */
@@ -21,6 +21,6 @@ final class ScalarKeyStrategy implements KeyStrategyInterface
             }
         }
 
-        return $this->getEntityPrefix($metadata) . '_' . json_encode($identifier);
+        return $this->getEntityPrefix($metadata) . '_' . sha1(json_encode($identifier));
     }
 }
