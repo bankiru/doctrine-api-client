@@ -153,6 +153,71 @@ class ReferenceLoadingTest extends AbstractEntityManagerTest
         self::assertEquals($parent->getPayload(), $child->getParent()->getPayload());
     }
 
+    public function testFindByNullValue()
+    {
+        $repository = $this->getManager()->getRepository(TestEntity::class);
+        /** @var TestEntity $parent */
+        $parent = $this->getManager()->getReference(TestEntity::class, 1);
+
+        $this->getClient('test-client')->push(
+            $this->getResponseMock(
+                true,
+                [
+                    (object)[
+                        'id'         => 2,
+                        'payload'    => 'test-child',
+                        'references' => [],
+                        'parent'     => 1,
+                    ],
+                ]
+            )
+        );
+
+        $children = $repository->findBy(['parent' => $parent]);
+
+        $this->getClient('test-client')->push(
+            $this->getResponseMock(
+                true,
+                [
+                    (object)[
+                        'id'         => 3,
+                        'payload'    => 'test-child-3',
+                        'references' => [],
+                        'parent'     => 1,
+                    ],
+                ]
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertNull($request->getParameters()['criteria']['parent']);
+
+                return true;
+            }
+        );
+
+        $children = $repository->findBy(['parent' => null]);
+
+        $this->getClient('test-client')->push(
+            $this->getResponseMock(
+                true,
+                [
+                    (object)[
+                        'id'         => 4,
+                        'payload'    => 'test-child-4',
+                        'references' => [],
+                        'parent'     => 1,
+                    ],
+                ]
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertNull($request->getParameters()['criteria']['payload']);
+
+                return true;
+            }
+        );
+
+        $children = $repository->findBy(['payload' => null]);
+    }
+
     public function testSubEntityRelations()
     {
         $repository = $this->getManager()->getRepository(SubEntity::class);
