@@ -197,9 +197,7 @@ class ApiPersister implements EntityPersister
         $result = [];
         foreach ($this->pendingInserts as $entity) {
             $result[] = [
-                'generatedId' => $this->getCrudsApi()->create(
-                    $this->transformer->transformCriteria($this->convertEntityToData($entity))
-                ),
+                'generatedId' => $this->getCrudsApi()->create($this->convertEntityToData($entity)),
                 'entity'      => $entity,
             ];
         }
@@ -281,13 +279,40 @@ class ApiPersister implements EntityPersister
             if ($this->metadata->isIdentifier($name) && $this->metadata->isIdentifierRemote()) {
                 continue;
             }
+            $apiField = $this->metadata->getApiFieldName($name);
+            $value    = $property->getValue($entity);
+            if (null === $value) {
+                $entityData[$apiField] = $value;
+                continue;
+            }
+
             if ($this->metadata->hasAssociation($name)) {
                 $mapping = $this->metadata->getAssociationMapping($name);
                 if (($mapping['type'] & ApiMetadata::TO_MANY) && !$mapping['isOwningSide']) {
                     continue;
                 }
+                $target         = $this->metadata->getAssociationMapping($name)['target'];
+                $targetMetadata = $this->manager->getClassMetadata($target);
+                $value          = $targetMetadata->getIdentifierValues($value);
+                $ids            = [];
+                foreach ($value as $idName => $idValue) {
+                    $typeName        = $targetMetadata->getTypeOfField($idName);
+                    $idApiName       = $targetMetadata->getApiFieldName($idName);
+                    $type            = $this->manager->getConfiguration()->getTypeRegistry()->get($typeName);
+                    $idValue         = $type->toApiValue($idValue);
+                    $ids[$idApiName] = $idValue;
+                }
+                if (!$targetMetadata->isIdentifierComposite()) {
+                    $ids = array_shift($ids);
+                }
+                $value = $ids;
+            } else {
+                $typeName = $this->metadata->getTypeOfField($name);
+                $type     = $this->manager->getConfiguration()->getTypeRegistry()->get($typeName);
+                $value    = $type->toApiValue($value);
             }
-            $entityData[$name] = $property->getValue($entity);
+
+            $entityData[$apiField] = $value;
         }
 
         return $entityData;
