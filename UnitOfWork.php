@@ -1620,12 +1620,15 @@ class UnitOfWork implements PropertyChangedListener
                 $entity = $postInsertId['entity'];
                 $oid    = spl_object_hash($entity);
 
+                if ($id instanceof \stdClass) {
+                    $id = (array)$id;
+                }
                 if (!is_array($id)) {
                     $id = [$class->getApiFieldName($class->getIdentifierFieldNames()[0]) => $id];
                 }
 
                 $idValues = [];
-                foreach ($id as $apiIdField => $idValue) {
+                foreach ((array)$id as $apiIdField => $idValue) {
                     $idName   = $class->getFieldName($apiIdField);
                     $typeName = $class->getTypeOfField($idName);
                     $type     = $this->manager->getConfiguration()->getTypeRegistry()->get($typeName);
