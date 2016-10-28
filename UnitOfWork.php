@@ -108,18 +108,6 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
-     * Helper method to show an object as string.
-     *
-     * @param object $obj
-     *
-     * @return string
-     */
-    private static function objToStr($obj)
-    {
-        return method_exists($obj, '__toString') ? (string)$obj : get_class($obj).'@'.spl_object_hash($obj);
-    }
-
-    /**
      * @param $className
      *
      * @return EntityPersister
@@ -674,8 +662,8 @@ class UnitOfWork implements PropertyChangedListener
         $oid = spl_object_hash($entity);
 
         return isset($this->entityInsertions[$oid])
-        || isset($this->entityUpdates[$oid])
-        || isset($this->entityDeletions[$oid]);
+               || isset($this->entityUpdates[$oid])
+               || isset($this->entityDeletions[$oid]);
     }
 
     /**
@@ -743,11 +731,11 @@ class UnitOfWork implements PropertyChangedListener
             }
         }
         if (!($this->entityInsertions ||
-            $this->entityDeletions ||
-            $this->entityUpdates ||
-            $this->collectionUpdates ||
-            $this->collectionDeletions ||
-            $this->orphanRemovals)
+              $this->entityDeletions ||
+              $this->entityUpdates ||
+              $this->collectionUpdates ||
+              $this->collectionDeletions ||
+              $this->orphanRemovals)
         ) {
             return; // Nothing to do.
         }
@@ -866,13 +854,7 @@ class UnitOfWork implements PropertyChangedListener
         if (isset($this->readOnlyObjects[$oid])) {
             return;
         }
-        //        if ( ! $class->isInheritanceTypeNone()) {
-        //            $class = $this->em->getClassMetadata(get_class($entity));
-        //        }
-        //        $invoke = $this->listenersInvoker->getSubscribedSystems($class, Events::preFlush) & ~ListenersInvoker::INVOKE_MANAGER;
-        //        if ($invoke !== ListenersInvoker::INVOKE_NONE) {
-        //            $this->listenersInvoker->invoke($class, Events::preFlush, $entity, new PreFlushEventArgs($this->em), $invoke);
-        //        }
+
         $actualData = [];
         foreach ($class->getReflectionProperties() as $name => $refProp) {
             $value = $refProp->getValue($entity);
@@ -929,6 +911,7 @@ class UnitOfWork implements PropertyChangedListener
                 ? $this->entityChangeSets[$oid]
                 : [];
             foreach ($actualData as $propName => $actualValue) {
+
                 // skip field, its a partially omitted one!
                 if (!(isset($originalData[$propName]) || array_key_exists($propName, $originalData))) {
                     continue;
@@ -936,6 +919,7 @@ class UnitOfWork implements PropertyChangedListener
                 $orgValue = $originalData[$propName];
                 // skip if value haven't changed
                 if ($orgValue === $actualValue) {
+
                     continue;
                 }
                 // if regular field
@@ -946,6 +930,7 @@ class UnitOfWork implements PropertyChangedListener
                     $changeSet[$propName] = [$orgValue, $actualValue];
                     continue;
                 }
+
                 $assoc = $class->getAssociationMapping($propName);
                 // Persistent collection was exchanged with the "originally"
                 // created one. This can only mean it was cloned and replaced
@@ -1088,7 +1073,7 @@ class UnitOfWork implements PropertyChangedListener
     public function getCollectionPersister($association)
     {
         $role = isset($association['cache'])
-            ? $association['sourceEntity'].'::'.$association['fieldName']
+            ? $association['sourceEntity'] . '::' . $association['fieldName']
             : $association['type'];
         if (array_key_exists($role, $this->collectionPersisters)) {
             return $this->collectionPersisters[$role];
@@ -1253,6 +1238,18 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
+     * Helper method to show an object as string.
+     *
+     * @param object $obj
+     *
+     * @return string
+     */
+    private static function objToStr($obj)
+    {
+        return method_exists($obj, '__toString') ? (string)$obj : get_class($obj) . '@' . spl_object_hash($obj);
+    }
+
+    /**
      * @param ApiMetadata $class
      *
      * @return \Doctrine\Common\Persistence\ObjectManagerAware|object
@@ -1345,7 +1342,7 @@ class UnitOfWork implements PropertyChangedListener
                 // Can actually not happen right now since we assume STATE_NEW.
                 throw new \InvalidArgumentException('Detached entity cannot be persisted');
             default:
-                throw new \UnexpectedValueException("Unexpected entity state: $entityState.".self::objToStr($entity));
+                throw new \UnexpectedValueException("Unexpected entity state: $entityState." . self::objToStr($entity));
         }
         $this->cascadePersist($entity, $visited);
     }
@@ -1506,7 +1503,7 @@ class UnitOfWork implements PropertyChangedListener
         $state = $this->getEntityState($entity);
         if ($state !== self::STATE_MANAGED && $state !== self::STATE_REMOVED) {
             throw new \InvalidArgumentException(
-                "Entity has to be managed or scheduled for removal for single computation ".self::objToStr($entity)
+                "Entity has to be managed or scheduled for removal for single computation " . self::objToStr($entity)
             );
         }
         $class = $this->manager->getClassMetadata(get_class($entity));
@@ -1619,14 +1616,27 @@ class UnitOfWork implements PropertyChangedListener
         if ($postInsertIds) {
             // Persister returned post-insert IDs
             foreach ($postInsertIds as $postInsertId) {
-                $id      = $postInsertId['generatedId'];
-                $entity  = $postInsertId['entity'];
-                $oid     = spl_object_hash($entity);
-                $idField = $class->getIdentifierFieldNames()[0];
-                $class->getReflectionProperty($idField)->setValue($entity, $id);
-                $this->entityIdentifiers[$oid]            = [$idField => $id];
-                $this->entityStates[$oid]                 = self::STATE_MANAGED;
-                $this->originalEntityData[$oid][$idField] = $id;
+                $id     = $postInsertId['generatedId'];
+                $entity = $postInsertId['entity'];
+                $oid    = spl_object_hash($entity);
+
+                if (!is_array($id)) {
+                    $id = [$class->getApiFieldName($class->getIdentifierFieldNames()[0]) => $id];
+                }
+
+                $idValues = [];
+                foreach ($id as $apiIdField => $idValue) {
+                    $idName   = $class->getFieldName($apiIdField);
+                    $typeName = $class->getTypeOfField($idName);
+                    $type     = $this->manager->getConfiguration()->getTypeRegistry()->get($typeName);
+                    $idValue  = $type->toApiValue($idValue);
+                    $class->getReflectionProperty($idName)->setValue($entity, $idValue);
+                    $idValues[$idName] =  $idValue;
+                    $this->originalEntityData[$oid][$idName] = $idValue;
+                }
+
+                $this->entityIdentifiers[$oid]  = $idValues;
+                $this->entityStates[$oid]       = self::STATE_MANAGED;
                 $this->addToIdentityMap($entity);
             }
         }
@@ -1993,7 +2003,7 @@ class UnitOfWork implements PropertyChangedListener
             case self::STATE_DETACHED:
                 throw new \InvalidArgumentException('Detached entity cannot be removed');
             default:
-                throw new \UnexpectedValueException("Unexpected entity state: $entityState.".self::objToStr($entity));
+                throw new \UnexpectedValueException("Unexpected entity state: $entityState." . self::objToStr($entity));
         }
     }
 

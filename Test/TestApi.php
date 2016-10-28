@@ -75,7 +75,7 @@ final class TestApi implements CrudsApiInterface, EntityCacheAwareInterface, Sta
     /** {@inheritdoc} */
     public function patch(array $identifier, array $patch, array $data)
     {
-        $request = new RpcRequestMock($this->getMethod('patch'), $patch);
+        $request = new RpcRequestMock($this->getMethod('patch'), ['identifier' => $identifier, 'patch' => $patch]);
 
         return $this->client->invoke($request)->getResponse($request)->isSuccessful();
     }
