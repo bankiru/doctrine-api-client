@@ -11,7 +11,7 @@ class ArrayType implements Type
             return $value;
         }
 
-        return (array)$value;
+        return json_decode(json_encode($value), true);
     }
 
     /** {@inheritdoc} */
@@ -21,6 +21,6 @@ class ArrayType implements Type
             return $value;
         }
 
-        return (array)$value;
+        return json_decode(json_encode($value), true);
     }
 }

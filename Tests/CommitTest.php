@@ -69,7 +69,7 @@ class CommitTest extends AbstractEntityManagerTest
         $entity->setOwner($parent);
 
         $this->getClient()->push(
-            $this->getResponseMock(true, ['id' => 42]),
+            $this->getResponseMock(true, (object)['id' => 42]),
             function (RpcRequestInterface $request) {
                 self::assertEquals('test-entity/create', $request->getMethod());
                 self::assertEquals(
@@ -85,7 +85,7 @@ class CommitTest extends AbstractEntityManagerTest
         );
 
         $this->getClient('test-reference-client')->push(
-            $this->getResponseMock(true, ['id' => 241]),
+            $this->getResponseMock(true, (object)['id' => 241]),
             function (RpcRequestInterface $request) {
                 self::assertEquals('test-reference/create', $request->getMethod());
                 self::assertEquals(
@@ -122,7 +122,7 @@ class CommitTest extends AbstractEntityManagerTest
         $oldParent = $entity->getOwner();
         $newParent = new TestEntity();
         $this->getClient()->push(
-            $this->getResponseMock(true, ['id' => 17]),
+            $this->getResponseMock(true, (object)['id' => 17]),
             function (RpcRequestInterface $request) {
                 self::assertEquals('test-entity/create', $request->getMethod());
                 self::assertEquals(

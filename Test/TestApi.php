@@ -53,7 +53,11 @@ final class TestApi implements CrudsApiInterface, EntityCacheAwareInterface, Sta
 
         $id = $this->client->invoke($request)->getResponse($request)->getBody();
 
-        return $this->getMetadata()->isIdentifierNatural() ? null : $id;
+        if ($this->getMetadata()->isIdentifierNatural()) {
+            return null;
+        }
+
+        return is_scalar($id) ? $id : (object)$id;
     }
 
     /** {@inheritdoc} */
@@ -66,7 +70,7 @@ final class TestApi implements CrudsApiInterface, EntityCacheAwareInterface, Sta
         }
 
         $request = new RpcRequestMock($this->getMethod('find'), $identifier);
-        $body    = $this->client->invoke($request)->getResponse($request)->getBody();
+        $body    = (object)$this->client->invoke($request)->getResponse($request)->getBody();
         $this->cache->set($identifier, $body);
 
         return $body;
@@ -93,7 +97,12 @@ final class TestApi implements CrudsApiInterface, EntityCacheAwareInterface, Sta
             ]
         );
 
-        return new \ArrayIterator($this->client->invoke($request)->getResponse($request)->getBody());
+        $data = $this->client->invoke($request)->getResponse($request)->getBody();
+        foreach ((array)$data as &$item) {
+            $item = (object)$item;
+        }
+
+        return new \ArrayIterator($data);
     }
 
     /** {@inheritdoc} */

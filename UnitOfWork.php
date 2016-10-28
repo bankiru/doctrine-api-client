@@ -492,7 +492,7 @@ class UnitOfWork implements PropertyChangedListener
         $originalData = $this->originalEntityData[$oid];
         $changeSet    = [];
         foreach ($actualData as $propName => $actualValue) {
-            $orgValue = isset($originalData[$propName]) ? $originalData[$propName] : null;
+            $orgValue = isset($originalData->$propName) ? $originalData->$propName : null;
             if ($orgValue !== $actualValue) {
                 $changeSet[$propName] = [$orgValue, $actualValue];
             }
@@ -506,7 +506,7 @@ class UnitOfWork implements PropertyChangedListener
                     $this->entityUpdates[$oid]    = $entity;
                 }
             }
-            $this->originalEntityData[$oid] = $actualData;
+            $this->originalEntityData[$oid] = (object)$actualData;
         }
     }
 
@@ -889,7 +889,7 @@ class UnitOfWork implements PropertyChangedListener
         if (!isset($this->originalEntityData[$oid])) {
             // Entity is either NEW or MANAGED but not yet fully persisted (only has an id).
             // These result in an INSERT.
-            $this->originalEntityData[$oid] = $actualData;
+            $this->originalEntityData[$oid] = (object)$actualData;
             $changeSet                      = [];
             foreach ($actualData as $propName => $actualValue) {
                 if (!$class->hasAssociation($propName)) {
@@ -911,12 +911,11 @@ class UnitOfWork implements PropertyChangedListener
                 ? $this->entityChangeSets[$oid]
                 : [];
             foreach ($actualData as $propName => $actualValue) {
-
                 // skip field, its a partially omitted one!
-                if (!(isset($originalData[$propName]) || array_key_exists($propName, $originalData))) {
+                if (!isset($originalData->$propName)) {
                     continue;
                 }
-                $orgValue = $originalData[$propName];
+                $orgValue = $originalData->$propName;
                 // skip if value haven't changed
                 if ($orgValue === $actualValue) {
 
@@ -971,7 +970,7 @@ class UnitOfWork implements PropertyChangedListener
             }
             if ($changeSet) {
                 $this->entityChangeSets[$oid]   = $changeSet;
-                $this->originalEntityData[$oid] = $actualData;
+                $this->originalEntityData[$oid] = (object)$actualData;
                 $this->entityUpdates[$oid]      = $entity;
             }
         }
@@ -988,7 +987,7 @@ class UnitOfWork implements PropertyChangedListener
                 $val->isDirty()
             ) {
                 $this->entityChangeSets[$oid]   = [];
-                $this->originalEntityData[$oid] = $actualData;
+                $this->originalEntityData[$oid] = (object)$actualData;
                 $this->entityUpdates[$oid]      = $entity;
             }
         }
@@ -1627,6 +1626,10 @@ class UnitOfWork implements PropertyChangedListener
                     $id = [$class->getApiFieldName($class->getIdentifierFieldNames()[0]) => $id];
                 }
 
+                if (!array_key_exists($oid, $this->originalEntityData)) {
+                    $this->originalEntityData[$oid] = new \stdClass();
+                }
+
                 $idValues = [];
                 foreach ((array)$id as $apiIdField => $idValue) {
                     $idName   = $class->getFieldName($apiIdField);
@@ -1635,7 +1638,7 @@ class UnitOfWork implements PropertyChangedListener
                     $idValue  = $type->toApiValue($idValue);
                     $class->getReflectionProperty($idName)->setValue($entity, $idValue);
                     $idValues[$idName] =  $idValue;
-                    $this->originalEntityData[$oid][$idName] = $idValue;
+                    $this->originalEntityData[$oid]->$idName = $idValue;
                 }
 
                 $this->entityIdentifiers[$oid]  = $idValues;
@@ -2172,5 +2175,4 @@ class UnitOfWork implements PropertyChangedListener
             $this->cascadeDetach($entity, $visited);
         }
     }
-
 }
