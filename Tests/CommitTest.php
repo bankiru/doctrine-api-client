@@ -35,6 +35,33 @@ class CommitTest extends AbstractEntityManagerTest
         self::assertEquals(241, $entity->getId());
     }
 
+    public function testExtendedIdIsSameAsSimpleCommit()
+    {
+        $entity = new TestReference();
+
+        $this->getClient('test-reference-client')->push(
+            $this->getResponseMock(true, ['id' => 241]),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-reference/create', $request->getMethod());
+                self::assertEquals(
+                    [
+                        'reference-payload' => '',
+                        'owner'             => null,
+                    ],
+                    $request->getParameters()
+                );
+
+                return true;
+            }
+        );
+
+        $this->getManager()->persist($entity);
+        $this->getManager()->flush();
+
+        self::assertNotNull($entity->getId());
+        self::assertEquals(241, $entity->getId());
+    }
+
     public function testChainCommitWithRelation()
     {
         $entity = new TestReference();
@@ -42,7 +69,7 @@ class CommitTest extends AbstractEntityManagerTest
         $entity->setOwner($parent);
 
         $this->getClient()->push(
-            $this->getResponseMock(true, 42),
+            $this->getResponseMock(true, ['id' => 42]),
             function (RpcRequestInterface $request) {
                 self::assertEquals('test-entity/create', $request->getMethod());
                 self::assertEquals(
@@ -58,7 +85,7 @@ class CommitTest extends AbstractEntityManagerTest
         );
 
         $this->getClient('test-reference-client')->push(
-            $this->getResponseMock(true, 241),
+            $this->getResponseMock(true, ['id' => 241]),
             function (RpcRequestInterface $request) {
                 self::assertEquals('test-reference/create', $request->getMethod());
                 self::assertEquals(
@@ -95,7 +122,7 @@ class CommitTest extends AbstractEntityManagerTest
         $oldParent = $entity->getOwner();
         $newParent = new TestEntity();
         $this->getClient()->push(
-            $this->getResponseMock(true, 17),
+            $this->getResponseMock(true, ['id' => 17]),
             function (RpcRequestInterface $request) {
                 self::assertEquals('test-entity/create', $request->getMethod());
                 self::assertEquals(
@@ -115,7 +142,8 @@ class CommitTest extends AbstractEntityManagerTest
                 self::assertEquals('test-reference/patch', $request->getMethod());
                 self::assertEquals(
                     [
-                        'owner' => 17,
+                        'identifier' => ['id' => 241],
+                        'patch'      => ['owner' => 17],
                     ],
                     $request->getParameters()
                 );
