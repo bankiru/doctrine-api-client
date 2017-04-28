@@ -287,6 +287,33 @@ final class ReferenceLoadingTest extends AbstractEntityManagerTest
         }
     }
 
+    public function testNullValueTraitedAsNullAssociationObject()
+    {
+        $repository = $this->getManager()->getRepository(TestReference::class);
+
+        $this->getClient('test-reference-client')->push(
+            $this->getResponseMock(
+                true,
+                (object)[
+                    'id'                => '1',
+                    'reference-payload' => 'test-payload-5',
+                    'owner'             => null,
+                ]
+            ),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('test-reference/find', $request->getMethod());
+                self::assertEquals(['id' => 1], $request->getParameters());
+
+                return true;
+            }
+        );
+
+        /** @var TestReference $entity */
+        $entity = $repository->find(1);
+
+        self::assertNull($entity->getOwner());
+    }
+
     protected function getClientNames()
     {
         return array_merge(parent::getClientNames(), ['test-reference-client']);
