@@ -33,6 +33,13 @@ final class PatchDehydrator
     public function convertEntityToData($entity)
     {
         $entityData = [];
+
+        $discriminatorField = $this->metadata->getDiscriminatorField();
+
+        if (null !== $discriminatorField) {
+            $entityData[$discriminatorField['fieldName']] = $this->metadata->getDiscriminatorValue();
+        }
+
         foreach ($this->metadata->getReflectionProperties() as $name => $property) {
             if ($this->metadata->isIdentifier($name) && $this->metadata->isIdentifierRemote()) {
                 continue;

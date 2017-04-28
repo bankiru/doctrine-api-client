@@ -29,7 +29,20 @@ final class SearchDehydrator
     }
 
     /**
+     * Converts doctrine object identifiers to API-ready criteria (converts types and field names)
+     *
+     * @param object $entity
+     *
+     * @return array API-ready identifier criteria
+     */
+    public function transformIdentifier($entity)
+    {
+        return $this->doTransform($this->metadata->getIdentifierValues($entity));
+    }
+
+    /**
      * Converts doctrine entity criteria to API-ready criteria (converts types and field names)
+     * Appends discriminator for searching
      *
      * @param array $criteria
      *
@@ -37,7 +50,7 @@ final class SearchDehydrator
      */
     public function transformCriteria(array $criteria)
     {
-        $apiCriteria = [];
+        $apiCriteria = $this->doTransform($criteria);
 
         $discriminatorField = $this->metadata->getDiscriminatorField();
 
@@ -48,6 +61,42 @@ final class SearchDehydrator
                     $this->manager->getClassMetadata($subclass)->getDiscriminatorValue();
             }
         }
+
+        return $apiCriteria;
+    }
+
+    /**
+     * Converts doctrine entity criteria to API-ready criteria (converts types and field names)
+     *
+     * @param array $criteria
+     *
+     * @return array API-ready criteria
+     */
+    public function transformFields(array $criteria)
+    {
+        return $this->doTransform($criteria);
+    }
+
+    /**
+     * Converts doctrine entity order to API-ready order (converts field names)
+     *
+     * @param array $orderBy
+     *
+     * @return array API-ready order
+     */
+    public function transformOrder(array $orderBy = null)
+    {
+        $apiOrder = [];
+        foreach ((array)$orderBy as $field => $direction) {
+            $apiOrder[$this->metadata->getApiFieldName($field)] = $direction;
+        }
+
+        return $apiOrder;
+    }
+
+    private function doTransform(array $criteria)
+    {
+        $apiCriteria = [];
 
         foreach ($criteria as $field => $values) {
             if ($this->metadata->hasAssociation($field)) {
@@ -100,22 +149,5 @@ final class SearchDehydrator
         }
 
         return $apiCriteria;
-    }
-
-    /**
-     * Converts doctrine entity order to API-ready order (converts field names)
-     *
-     * @param array $orderBy
-     *
-     * @return array API-ready order
-     */
-    public function transformOrder(array $orderBy = null)
-    {
-        $apiOrder = [];
-        foreach ((array)$orderBy as $field => $direction) {
-            $apiOrder[$this->metadata->getApiFieldName($field)] = $direction;
-        }
-
-        return $apiOrder;
     }
 }

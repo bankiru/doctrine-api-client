@@ -859,7 +859,7 @@ class UnitOfWork implements PropertyChangedListener
         $actualData = [];
         foreach ($class->getReflectionProperties() as $name => $refProp) {
             $value = $refProp->getValue($entity);
-            if ($class->isCollectionValuedAssociation($name) && $value !== null) {
+            if (null !== $value && $class->isCollectionValuedAssociation($name)) {
                 if ($value instanceof ApiCollection) {
                     if ($value->getOwner() === $entity) {
                         continue;
@@ -904,6 +904,7 @@ class UnitOfWork implements PropertyChangedListener
             }
             $this->entityChangeSets[$oid] = $changeSet;
         } else {
+
             // Entity is "fully" MANAGED: it was already fully persisted before
             // and we have a copy of the original data
             $originalData           = $this->originalEntityData[$oid];
@@ -911,9 +912,10 @@ class UnitOfWork implements PropertyChangedListener
             $changeSet              = ($isChangeTrackingNotify && isset($this->entityChangeSets[$oid]))
                 ? $this->entityChangeSets[$oid]
                 : [];
+
             foreach ($actualData as $propName => $actualValue) {
                 // skip field, its a partially omitted one!
-                if (!isset($originalData->$propName)) {
+                if (!property_exists($originalData, $propName)) {
                     continue;
                 }
                 $orgValue = $originalData->$propName;
