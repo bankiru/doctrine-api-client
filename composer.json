@@ -21,7 +21,7 @@
     "symfony/property-access": "~2.3|~3.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^4.8.35 || ^5.1"
+    "phpunit/phpunit": "^4.8.35 | ^5.4 | ^6.0"
   },
   "suggest": {
     "psr/cache-implementation": "For entity cache support",
