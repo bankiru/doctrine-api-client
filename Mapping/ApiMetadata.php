@@ -204,4 +204,13 @@ interface ApiMetadata extends ClassMetadata
      * @return string
      */
     public function getDiscriminatorValue();
+
+    /**
+     * Returns options array for mapped field
+     *
+     * @param string $fieldName
+     *
+     * @return array
+     */
+    public function getFieldOptions($fieldName);
 }

@@ -1,0 +1,24 @@
+Bankiru\Api\Doctrine\Test\Entity\TypeEntity:
+  type: entity
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: REMOTE
+  fields:
+    datetimeU:
+      type: datetime
+      api_field: datetime_u
+      options:
+        format: 'U'
+    datetimeC:
+      type: datetime
+      api_field: datetime_c
+      options:
+        format: 'Y.m.d H:i:s'
+
+  client:
+    name: test-client
+    entityPath: test-entity
+  api:
+    factory: Bankiru\Api\Doctrine\Test\TestApi
