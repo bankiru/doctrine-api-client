@@ -172,4 +172,48 @@ final class DiscriminatorTest extends AbstractEntityManagerTest
         self::assertEquals(3, $second->getFirst());
         self::assertEquals(3, $second->getSecond());
     }
+
+    public function testDiscriminatorEntitiesCommit()
+    {
+        $this->getClient()->push(
+            $this->getResponseMock(true, ['id_field' => 241]),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('discriminator/create', $request->getMethod());
+                self::assertEquals(
+                    [
+                        'type'  => strtolower('InheritorFirst'),
+                        'base'  => null,
+                        'first' => null,
+                    ],
+                    $request->getParameters()
+                );
+
+                return true;
+            }
+        );
+
+        $entity = new InheritorFirst();
+
+        $this->getManager()->persist($entity);
+        $this->getManager()->flush();
+
+        $this->getClient()->push(
+            $this->getResponseMock(true, ['id_field' => 241]),
+            function (RpcRequestInterface $request) {
+                self::assertEquals('discriminator/patch', $request->getMethod());
+                self::assertEquals(
+                    [
+                        'identifier' => ['id_field' => 241],
+                        'patch'       => ['first' => 'test'],
+                    ],
+                    $request->getParameters()
+                );
+
+                return true;
+            }
+        );
+
+        $entity->setFirst('test');
+        $this->getManager()->flush();
+    }
 }

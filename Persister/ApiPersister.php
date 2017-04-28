@@ -59,19 +59,13 @@ final class ApiPersister implements EntityPersister
         $patch = $this->patchDehydrator->prepareUpdateData($entity);
         $data  = $this->patchDehydrator->convertEntityToData($entity);
 
-        $this->api->patch(
-            $this->searchDehydrator->transformCriteria($this->metadata->getIdentifierValues($entity)),
-            $patch,
-            $data
-        );
+        $this->api->patch($this->searchDehydrator->transformIdentifier($entity), $patch, $data);
     }
 
     /** {@inheritdoc} */
     public function delete($entity)
     {
-        return $this->api->remove(
-            $this->searchDehydrator->transformCriteria($this->metadata->getIdentifierValues($entity))
-        );
+        return $this->api->remove($this->searchDehydrator->transformIdentifier($entity));
     }
 
     /** {@inheritdoc} */
@@ -116,7 +110,7 @@ final class ApiPersister implements EntityPersister
     /** {@inheritdoc} */
     public function loadById(array $identifiers, $entity = null)
     {
-        $body = $this->api->find($this->searchDehydrator->transformCriteria($identifiers));
+        $body = $this->api->find($this->searchDehydrator->transformFields($identifiers));
 
         if (null === $body) {
             return null;
