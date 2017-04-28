@@ -16,7 +16,7 @@ use Doctrine\Common\Proxy\ProxyDefinition;
 use Doctrine\Common\Proxy\ProxyGenerator;
 use Doctrine\Common\Util\ClassUtils;
 
-class ProxyFactory extends AbstractProxyFactory
+final class ProxyFactory extends AbstractProxyFactory
 {
     /** @var ClassMetadataFactory */
     private $manager;
