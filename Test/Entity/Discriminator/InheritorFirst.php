@@ -16,4 +16,12 @@ class InheritorFirst extends DiscriminatorBaseClass
     {
         return $this->first;
     }
+
+    /**
+     * @param string $first
+     */
+    public function setFirst($first)
+    {
+        $this->first = $first;
+    }
 }

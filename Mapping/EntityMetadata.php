@@ -446,7 +446,7 @@ class EntityMetadata implements ApiMetadata
      */
     public function isChangeTrackingDeferredExplicit()
     {
-        return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_EXPLICIT;
+        return $this->changeTrackingPolicy === self::CHANGETRACKING_DEFERRED_EXPLICIT;
     }
 
     /**
@@ -456,7 +456,7 @@ class EntityMetadata implements ApiMetadata
      */
     public function isChangeTrackingDeferredImplicit()
     {
-        return $this->changeTrackingPolicy == self::CHANGETRACKING_DEFERRED_IMPLICIT;
+        return $this->changeTrackingPolicy === self::CHANGETRACKING_DEFERRED_IMPLICIT;
     }
 
     /**
@@ -466,7 +466,7 @@ class EntityMetadata implements ApiMetadata
      */
     public function isChangeTrackingNotify()
     {
-        return $this->changeTrackingPolicy == self::CHANGETRACKING_NOTIFY;
+        return $this->changeTrackingPolicy === self::CHANGETRACKING_NOTIFY;
     }
 
     public function mapIdentifier(array $mapping)
