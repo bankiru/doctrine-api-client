@@ -51,9 +51,17 @@ class EntityMetadata implements ApiMetadata
     public $isIdentifierComposite = false;
     /** @var int */
     public $generatorType = self::GENERATOR_TYPE_NATURAL;
+    /** @var string[] */
+    public $discriminatorField;
+    /** @var string[] */
+    public $discriminatorMap;
+    /** @var string */
+    public $discriminatorValue;
+    /** @var string[] */
+    public $subclasses = [];
     /** @var InstantiatorInterface */
     private $instantiator;
-    /** @var  int */
+    /** @var int */
     private $changeTrackingPolicy = self::CHANGETRACKING_DEFERRED_IMPLICIT;
 
     /**
@@ -405,8 +413,7 @@ class EntityMetadata implements ApiMetadata
     /** {@inheritdoc} */
     public function getSubclasses()
     {
-        //fixme
-        return [];
+        return $this->subclasses;
     }
 
     /** {@inheritdoc} */
@@ -489,6 +496,120 @@ class EntityMetadata implements ApiMetadata
     public function isIdentifierRemote()
     {
         return $this->generatorType === self::GENERATOR_TYPE_REMOTE;
+    }
+
+    /**
+     * Populates the entity identifier of an entity.
+     *
+     * @param object $entity
+     * @param array  $id
+     *
+     * @return void
+     *
+     * @todo Rename to assignIdentifier()
+     */
+    public function setIdentifierValues($entity, array $id)
+    {
+        foreach ($id as $idField => $idValue) {
+            $this->reflFields[$idField]->setValue($entity, $idValue);
+        }
+    }
+
+    public function isRootEntity()
+    {
+        return $this->getRootEntityName() === $this->getName();
+    }
+
+    /**
+     * Sets the discriminator column definition.
+     *
+     * @param array $columnDef
+     *
+     * @return void
+     *
+     * @throws MappingException
+     *
+     * @see getDiscriminatorColumn()
+     */
+    public function setDiscriminatorField(array $columnDef = null)
+    {
+        if ($columnDef !== null) {
+            if (!isset($columnDef['name'])) {
+                throw MappingException::nameIsMandatoryForDiscriminatorColumns($this->name);
+            }
+            if (isset($this->fieldNames[$columnDef['name']])) {
+                throw MappingException::duplicateColumnName($this->name, $columnDef['name']);
+            }
+            if (!isset($columnDef['fieldName'])) {
+                $columnDef['fieldName'] = $columnDef['name'];
+            }
+            if (!isset($columnDef['type'])) {
+                $columnDef['type'] = 'string';
+            }
+            if (in_array($columnDef['type'], ['boolean', 'array', 'object', 'datetime', 'time', 'date'], true)) {
+                throw MappingException::invalidDiscriminatorColumnType($this->name, $columnDef['type']);
+            }
+            $this->discriminatorField = $columnDef;
+        }
+    }
+
+    /**
+     * Sets the discriminator values used by this class.
+     * Used for JOINED and SINGLE_TABLE inheritance mapping strategies.
+     *
+     * @param array $map
+     *
+     * @return void
+     */
+    public function setDiscriminatorMap(array $map)
+    {
+        foreach ($map as $value => $className) {
+            $this->addDiscriminatorMapClass($value, $className);
+        }
+    }
+
+    /**
+     * Adds one entry of the discriminator map with a new class and corresponding name.
+     *
+     * @param string $name
+     * @param string $className
+     *
+     * @return void
+     *
+     * @throws MappingException
+     */
+    public function addDiscriminatorMapClass($name, $className)
+    {
+        $className                     = $this->fullyQualifiedClassName($className);
+        $className                     = ltrim($className, '\\');
+        $this->discriminatorMap[$name] = $className;
+        if ($this->name === $className) {
+            $this->discriminatorValue = $name;
+
+            return;
+        }
+        if (!(class_exists($className) || interface_exists($className))) {
+            throw MappingException::invalidClassInDiscriminatorMap($className, $this->name);
+        }
+        if (is_subclass_of($className, $this->name) && !in_array($className, $this->subclasses)) {
+            $this->subclasses[] = $className;
+        }
+    }
+
+    /**
+     * @param  string|null $className
+     *
+     * @return string|null null if the input value is null
+     */
+    public function fullyQualifiedClassName($className)
+    {
+        if (empty($className)) {
+            return $className;
+        }
+        if ($className !== null && strpos($className, '\\') === false && $this->namespace) {
+            return $this->namespace . '\\' . $className;
+        }
+        return $className;
     }
 
     /**
@@ -609,6 +730,10 @@ class EntityMetadata implements ApiMetadata
         $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
         $this->fieldNames[$mapping['api_field']] = $mapping['field'];
 
+//        if (isset($this->fieldNames[$mapping['columnName']]) || ($this->discriminatorField && $this->discriminatorField['name'] === $mapping['api_field'])) {
+//            throw MappingException::duplicateColumnName($this->name, $mapping['columnName']);
+//        }
+
         // Complete id mapping
         if (isset($mapping['id']) && $mapping['id'] === true) {
             if (!in_array($mapping['field'], $this->identifier, true)) {
@@ -692,20 +817,21 @@ class EntityMetadata implements ApiMetadata
         return $mapping;
     }
 
-    /**
-     * Populates the entity identifier of an entity.
-     *
-     * @param object $entity
-     * @param array  $id
-     *
-     * @return void
-     *
-     * @todo Rename to assignIdentifier()
-     */
-    public function setIdentifierValues($entity, array $id)
+    /** {@inheritdoc} */
+    public function getDiscriminatorField()
     {
-        foreach ($id as $idField => $idValue) {
-            $this->reflFields[$idField]->setValue($entity, $idValue);
-        }
+        return $this->discriminatorField;
+    }
+
+    /** {@inheritdoc} */
+    public function getDiscriminatorMap()
+    {
+        return $this->discriminatorMap;
+    }
+
+    /** {@inheritdoc} */
+    public function getDiscriminatorValue()
+    {
+        return $this->discriminatorValue;
     }
 }

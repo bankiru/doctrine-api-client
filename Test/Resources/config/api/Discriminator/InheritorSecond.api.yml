@@ -1,0 +1,5 @@
+Bankiru\Api\Doctrine\Test\Entity\Discriminator\InheritorSecond:
+  type: entity
+  fields:
+    second:
+      type: string

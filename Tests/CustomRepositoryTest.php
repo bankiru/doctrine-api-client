@@ -6,7 +6,7 @@ use Bankiru\Api\Doctrine\Test\Entity\CustomEntity;
 use Bankiru\Api\Doctrine\Test\Repository\CustomTestRepository;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
-class CustomRepositoryTest extends AbstractEntityManagerTest
+final class CustomRepositoryTest extends AbstractEntityManagerTest
 {
     public function testCustomRepository()
     {

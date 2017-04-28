@@ -118,7 +118,8 @@ as `Entity[]|ArrayCollection` as hydrator will substitute your relation property
 
 ### Note on lazy-loading
 
-Generic API is not a DB, so eager reference pre-fetching will always result in additional API query, 
+Generic API is not a DB, so eager reference pre-fetching will always result in additional API query (excluding super-APIs with 
+prefetching features, not supported now), 
 so current implementation always assumes that all requests are extra-lazy.
 This means that no data will be fetched until you really need it, and you'll have only lazy proxy object before that happens.
 
@@ -131,7 +132,8 @@ Keep it in the mind
 Just call defined RpcClient from your repository
 
 ```php
-class MyRepository extends \Bankiru\Api\Doctrine\EntityRepository {
+class MyRepository extends \Bankiru\Api\Doctrine\EntityRepository 
+{
     public function callCustomRpcMethod()
     {
         $request = new \Bankiru\Api\Rpc\RpcRequest('my-method',['param1'=>'value1']);
@@ -157,7 +159,8 @@ MyVendor\Api\Entity\MyEntity:
     
   repositoryClass: MyVendor\Api\Repository\MyRepository # This will override repository for MyEntity
   api:
-    name: Vendor\Api\CrudsApiFactory
+    factory: Vendor\Api\CrudsApiFactory
+    
   client:
     name: my-client
     # entityPath: my-entity autoconfigures find and search methods for you as following, but it is not overridable
@@ -171,7 +174,8 @@ MyVendor\Api\Entity\MyEntity:
 ```
 
 ```php
-class MyRepository extends \Bankiru\Api\Doctrine\EntityRepository {
+class MyRepository extends \Bankiru\Api\Doctrine\EntityRepository 
+{
     public function callCustomRpcMethod()
     {
         $request = new \Bankiru\Api\Rpc\RpcRequest(

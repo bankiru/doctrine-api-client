@@ -1,0 +1,18 @@
+Bankiru\Api\Doctrine\Test\Entity\DiscriminatorBaseClass:
+  type: entity
+  discriminatorField:
+    name: type
+    type: string
+  id:
+    id:
+      type: int
+      api_field: id_field
+      generator: {strategy: REMOTE}
+  fields:
+    base:
+      type: string
+  client:
+    name: test-client
+    entityPath: discriminator
+  api:
+    factory: Bankiru\Api\Doctrine\Test\TestApi

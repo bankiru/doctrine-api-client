@@ -48,6 +48,23 @@ class YmlMetadataDriver extends FileDriver
             }
         }
 
+        // Evaluate discriminatorColumn
+        if (isset($element['discriminatorField'])) {
+            $discrColumn = $element['discriminatorField'];
+            $metadata->setDiscriminatorField(
+                [
+                    'name' => isset($discrColumn['name']) ? (string)$discrColumn['name'] : null,
+                    'type' => isset($discrColumn['type']) ? (string)$discrColumn['type'] : 'string',
+                ]
+            );
+        } else {
+            // $metadata->setDiscriminatorField(['name' => 'dtype', 'type' => 'string']);
+        }
+        // Evaluate discriminatorMap
+        if (isset($element['discriminatorMap'])) {
+            $metadata->setDiscriminatorMap($element['discriminatorMap']);
+        }
+
         // Configure Client
         if (array_key_exists('client', $element)) {
             if (array_key_exists('name', $element['client'])) {

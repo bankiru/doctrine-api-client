@@ -5,7 +5,7 @@ namespace Bankiru\Api\Doctrine\Tests;
 use Bankiru\Api\Doctrine\Test\Entity\PrefixedEntity;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
-class CountingTest extends AbstractEntityManagerTest
+final class CountingTest extends AbstractEntityManagerTest
 {
     public function testEntityCounting()
     {

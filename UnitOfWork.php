@@ -8,6 +8,7 @@ use Bankiru\Api\Doctrine\Cache\LoggingCache;
 use Bankiru\Api\Doctrine\Cache\VoidEntityCache;
 use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Hydration\EntityHydrator;
+use Bankiru\Api\Doctrine\Hydration\Hydrator;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Persister\ApiPersister;
@@ -94,6 +95,8 @@ class UnitOfWork implements PropertyChangedListener
     private $visitedCollections = [];
     /** @var ReflectionPropertiesGetter */
     private $reflectionPropertiesGetter;
+    /** @var Hydrator[] */
+    private $hydrators = [];
 
     /**
      * UnitOfWork constructor.
@@ -181,10 +184,8 @@ class UnitOfWork implements PropertyChangedListener
     public function getOrCreateEntity($className, \stdClass $data)
     {
         /** @var EntityMetadata $class */
-        $class    = $this->manager->getClassMetadata($className);
-        $hydrator = new EntityHydrator($this->manager, $class);
-
-        $tmpEntity = $hydrator->hydarate($data);
+        $class     = $this->resolveSourceMetadataForClass($data, $className);
+        $tmpEntity = $this->getHydratorForClass($class)->hydarate($data);
 
         $id     = $this->identifierFlattener->flattenIdentifier($class, $class->getIdentifierValues($tmpEntity));
         $idHash = implode(' ', $id);
@@ -221,7 +222,7 @@ class UnitOfWork implements PropertyChangedListener
             return $entity;
         }
 
-        $entity = $hydrator->hydarate($data, $entity);
+        $entity = $this->getHydratorForClass($class)->hydarate($data, $entity);
 
         return $entity;
     }
@@ -1237,6 +1238,37 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
+     * Resolve metadata against source data and root class
+     *
+     * @param \stdClass $data
+     * @param string    $class
+     *
+     * @return ApiMetadata
+     * @throws MappingException
+     */
+    private function resolveSourceMetadataForClass(\stdClass $data, $class)
+    {
+        $metadata           = $this->manager->getClassMetadata($class);
+        $discriminatorValue = $metadata->getDiscriminatorValue();
+        if ($metadata->getDiscriminatorField()) {
+            $property = $metadata->getDiscriminatorField()['fieldName'];
+            if (isset($data->$property)) {
+                $discriminatorValue = $data->$property;
+            }
+        }
+
+        $map = $metadata->getDiscriminatorMap();
+
+        if (!array_key_exists($discriminatorValue, $map)) {
+            throw MappingException::unknownDiscriminatorValue($discriminatorValue, $class);
+        }
+
+        $realClass = $map[$discriminatorValue];
+
+        return $this->manager->getClassMetadata($realClass);
+    }
+
+    /**
      * Helper method to show an object as string.
      *
      * @param object $obj
@@ -1637,12 +1669,12 @@ class UnitOfWork implements PropertyChangedListener
                     $type     = $this->manager->getConfiguration()->getTypeRegistry()->get($typeName);
                     $idValue  = $type->toApiValue($idValue);
                     $class->getReflectionProperty($idName)->setValue($entity, $idValue);
-                    $idValues[$idName] =  $idValue;
+                    $idValues[$idName]                       = $idValue;
                     $this->originalEntityData[$oid]->$idName = $idValue;
                 }
 
-                $this->entityIdentifiers[$oid]  = $idValues;
-                $this->entityStates[$oid]       = self::STATE_MANAGED;
+                $this->entityIdentifiers[$oid] = $idValues;
+                $this->entityStates[$oid]      = self::STATE_MANAGED;
                 $this->addToIdentityMap($entity);
             }
         }
@@ -2174,5 +2206,19 @@ class UnitOfWork implements PropertyChangedListener
         if (!$noCascade) {
             $this->cascadeDetach($entity, $visited);
         }
+    }
+
+    /**
+     * @param ApiMetadata $class
+     *
+     * @return EntityHydrator
+     */
+    private function getHydratorForClass(ApiMetadata $class)
+    {
+        if (!array_key_exists($class->getName(), $this->hydrators)) {
+            $this->hydrators[$class->getName()] = new EntityHydrator($this->manager, $class);
+        }
+
+        return $this->hydrators[$class->getName()];
     }
 }
