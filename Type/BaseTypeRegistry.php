@@ -2,7 +2,7 @@
 
 namespace Bankiru\Api\Doctrine\Type;
 
-class BaseTypeRegistry implements TypeRegistryInterface
+final class BaseTypeRegistry implements TypeRegistryInterface
 {
     /** @var  TypeRegistryInterface */
     private $registry;

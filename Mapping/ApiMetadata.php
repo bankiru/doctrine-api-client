@@ -187,4 +187,21 @@ interface ApiMetadata extends ClassMetadata
      * @todo Rename to assignIdentifier()
      */
     public function setIdentifierValues($entity, array $id);
+
+    /**
+     * Return discriminator field definition
+     *
+     * @return \string[]|null
+     */
+    public function getDiscriminatorField();
+
+    /**
+     * @return \string[]
+     */
+    public function getDiscriminatorMap();
+
+    /**
+     * @return string
+     */
+    public function getDiscriminatorValue();
 }

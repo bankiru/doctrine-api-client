@@ -6,7 +6,7 @@ use Bankiru\Api\Doctrine\Test\Entity\Sub\SubEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
-class CollectionLoadingTest extends AbstractEntityManagerTest
+final class CollectionLoadingTest extends AbstractEntityManagerTest
 {
     public function testFindBy()
     {

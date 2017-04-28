@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Proxy\Proxy;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
-class ReferenceLoadingTest extends AbstractEntityManagerTest
+final class ReferenceLoadingTest extends AbstractEntityManagerTest
 {
     public function testAnyToOneLoading()
     {

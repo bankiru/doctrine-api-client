@@ -9,7 +9,7 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
-class EntityCacheTest extends AbstractEntityManagerTest
+final class EntityCacheTest extends AbstractEntityManagerTest
 {
     private static $cache;
 

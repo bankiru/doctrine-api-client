@@ -18,11 +18,15 @@ use Bankiru\Api\Doctrine\Type\BaseTypeRegistry;
 use Bankiru\Api\Doctrine\Type\TypeRegistry;
 use Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\Common\Persistence\Mapping\Driver\SymfonyFileLocator;
+use PHPUnit\Framework\TestCase;
 use ScayTrase\Api\Rpc\Test\RpcMockClient;
 use ScayTrase\Api\Rpc\Tests\AbstractRpcTest;
+use ScayTrase\Api\Rpc\Tests\RpcRequestTrait;
 
-abstract class AbstractEntityManagerTest extends AbstractRpcTest
+abstract class AbstractEntityManagerTest extends TestCase
 {
+    use RpcRequestTrait;
+
     const DEFAULT_CLIENT = 'test-client';
     /** @var  ClientRegistryInterface */
     private $clientRegistry;

@@ -139,5 +139,12 @@ interface EntityPersister
     public function pushNewEntity($entity);
 
     public function flushNewEntities();
+
+    /**
+     * @param string $oid
+     *
+     * @return bool
+     */
+    public function hasPendingUpdates($oid);
 }
 

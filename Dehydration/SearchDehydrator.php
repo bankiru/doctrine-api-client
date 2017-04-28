@@ -1,6 +1,6 @@
 <?php
 
-namespace Bankiru\Api\Doctrine\Rpc;
+namespace Bankiru\Api\Doctrine\Dehydration;
 
 use Bankiru\Api\Doctrine\ApiEntityManager;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
@@ -9,7 +9,7 @@ use Bankiru\Api\Doctrine\Proxy\ApiCollection;
 use Doctrine\Common\Collections\Collection;
 
 /** @internal */
-final class SearchArgumentsTransformer
+final class SearchDehydrator
 {
     /** @var  ApiMetadata */
     private $metadata;
@@ -17,7 +17,7 @@ final class SearchArgumentsTransformer
     private $manager;
 
     /**
-     * SearchArgumentsTransformer constructor.
+     * SearchDehydrator constructor.
      *
      * @param ApiMetadata      $metadata
      * @param ApiEntityManager $manager
@@ -38,6 +38,17 @@ final class SearchArgumentsTransformer
     public function transformCriteria(array $criteria)
     {
         $apiCriteria = [];
+
+        $discriminatorField = $this->metadata->getDiscriminatorField();
+
+        if (null !== $discriminatorField) {
+            $apiCriteria[$discriminatorField['fieldName']] = [$this->metadata->getDiscriminatorValue()];
+            foreach ($this->metadata->getSubclasses() as $subclass) {
+                $apiCriteria[$discriminatorField['fieldName']][] =
+                    $this->manager->getClassMetadata($subclass)->getDiscriminatorValue();
+            }
+        }
+
         foreach ($criteria as $field => $values) {
             if ($this->metadata->hasAssociation($field)) {
                 $mapping = $this->metadata->getAssociationMapping($field);
@@ -63,7 +74,7 @@ final class SearchArgumentsTransformer
                     }
                     $values = $values->toArray();
                 }
-                
+
                 if (is_array($values)) {
                     $values = array_map($converter, $values);
                 } else {
