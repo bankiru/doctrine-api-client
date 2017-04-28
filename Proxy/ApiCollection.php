@@ -11,7 +11,7 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
 use ScayTrase\Api\Rpc\Exception\RpcExceptionInterface;
 
-class ApiCollection extends AbstractLazyCollection implements Selectable
+final class ApiCollection extends AbstractLazyCollection implements Selectable
 {
     /** @var  ApiEntityManager */
     private $manager;

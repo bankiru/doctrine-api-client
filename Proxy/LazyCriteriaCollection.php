@@ -6,8 +6,16 @@ use Bankiru\Api\Doctrine\Persister\EntityPersister;
 use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\Criteria;
 
-class LazyCriteriaCollection extends AbstractLazyCollection
+final class LazyCriteriaCollection extends AbstractLazyCollection
 {
+    /**
+     * @var EntityPersister
+     */
+    private $persister;
+    /**
+     * @var Criteria
+     */
+    private $criteria;
 
     /**
      * LazyCriteriaCollection constructor.
@@ -17,6 +25,8 @@ class LazyCriteriaCollection extends AbstractLazyCollection
      */
     public function __construct(EntityPersister $persister, Criteria $criteria)
     {
+        $this->persister = $persister;
+        $this->criteria = $criteria;
     }
 
     /**
@@ -26,6 +36,6 @@ class LazyCriteriaCollection extends AbstractLazyCollection
      */
     protected function doInitialize()
     {
-        // TODO: Implement doInitialize() method.
+        $this->collection = [];
     }
 }
