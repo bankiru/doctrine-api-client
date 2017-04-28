@@ -114,6 +114,10 @@ final class EntityHydrator implements Hydrator
                     );
                 }
 
+                if (null === $value) {
+                    return null;
+                }
+
                 if ($targetMetadata->isIdentifierComposite()) {
                     throw new HydrationException('Composite references not supported');
                 }
