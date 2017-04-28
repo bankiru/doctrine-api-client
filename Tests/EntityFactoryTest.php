@@ -7,7 +7,7 @@ use Bankiru\Api\Doctrine\Test\Entity\Sub\SubEntity;
 use Bankiru\Api\Doctrine\Test\Entity\TestEntity;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
-class EntityFactoryTest extends AbstractEntityManagerTest
+final class EntityFactoryTest extends AbstractEntityManagerTest
 {
     public function testEntityLoading()
     {

@@ -5,7 +5,7 @@ namespace Bankiru\Api\Doctrine\Tests;
 use Bankiru\Api\Doctrine\Test\Entity\IndirectIdEntity;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
-class IndirectFieldsTestAbstract extends AbstractEntityManagerTest
+final class IndirectFieldsTest extends AbstractEntityManagerTest
 {
     public function testIndirectId()
     {

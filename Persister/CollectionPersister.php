@@ -2,7 +2,6 @@
 
 namespace Bankiru\Api\Doctrine\Persister;
 
-class CollectionPersister
+final class CollectionPersister
 {
-
 }

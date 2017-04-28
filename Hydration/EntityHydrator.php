@@ -11,7 +11,7 @@ use Doctrine\Common\Proxy\Proxy;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
-class EntityHydrator
+final class EntityHydrator implements Hydrator
 {
     /** @var  EntityMetadata */
     private $metadata;
@@ -30,13 +30,7 @@ class EntityHydrator
         $this->metadata = $metadata;
     }
 
-    /**
-     * @param \StdClass   $source
-     * @param object|null $entity
-     *
-     * @return object Hydrated object
-     * @throws HydrationException
-     */
+    /** {@inheritdoc} */
     public function hydarate($source, $entity = null)
     {
         if (null === $entity) {

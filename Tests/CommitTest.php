@@ -6,7 +6,7 @@ use Bankiru\Api\Doctrine\Test\Entity\TestEntity;
 use Bankiru\Api\Doctrine\Test\Entity\TestReference;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
-class CommitTest extends AbstractEntityManagerTest
+final class CommitTest extends AbstractEntityManagerTest
 {
     public function testSimpleCommit()
     {

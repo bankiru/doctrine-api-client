@@ -6,7 +6,7 @@ use Bankiru\Api\Doctrine\Test\Entity\Sub\SubEntity;
 use Doctrine\Common\Proxy\Proxy;
 use ScayTrase\Api\Rpc\RpcRequestInterface;
 
-class ProxyTestAbstract extends AbstractEntityManagerTest
+final class ProxyTest extends AbstractEntityManagerTest
 {
     public function testLazyProxy()
     {

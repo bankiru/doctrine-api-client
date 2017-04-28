@@ -37,6 +37,17 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
         $this->manager = $manager;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    protected function loadMetadata($name)
+    {
+        $loaded = parent::loadMetadata($name);
+        array_map([$this, 'resolveDiscriminatorValue'], array_map([$this, 'getMetadataFor'], $loaded));
+
+        return $loaded;
+    }
+
     /** {@inheritdoc} */
     protected function initialize()
     {
@@ -100,18 +111,7 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
         return true;
     }
 
-    /**
-     * Actually loads the metadata from the underlying metadata.
-     *
-     * @param EntityMetadata      $class
-     * @param EntityMetadata|null $parent
-     * @param bool                $rootEntityFound
-     * @param array               $nonSuperclassParents    All parent class names
-     *                                                     that are not marked as mapped superclasses.
-     *
-     * @return void
-     * @throws MappingException
-     */
+    /** {@inheritdoc} */
     protected function doLoadMetadata($class, $parent, $rootEntityFound, array $nonSuperclassParents)
     {
         /* @var $class EntityMetadata */
@@ -123,7 +123,10 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
             $class->apiFactory     = $parent->apiFactory;
             $class->clientName     = $parent->clientName;
             $class->methodProvider = $parent->methodProvider;
-            $class->generatorType  = $parent->generatorType;
+
+            $class->setIdGeneratorType($parent->generatorType);
+            $class->setDiscriminatorField($parent->discriminatorField);
+            $class->setDiscriminatorMap($parent->discriminatorMap);
 
             if ($parent->isMappedSuperclass) {
                 $class->setCustomRepositoryClass($parent->repositoryClass);
@@ -135,6 +138,20 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
             $this->getDriver()->loadMetadataForClass($class->getName(), $class);
         } catch (ReflectionException $e) {
             throw MappingException::nonExistingClass($class->getName());
+        }
+
+        if ($parent) {
+            $classCache = $this->manager->getConfiguration()->getCacheConfiguration($class->getName());
+            if (!$classCache->isEnabled()) {
+                $parentCache = $this->manager->getConfiguration()->getCacheConfiguration($parent->getName());
+                if ($parentCache->isEnabled()) {
+                    $this->manager->getConfiguration()->setCacheConfigurationInstance($class->getName(), $parentCache);
+                }
+            }
+        }
+
+        if ($class->isRootEntity() && !$class->discriminatorMap) {
+            $this->addDefaultDiscriminatorMap($class);
         }
     }
 
@@ -158,6 +175,98 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
     protected function newClassMetadataInstance($className)
     {
         return new EntityMetadata($className);
+    }
+
+    /**
+     * Populates the discriminator value of the given metadata (if not set) by iterating over discriminator
+     * map classes and looking for a fitting one.
+     *
+     * @param EntityMetadata $metadata
+     *
+     * @return void
+     *
+     * @throws MappingException
+     */
+    private function resolveDiscriminatorValue(EntityMetadata $metadata)
+    {
+        if ($metadata->discriminatorValue
+            || !$metadata->discriminatorMap
+            || $metadata->isMappedSuperclass
+            || !$metadata->reflClass
+            || $metadata->reflClass->isAbstract()
+        ) {
+            return;
+        }
+        // minor optimization: avoid loading related metadata when not needed
+        foreach ($metadata->discriminatorMap as $discriminatorValue => $discriminatorClass) {
+            if ($discriminatorClass === $metadata->name) {
+                $metadata->discriminatorValue = $discriminatorValue;
+
+                return;
+            }
+        }
+        // iterate over discriminator mappings and resolve actual referenced classes according to existing metadata
+        foreach ($metadata->discriminatorMap as $discriminatorValue => $discriminatorClass) {
+            if ($metadata->name === $this->getMetadataFor($discriminatorClass)->getName()) {
+                $metadata->discriminatorValue = $discriminatorValue;
+
+                return;
+            }
+        }
+
+        throw MappingException::mappedClassNotPartOfDiscriminatorMap($metadata->name, $metadata->rootEntityName);
+    }
+
+    /**
+     * Adds a default discriminator map if no one is given
+     *
+     * If an entity is of any inheritance type and does not contain a
+     * discriminator map, then the map is generated automatically. This process
+     * is expensive computation wise.
+     *
+     * The automatically generated discriminator map contains the lowercase short name of
+     * each class as key.
+     *
+     * @param EntityMetadata $class
+     *
+     * @throws MappingException
+     */
+    private function addDefaultDiscriminatorMap(EntityMetadata $class)
+    {
+        $allClasses = $this->driver->getAllClassNames();
+        $fqcn       = $class->getName();
+        $map        = [$this->getShortName($class->name) => $fqcn];
+        $duplicates = [];
+        foreach ($allClasses as $subClassCandidate) {
+            if (is_subclass_of($subClassCandidate, $fqcn)) {
+                $shortName = $this->getShortName($subClassCandidate);
+                if (isset($map[$shortName])) {
+                    $duplicates[] = $shortName;
+                }
+                $map[$shortName] = $subClassCandidate;
+            }
+        }
+        if ($duplicates) {
+            throw MappingException::duplicateDiscriminatorEntry($class->name, $duplicates, $map);
+        }
+        $class->setDiscriminatorMap($map);
+    }
+
+    /**
+     * Gets the lower-case short name of a class.
+     *
+     * @param string $className
+     *
+     * @return string
+     */
+    private function getShortName($className)
+    {
+        if (strpos($className, "\\") === false) {
+            return strtolower($className);
+        }
+        $parts = explode("\\", $className);
+
+        return strtolower(end($parts));
     }
 
     /**

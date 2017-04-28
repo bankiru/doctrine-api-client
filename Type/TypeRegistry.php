@@ -4,7 +4,7 @@ namespace Bankiru\Api\Doctrine\Type;
 
 use Bankiru\Api\Doctrine\Exception\TypeException;
 
-class TypeRegistry implements TypeRegistryInterface
+final class TypeRegistry implements TypeRegistryInterface
 {
     /** @var  Type[] */
     private $types = [];
