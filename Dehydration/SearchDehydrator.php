@@ -135,7 +135,7 @@ final class SearchDehydrator
                         ->getConfiguration()
                         ->getTypeRegistry()->get($this->metadata->getTypeOfField($field));
 
-                    return $type->toApiValue($value);
+                    return $type->toApiValue($value, $this->metadata->getFieldOptions($field));
                 };
 
                 if (is_array($values)) {

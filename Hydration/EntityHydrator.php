@@ -63,7 +63,7 @@ final class EntityHydrator implements Hydrator
 
             $type  =
                 $this->manager->getConfiguration()->getTypeRegistry()->get($this->metadata->getTypeOfField($fieldName));
-            $value = $type->fromApiValue($value);
+            $value = $type->fromApiValue($value, $this->metadata->getFieldOptions($fieldName));
 
             $property->setValue($entity, $value);
         }
@@ -129,7 +129,7 @@ final class EntityHydrator implements Hydrator
                     ->getTypeRegistry()
                     ->get($targetMetadata->getTypeOfField($targetIdName));
 
-                $identifiers = [$targetIdName => $type->fromApiValue($value)];
+                $identifiers = [$targetIdName => $type->fromApiValue($value, $this->metadata->getFieldOptions($targetIdName))];
             }
 
             $newValue = $targetPersister->getToOneEntity($mapping, $entity, $identifiers);

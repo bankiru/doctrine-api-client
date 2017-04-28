@@ -64,7 +64,7 @@ final class PatchDehydrator
                     $typeName        = $targetMetadata->getTypeOfField($idName);
                     $idApiName       = $targetMetadata->getApiFieldName($idName);
                     $type            = $this->manager->getConfiguration()->getTypeRegistry()->get($typeName);
-                    $idValue         = $type->toApiValue($idValue);
+                    $idValue         = $type->toApiValue($idValue, $targetMetadata->getFieldOptions($idName));
                     $ids[$idApiName] = $idValue;
                 }
                 if (!$targetMetadata->isIdentifierComposite()) {
@@ -74,7 +74,7 @@ final class PatchDehydrator
             } else {
                 $typeName = $this->metadata->getTypeOfField($name);
                 $type     = $this->manager->getConfiguration()->getTypeRegistry()->get($typeName);
-                $value    = $type->toApiValue($value);
+                $value    = $type->toApiValue($value, $this->metadata->getFieldOptions($name));
             }
 
             $entityData[$apiField] = $value;

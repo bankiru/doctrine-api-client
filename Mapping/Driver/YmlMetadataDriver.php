@@ -205,6 +205,7 @@ class YmlMetadataDriver extends FileDriver
             'field'    => $field,
             'type'     => 'string',
             'nullable' => true,
+            'options'  => [],
         ];
 
         if (array_key_exists('type', $source)) {
@@ -217,6 +218,10 @@ class YmlMetadataDriver extends FileDriver
 
         if (array_key_exists('api_field', $source)) {
             $mapping['api_field'] = $source['api_field'];
+        }
+
+        if (array_key_exists('options', $source)) {
+            $mapping['options'] = $source['options'];
         }
 
         return $mapping;

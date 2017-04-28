@@ -7,11 +7,15 @@ class DateTimeType implements Type
     /** {@inheritdoc} */
     public function toApiValue($value, array $options = [])
     {
+        if (null === $value) {
+            return null;
+        }
+
         if (!$value instanceof \DateTime) {
             $value = new \DateTime($value);
         }
 
-        return $value->format('c');
+        return $value->format($this->getFormat($options));
     }
 
     /** {@inheritdoc} */
@@ -21,6 +25,15 @@ class DateTimeType implements Type
             return null;
         }
 
-        return \DateTime::createFromFormat('c', $value);
+        return \DateTime::createFromFormat($this->getFormat($options), $value);
+    }
+
+    protected function getFormat(array $options)
+    {
+        if (!array_key_exists('format', $options)) {
+            return \DateTime::ATOM;
+        }
+
+        return $options['format'];
     }
 }
