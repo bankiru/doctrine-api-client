@@ -1669,7 +1669,7 @@ class UnitOfWork implements PropertyChangedListener
                     $idName   = $class->getFieldName($apiIdField);
                     $typeName = $class->getTypeOfField($idName);
                     $type     = $this->manager->getConfiguration()->getTypeRegistry()->get($typeName);
-                    $idValue  = $type->toApiValue($idValue);
+                    $idValue  = $type->toApiValue($idValue, $class->getFieldOptions($idName));
                     $class->getReflectionProperty($idName)->setValue($entity, $idValue);
                     $idValues[$idName]                       = $idValue;
                     $this->originalEntityData[$oid]->$idName = $idValue;

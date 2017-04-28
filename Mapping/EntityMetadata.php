@@ -305,6 +305,12 @@ class EntityMetadata implements ApiMetadata
     }
 
     /** {@inheritdoc} */
+    public function getFieldOptions($fieldName)
+    {
+        return $this->getFieldMapping($fieldName)['options'];
+    }
+
+    /** {@inheritdoc} */
     public function getAssociationMapping($fieldName)
     {
         if (!isset($this->associations[$fieldName])) {
@@ -521,54 +527,6 @@ class EntityMetadata implements ApiMetadata
     }
 
     /**
-     * Sets the discriminator column definition.
-     *
-     * @param array $columnDef
-     *
-     * @return void
-     *
-     * @throws MappingException
-     *
-     * @see getDiscriminatorColumn()
-     */
-    public function setDiscriminatorField(array $columnDef = null)
-    {
-        if ($columnDef !== null) {
-            if (!isset($columnDef['name'])) {
-                throw MappingException::nameIsMandatoryForDiscriminatorColumns($this->name);
-            }
-            if (isset($this->fieldNames[$columnDef['name']])) {
-                throw MappingException::duplicateColumnName($this->name, $columnDef['name']);
-            }
-            if (!isset($columnDef['fieldName'])) {
-                $columnDef['fieldName'] = $columnDef['name'];
-            }
-            if (!isset($columnDef['type'])) {
-                $columnDef['type'] = 'string';
-            }
-            if (in_array($columnDef['type'], ['boolean', 'array', 'object', 'datetime', 'time', 'date'], true)) {
-                throw MappingException::invalidDiscriminatorColumnType($this->name, $columnDef['type']);
-            }
-            $this->discriminatorField = $columnDef;
-        }
-    }
-
-    /**
-     * Sets the discriminator values used by this class.
-     * Used for JOINED and SINGLE_TABLE inheritance mapping strategies.
-     *
-     * @param array $map
-     *
-     * @return void
-     */
-    public function setDiscriminatorMap(array $map)
-    {
-        foreach ($map as $value => $className) {
-            $this->addDiscriminatorMapClass($value, $className);
-        }
-    }
-
-    /**
      * Adds one entry of the discriminator map with a new class and corresponding name.
      *
      * @param string $name
@@ -609,7 +567,74 @@ class EntityMetadata implements ApiMetadata
         if ($className !== null && strpos($className, '\\') === false && $this->namespace) {
             return $this->namespace . '\\' . $className;
         }
+
         return $className;
+    }
+
+    /** {@inheritdoc} */
+    public function getDiscriminatorField()
+    {
+        return $this->discriminatorField;
+    }
+
+    /**
+     * Sets the discriminator column definition.
+     *
+     * @param array $columnDef
+     *
+     * @return void
+     *
+     * @throws MappingException
+     *
+     * @see getDiscriminatorColumn()
+     */
+    public function setDiscriminatorField(array $columnDef = null)
+    {
+        if ($columnDef !== null) {
+            if (!isset($columnDef['name'])) {
+                throw MappingException::nameIsMandatoryForDiscriminatorColumns($this->name);
+            }
+            if (isset($this->fieldNames[$columnDef['name']])) {
+                throw MappingException::duplicateColumnName($this->name, $columnDef['name']);
+            }
+            if (!isset($columnDef['fieldName'])) {
+                $columnDef['fieldName'] = $columnDef['name'];
+            }
+            if (!isset($columnDef['type'])) {
+                $columnDef['type'] = 'string';
+            }
+            if (in_array($columnDef['type'], ['boolean', 'array', 'object', 'datetime', 'time', 'date'], true)) {
+                throw MappingException::invalidDiscriminatorColumnType($this->name, $columnDef['type']);
+            }
+            $this->discriminatorField = $columnDef;
+        }
+    }
+
+    /** {@inheritdoc} */
+    public function getDiscriminatorMap()
+    {
+        return $this->discriminatorMap;
+    }
+
+    /**
+     * Sets the discriminator values used by this class.
+     * Used for JOINED and SINGLE_TABLE inheritance mapping strategies.
+     *
+     * @param array $map
+     *
+     * @return void
+     */
+    public function setDiscriminatorMap(array $map)
+    {
+        foreach ($map as $value => $className) {
+            $this->addDiscriminatorMapClass($value, $className);
+        }
+    }
+
+    /** {@inheritdoc} */
+    public function getDiscriminatorValue()
+    {
+        return $this->discriminatorValue;
     }
 
     /**
@@ -727,12 +752,16 @@ class EntityMetadata implements ApiMetadata
             $mapping['api_field'] = $mapping['field']; //todo: invent naming strategy
         }
 
+        if (!array_key_exists('options', $mapping)) {
+            $mapping['options'] = [];
+        }
+
         $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
         $this->fieldNames[$mapping['api_field']] = $mapping['field'];
 
-//        if (isset($this->fieldNames[$mapping['columnName']]) || ($this->discriminatorField && $this->discriminatorField['name'] === $mapping['api_field'])) {
-//            throw MappingException::duplicateColumnName($this->name, $mapping['columnName']);
-//        }
+        //        if (isset($this->fieldNames[$mapping['columnName']]) || ($this->discriminatorField && $this->discriminatorField['name'] === $mapping['api_field'])) {
+        //            throw MappingException::duplicateColumnName($this->name, $mapping['columnName']);
+        //        }
 
         // Complete id mapping
         if (isset($mapping['id']) && $mapping['id'] === true) {
@@ -815,23 +844,5 @@ class EntityMetadata implements ApiMetadata
         }
 
         return $mapping;
-    }
-
-    /** {@inheritdoc} */
-    public function getDiscriminatorField()
-    {
-        return $this->discriminatorField;
-    }
-
-    /** {@inheritdoc} */
-    public function getDiscriminatorMap()
-    {
-        return $this->discriminatorMap;
-    }
-
-    /** {@inheritdoc} */
-    public function getDiscriminatorValue()
-    {
-        return $this->discriminatorValue;
     }
 }
