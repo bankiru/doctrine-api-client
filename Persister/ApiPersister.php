@@ -143,8 +143,8 @@ final class ApiPersister implements EntityPersister
 
         foreach ($source as $object) {
             $entity = $this->manager->getUnitOfWork()->getOrCreateEntity($target->getName(), $object);
-            if (isset($assoc['orderBy'])) {
-                $index = $target->getReflectionProperty($assoc['orderBy'])->getValue($entity);
+            if (isset($assoc['indexBy'])) {
+                $index = $target->getReflectionProperty($assoc['indexBy'])->getValue($entity);
                 $collection->set($index, $entity);
             } else {
                 $collection->add($entity);
