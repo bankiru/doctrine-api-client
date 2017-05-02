@@ -97,6 +97,8 @@ class UnitOfWork implements PropertyChangedListener
     private $reflectionPropertiesGetter;
     /** @var Hydrator[] */
     private $hydrators = [];
+    /** @var CrudsApiInterface[] */
+    private $apis = [];
 
     /**
      * UnitOfWork constructor.
@@ -1074,6 +1076,19 @@ class UnitOfWork implements PropertyChangedListener
 
     public function getCollectionPersister($association)
     {
+        $targetMetadata = $this->manager->getClassMetadata($association['target']);
+        $role           = $association['sourceEntity'] . '::' . $association['field'];
+
+        if (!array_key_exists($role, $this->collectionPersisters)) {
+            $this->collectionPersisters[$role] = new CollectionPersister(
+                $this->manager,
+                $this->createApi($targetMetadata),
+                $association
+            );
+        }
+
+        return $this->collectionPersisters[$role];
+
         $role = isset($association['cache'])
             ? $association['sourceEntity'] . '::' . $association['fieldName']
             : $association['type'];
@@ -1331,18 +1346,22 @@ class UnitOfWork implements PropertyChangedListener
      */
     private function createApi(ApiMetadata $classMetadata)
     {
-        $client = $this->manager->getConfiguration()->getClientRegistry()->get($classMetadata->getClientName());
+        if (!array_key_exists($classMetadata->getName(), $this->apis)) {
+            $client = $this->manager->getConfiguration()->getClientRegistry()->get($classMetadata->getClientName());
 
-        $api = $this->manager
-            ->getConfiguration()
-            ->getFactoryRegistry()
-            ->create(
-                $classMetadata->getApiFactory(),
-                $client,
-                $classMetadata
-            );
+            $api = $this->manager
+                ->getConfiguration()
+                ->getFactoryRegistry()
+                ->create(
+                    $classMetadata->getApiFactory(),
+                    $client,
+                    $classMetadata
+                );
 
-        return $api;
+            $this->apis[$classMetadata->getName()] = $api;
+        }
+
+        return $this->apis[$classMetadata->getName()];
     }
 
     private function doPersist($entity, $visited)

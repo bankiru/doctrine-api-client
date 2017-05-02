@@ -1,0 +1,19 @@
+Bankiru\Api\Doctrine\Test\Entity\ToManyAsArrayEntity:
+  type: entity
+  id:
+    id:
+      type: integer
+      generator:
+        strategy: REMOTE
+  fields:
+    payload: { type: string }
+  manyToMany:
+    children:
+      target: Bankiru\Api\Doctrine\Test\Entity\ToManyAsArrayEntity
+      api_field: references
+
+  client:
+    name: test-client
+    entityPath: array-entity
+  api:
+    factory: Bankiru\Api\Doctrine\Test\TestApi

@@ -124,7 +124,7 @@ class YmlMetadataDriver extends FileDriver
             }
         }
 
-        foreach (['oneToOne', 'manyToOne', 'oneToMany'] as $type) {
+        foreach (['oneToOne', 'manyToOne', 'oneToMany', 'manyToMany'] as $type) {
             if (array_key_exists($type, $element)) {
                 $associations = $element[$type];
                 foreach ($associations as $name => $association) {
@@ -145,6 +145,7 @@ class YmlMetadataDriver extends FileDriver
     {
         $mapping           = $this->fieldToArray($name, $association);
         $mapping['target'] = $association['target'];
+        $mapping['sourceEntity'] = $metadata->getName();
         if (isset($association['fetch'])) {
             $mapping['fetch'] = constant(ApiMetadata::class . '::FETCH_' . $association['fetch']);
         }
@@ -181,6 +182,19 @@ class YmlMetadataDriver extends FileDriver
                     $mapping['indexBy'] = $association['indexBy'];
                 }
                 $metadata->mapOneToMany($mapping);
+                break;
+            case 'manyToMany':
+                $mapping['type'] = EntityMetadata::MANY_TO_MANY;
+                if (array_key_exists('api_field', $association)) {
+                    $mapping['api_field'] = $association['api_field'];
+                }
+                if (array_key_exists('orderBy', $association)) {
+                    $mapping['orderBy'] = $association['orderBy'];
+                }
+                if (array_key_exists('indexBy', $association)) {
+                    $mapping['indexBy'] = $association['indexBy'];
+                }
+                $metadata->mapManyToMany($mapping);
                 break;
         }
     }

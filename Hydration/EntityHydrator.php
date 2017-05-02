@@ -7,6 +7,7 @@ use Bankiru\Api\Doctrine\Exception\HydrationException;
 use Bankiru\Api\Doctrine\Exception\MappingException;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Proxy\Proxy;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -91,6 +92,7 @@ final class EntityHydrator implements Hydrator
         $accessor        = new PropertyAccessor();
         $targetClassName = $this->metadata->getAssociationTargetClass($field);
         $mapping         = $this->metadata->getAssociationMapping($field);
+        $mapping         = $mapping;
         $targetPersister = $this->manager->getUnitOfWork()->getEntityPersister($targetClassName);
         $targetMetadata  = $this->manager->getClassMetadata($mapping['target']);
         $apiField        = $mapping['api_field'];
@@ -129,7 +131,8 @@ final class EntityHydrator implements Hydrator
                     ->getTypeRegistry()
                     ->get($targetMetadata->getTypeOfField($targetIdName));
 
-                $identifiers = [$targetIdName => $type->fromApiValue($value, $this->metadata->getFieldOptions($targetIdName))];
+                $identifiers =
+                    [$targetIdName => $type->fromApiValue($value, $this->metadata->getFieldOptions($targetIdName))];
             }
 
             $newValue = $targetPersister->getToOneEntity($mapping, $entity, $identifiers);
@@ -140,11 +143,46 @@ final class EntityHydrator implements Hydrator
         }
 
         if ($this->metadata->isCollectionValuedAssociation($field)) {
-            $newValue = $targetPersister->getOneToManyCollection($mapping, $entity);
+            if ($mapping['type'] & EntityMetadata::ONE_TO_MANY) {
+                $newValue = $targetPersister->getOneToManyCollection($mapping, $entity);
 
-            $this->manager->getUnitOfWork()->setOriginalEntityProperty($oid, $field, $newValue);
+                $this->manager->getUnitOfWork()->setOriginalEntityProperty($oid, $field, $newValue);
 
-            return $newValue;
+                return $newValue;
+            } else {
+                try {
+                    $value = $accessor->getValue($source, $apiField);
+                } catch (NoSuchPropertyException $exception) {
+                    if ($mapping['nullable']) {
+                        $this->manager->getUnitOfWork()->setOriginalEntityProperty($oid, $field, new ArrayCollection());
+
+                        return new ArrayCollection();
+                    }
+
+                    throw new HydrationException(
+                        sprintf('Api field %s for property %s does not present in response', $apiField, $field)
+                    );
+                }
+
+                if (null === $value) {
+                    return new ArrayCollection();
+                }
+
+                if (!is_array($value)) {
+                    throw new \InvalidArgumentException(
+                        'ManyToMany collection value should be an array of identifiers'
+                    );
+                }
+
+                $collection = $this->manager
+                    ->getUnitOfWork()
+                    ->getCollectionPersister($mapping)
+                    ->getManyToManyCollection($value);
+
+                $this->manager->getUnitOfWork()->setOriginalEntityProperty($oid, $field, $collection);
+
+                return $collection;
+            }
         }
 
         throw new MappingException('Invalid metadata association type');

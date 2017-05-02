@@ -637,6 +637,13 @@ class EntityMetadata implements ApiMetadata
         return $this->discriminatorValue;
     }
 
+    public function mapManyToMany($mapping)
+    {
+        $mapping = $this->validateAndCompleteManyToManyMapping($mapping);
+
+        $this->storeMapping($mapping);
+    }
+
     /**
      * Validates & completes the basic mapping information that is common to all
      * association mappings (one-to-one, many-ot-one, one-to-many, many-to-many).
@@ -659,6 +666,10 @@ class EntityMetadata implements ApiMetadata
 
         if (!isset($mapping['inversedBy'])) {
             $mapping['inversedBy'] = null;
+        }
+
+        if (!isset($mapping['orderBy'])) {
+            $mapping['orderBy'] = [];
         }
 
         $mapping['isOwningSide'] = true; // assume owning side until we hit mappedBy
@@ -809,6 +820,22 @@ class EntityMetadata implements ApiMetadata
         }
         $mapping['orphanRemoval']   = isset($mapping['orphanRemoval']) && $mapping['orphanRemoval'];
         $mapping['isCascadeRemove'] = $mapping['orphanRemoval'] || $mapping['isCascadeRemove'];
+        $this->assertMappingOrderBy($mapping);
+
+        return $mapping;
+    }
+
+    /**
+     * @param array $mapping
+     *
+     * @return array
+     * @throws MappingException
+     * @throws \InvalidArgumentException
+     */
+    private function validateAndCompleteManyToManyMapping(array $mapping)
+    {
+        $mapping = $this->validateAndCompleteAssociationMapping($mapping);
+
         $this->assertMappingOrderBy($mapping);
 
         return $mapping;
