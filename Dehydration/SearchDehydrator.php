@@ -60,6 +60,7 @@ final class SearchDehydrator
                 $apiCriteria[$discriminatorField['fieldName']][] =
                     $this->manager->getClassMetadata($subclass)->getDiscriminatorValue();
             }
+            sort($apiCriteria[$discriminatorField['fieldName']]);
         }
 
         return $apiCriteria;
