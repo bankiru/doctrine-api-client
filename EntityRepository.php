@@ -3,10 +3,15 @@
 namespace Bankiru\Api\Doctrine;
 
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
+use Bankiru\Api\Doctrine\Persister\CollectionMatcher;
+use Bankiru\Api\Doctrine\Proxy\LazyCriteriaCollection;
+use Bankiru\Api\Doctrine\Rpc\CrudsApiInterface;
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Selectable;
 use Doctrine\Common\Persistence\ObjectRepository;
 use ScayTrase\Api\Rpc\RpcClientInterface;
 
-class EntityRepository implements ObjectRepository
+class EntityRepository implements ObjectRepository, Selectable
 {
     /** @var  ApiMetadata */
     private $metadata;
@@ -25,54 +30,25 @@ class EntityRepository implements ObjectRepository
         $this->metadata = $this->manager->getClassMetadata($className);
     }
 
-    /**
-     * Finds an object by its primary key / identifier.
-     *
-     * @param mixed $id The identifier.
-     *
-     * @return object The object.
-     */
+    /** {@inheritdoc} */
     public function find($id)
     {
         return $this->manager->find($this->getClassName(), $id);
     }
 
-    /**
-     * Returns the class name of the object managed by the repository.
-     *
-     * @return string
-     */
+    /** {@inheritdoc} */
     public function getClassName()
     {
         return $this->metadata->getReflectionClass()->getName();
     }
 
-    /**
-     * Finds all objects in the repository.
-     *
-     * @return array The objects.
-     */
+    /** {@inheritdoc} */
     public function findAll()
     {
         return $this->findBy([]);
     }
 
-    /**
-     * Finds objects by a set of criteria.
-     *
-     * Optionally sorting and limiting details can be passed. An implementation may throw
-     * an UnexpectedValueException if certain values of the sorting or limiting details are
-     * not supported.
-     *
-     * @param array      $criteria
-     * @param array|null $orderBy
-     * @param int|null   $limit
-     * @param int|null   $offset
-     *
-     * @return array The objects.
-     *
-     * @throws \UnexpectedValueException
-     */
+    /** {@inheritdoc} */
     public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
     {
         $persister = $this->manager->getUnitOfWork()->getEntityPersister($this->getClassName());
@@ -80,13 +56,7 @@ class EntityRepository implements ObjectRepository
         return $persister->loadAll($criteria, $orderBy, $limit, $offset);
     }
 
-    /**
-     * Finds a single object by a set of criteria.
-     *
-     * @param array $criteria The criteria.
-     *
-     * @return object The object.
-     */
+    /** {@inheritdoc} */
     public function findOneBy(array $criteria)
     {
         $objects = $this->findBy($criteria, [], 1);
@@ -102,12 +72,26 @@ class EntityRepository implements ObjectRepository
         return $this->manager;
     }
 
+    /** {@inheritdoc} */
+    public function matching(Criteria $criteria)
+    {
+        return new LazyCriteriaCollection(new CollectionMatcher($this->getManager(), $this->getApi()), $criteria);
+    }
+
     /**
      * @return RpcClientInterface
      */
     protected function getClient()
     {
         return $this->manager->getConfiguration()->getClientRegistry()->get($this->metadata->getClientName());
+    }
+
+    /**
+     * @return CrudsApiInterface
+     */
+    protected function getApi()
+    {
+        return $this->manager->getUnitOfWork()->getEntityPersister($this->metadata->getName())->getCrudsApi();
     }
 
     /**

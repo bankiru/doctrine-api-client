@@ -12,6 +12,7 @@ use Bankiru\Api\Doctrine\Hydration\Hydrator;
 use Bankiru\Api\Doctrine\Mapping\ApiMetadata;
 use Bankiru\Api\Doctrine\Mapping\EntityMetadata;
 use Bankiru\Api\Doctrine\Persister\ApiPersister;
+use Bankiru\Api\Doctrine\Persister\CollectionMatcher;
 use Bankiru\Api\Doctrine\Persister\CollectionPersister;
 use Bankiru\Api\Doctrine\Persister\EntityPersister;
 use Bankiru\Api\Doctrine\Proxy\ApiCollection;
@@ -123,7 +124,7 @@ class UnitOfWork implements PropertyChangedListener
             /** @var ApiMetadata $classMetadata */
             $classMetadata = $this->manager->getClassMetadata($className);
 
-            $api = $this->createApi($classMetadata);
+            $api = $this->getCrudsApi($classMetadata);
 
             if ($api instanceof EntityCacheAwareInterface) {
                 $api->setEntityCache($this->createEntityCache($classMetadata));
@@ -1081,21 +1082,11 @@ class UnitOfWork implements PropertyChangedListener
 
         if (!array_key_exists($role, $this->collectionPersisters)) {
             $this->collectionPersisters[$role] = new CollectionPersister(
-                $this->manager,
-                $this->createApi($targetMetadata),
+                $targetMetadata,
+                new CollectionMatcher($this->manager, $this->getCrudsApi($targetMetadata)),
                 $association
             );
         }
-
-        return $this->collectionPersisters[$role];
-
-        $role = isset($association['cache'])
-            ? $association['sourceEntity'] . '::' . $association['fieldName']
-            : $association['type'];
-        if (array_key_exists($role, $this->collectionPersisters)) {
-            return $this->collectionPersisters[$role];
-        }
-        $this->collectionPersisters[$role] = new CollectionPersister($this->manager);
 
         return $this->collectionPersisters[$role];
     }
@@ -1344,7 +1335,7 @@ class UnitOfWork implements PropertyChangedListener
      *
      * @return CrudsApiInterface
      */
-    private function createApi(ApiMetadata $classMetadata)
+    private function getCrudsApi(ApiMetadata $classMetadata)
     {
         if (!array_key_exists($classMetadata->getName(), $this->apis)) {
             $client = $this->manager->getConfiguration()->getClientRegistry()->get($classMetadata->getClientName());

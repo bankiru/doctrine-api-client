@@ -2,16 +2,16 @@
 
 namespace Bankiru\Api\Doctrine\Proxy;
 
-use Bankiru\Api\Doctrine\Persister\CollectionPersister;
 use Doctrine\Common\Collections\AbstractLazyCollection;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Selectable;
 
 final class LazyCriteriaCollection extends AbstractLazyCollection
 {
     /**
-     * @var CollectionPersister
+     * @var Selectable
      */
-    private $persister;
+    private $matcher;
     /**
      * @var Criteria
      */
@@ -20,13 +20,13 @@ final class LazyCriteriaCollection extends AbstractLazyCollection
     /**
      * LazyCriteriaCollection constructor.
      *
-     * @param CollectionPersister $persister
-     * @param Criteria            $criteria
+     * @param Selectable $matcher
+     * @param Criteria   $criteria
      */
-    public function __construct(CollectionPersister $persister, Criteria $criteria)
+    public function __construct(Selectable $matcher, Criteria $criteria)
     {
-        $this->persister = $persister;
-        $this->criteria  = $criteria;
+        $this->matcher  = $matcher;
+        $this->criteria = $criteria;
     }
 
     /**
@@ -36,6 +36,6 @@ final class LazyCriteriaCollection extends AbstractLazyCollection
      */
     protected function doInitialize()
     {
-        $this->collection = $this->persister->matching($this->criteria);
+        $this->collection = $this->matcher->matching($this->criteria);
     }
 }
