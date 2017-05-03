@@ -9,4 +9,5 @@ build:
 
 filter:
   excluded_paths:
-    - "src/Bankiru/Api/Tests/"
+    - "./Tests"
+    - "./Test"
