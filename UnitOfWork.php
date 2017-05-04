@@ -1082,6 +1082,7 @@ class UnitOfWork implements PropertyChangedListener
 
         if (!array_key_exists($role, $this->collectionPersisters)) {
             $this->collectionPersisters[$role] = new CollectionPersister(
+                $this->manager,
                 $targetMetadata,
                 new CollectionMatcher($this->manager, $this->getCrudsApi($targetMetadata)),
                 $association
