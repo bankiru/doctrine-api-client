@@ -2,9 +2,7 @@
 
 namespace Bankiru\Api\Doctrine\Test\Entity\Discriminator;
 
-use Bankiru\Api\Doctrine\Test\Entity\DiscriminatorBaseClass;
-
-class InheritorFirst extends DiscriminatorBaseClass
+class InheritorFirst extends AbstractInheritor
 {
     /** @var string */
     private $first;

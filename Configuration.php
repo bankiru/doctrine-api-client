@@ -88,13 +88,13 @@ class Configuration
     /**
      * @param LoggerInterface $apiCacheLogger
      */
-    public function setApiCacheLogger($apiCacheLogger)
+    public function setApiCacheLogger(LoggerInterface $apiCacheLogger = null)
     {
-        $this->apiCacheLogger = $apiCacheLogger;
+        $this->apiCacheLogger = $apiCacheLogger ?: new NullLogger();
     }
 
     /**
-     * @return CacheItemPoolInterface
+     * @return CacheItemPoolInterface|null
      */
     public function getApiCache()
     {

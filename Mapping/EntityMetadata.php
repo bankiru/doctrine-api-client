@@ -540,15 +540,24 @@ class EntityMetadata implements ApiMetadata
     {
         $className                     = $this->fullyQualifiedClassName($className);
         $className                     = ltrim($className, '\\');
+
+        if (!(class_exists($className) || interface_exists($className))) {
+            throw MappingException::invalidClassInDiscriminatorMap($className, $this->name);
+        }
+
+        $refl = new \ReflectionClass($className);
+        if ($refl->isAbstract()) {
+            return;
+        }
+
         $this->discriminatorMap[$name] = $className;
+
         if ($this->name === $className) {
             $this->discriminatorValue = $name;
 
             return;
         }
-        if (!(class_exists($className) || interface_exists($className))) {
-            throw MappingException::invalidClassInDiscriminatorMap($className, $this->name);
-        }
+
         if (is_subclass_of($className, $this->name) && !in_array($className, $this->subclasses)) {
             $this->subclasses[] = $className;
         }
@@ -618,7 +627,6 @@ class EntityMetadata implements ApiMetadata
 
     /**
      * Sets the discriminator values used by this class.
-     * Used for JOINED and SINGLE_TABLE inheritance mapping strategies.
      *
      * @param array $map
      *
