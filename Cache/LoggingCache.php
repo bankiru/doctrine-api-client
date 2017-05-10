@@ -60,4 +60,15 @@ final class LoggingCache implements EntityDataCacheInterface
     {
         return $this->delegate->getConfiguration();
     }
+
+    /** {@inheritdoc} */
+    public function clear(array $identifier)
+    {
+        $this->delegate->clear($identifier);
+
+        $this->logger->debug(
+            'Cleared API entity data from cache',
+            ['class' => $this->getMetadata()->getName(), 'identifiers' => $identifier]
+        );
+    }
 }

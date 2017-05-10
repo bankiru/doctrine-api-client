@@ -27,6 +27,15 @@ interface EntityDataCacheInterface
     public function set(array $identifier, $data);
 
     /**
+     * Clears the cache for given entity identifier
+     *
+     * @param array $identifier
+     *
+     * @return void
+     */
+    public function clear(array $identifier);
+
+    /**
      * @return ApiMetadata
      */
     public function getMetadata();

@@ -69,6 +69,7 @@ class ApiEntityCache implements EntityDataCacheInterface
         return $this->configuration;
     }
 
+
     /**
      * @param array $identifier
      *
@@ -77,5 +78,17 @@ class ApiEntityCache implements EntityDataCacheInterface
     private function getKey(array $identifier)
     {
         return $this->configuration->getStrategy()->getEntityKey($this->metadata, $identifier);
+    }
+
+    /**
+     * Clears the cache for given entity identifier
+     *
+     * @param array $identifier
+     *
+     * @return void
+     */
+    public function clear(array $identifier)
+    {
+        $this->cache->deleteItem($this->getKey($identifier));
     }
 }

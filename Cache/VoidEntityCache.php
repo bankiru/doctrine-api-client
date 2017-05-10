@@ -60,4 +60,10 @@ final class VoidEntityCache implements EntityDataCacheInterface
             sprintf('Skipping entity cache for %s: not configured', $this->getMetadata()->getName())
         );
     }
+
+    /** {@inheritdoc} */
+    public function clear(array $identifier)
+    {
+        $this->logSkip();
+    }
 }

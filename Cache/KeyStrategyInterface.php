@@ -9,6 +9,8 @@ interface KeyStrategyInterface
     /**
      * Returns cache key prefix
      *
+     * Should be valid PSR-6 cache key
+     *
      * @param ApiMetadata $metadata
      *
      * @return string
@@ -16,8 +18,13 @@ interface KeyStrategyInterface
     public function getEntityPrefix(ApiMetadata $metadata);
 
     /**
-     * Returns cache key for entity. Key should start with prefix
-     * defined by KeyStrategyInterface::getEntityPrefix method
+     * Returns cache key for entity
+     *
+     * Key should start with prefix defined by KeyStrategyInterface::getEntityPrefix() method
+     * Should be valid PSR-6 cache key
+     *
+     *
+     * @see KeyStrategyInterface::getEntityPrefix()
      *
      * @param ApiMetadata $metadata
      * @param array       $identifier
