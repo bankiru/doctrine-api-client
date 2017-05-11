@@ -55,14 +55,18 @@ final class SearchDehydrator
         $discriminatorField = $this->metadata->getDiscriminatorField();
 
         if (null !== $discriminatorField) {
-            $apiCriteria[$discriminatorField['fieldName']] = [$this->metadata->getDiscriminatorValue()];
+            if (!$this->metadata->getReflectionClass()->isAbstract()) {
+                $apiCriteria[$discriminatorField['fieldName']] = [$this->metadata->getDiscriminatorValue()];
+            }
             foreach ($this->metadata->getSubclasses() as $subclass) {
-                $apiCriteria[$discriminatorField['fieldName']][] =
-                    $this->manager->getClassMetadata($subclass)->getDiscriminatorValue();
+                $subClassMetadata = $this->manager->getClassMetadata($subclass);
+                if (!$subClassMetadata->getReflectionClass()->isAbstract()) {
+                    $apiCriteria[$discriminatorField['fieldName']][] = $subClassMetadata->getDiscriminatorValue();
+                }
             }
             sort($apiCriteria[$discriminatorField['fieldName']]);
         }
-
+        
         return $apiCriteria;
     }
 
