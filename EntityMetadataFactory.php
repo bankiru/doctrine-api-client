@@ -140,16 +140,6 @@ class EntityMetadataFactory extends AbstractClassMetadataFactory
             throw MappingException::nonExistingClass($class->getName());
         }
 
-        if ($parent) {
-            $classCache = $this->manager->getConfiguration()->getCacheConfiguration($class->getName());
-            if (!$classCache->isEnabled()) {
-                $parentCache = $this->manager->getConfiguration()->getCacheConfiguration($parent->getName());
-                if ($parentCache->isEnabled()) {
-                    $this->manager->getConfiguration()->setCacheConfigurationInstance($class->getName(), $parentCache);
-                }
-            }
-        }
-
         if ($class->isRootEntity() && !$class->discriminatorMap) {
             $this->addDefaultDiscriminatorMap($class);
         }

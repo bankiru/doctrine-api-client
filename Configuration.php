@@ -110,7 +110,9 @@ class Configuration
     }
 
     /**
-     * Returns class cache configuration
+     * Returns class cache configuration.
+     *
+     * Checks for parent classes recursively
      *
      * @param $class
      *
@@ -118,15 +120,30 @@ class Configuration
      */
     public function getCacheConfiguration($class)
     {
-        if (!array_key_exists($class, $this->cacheConfiguration)) {
+        if ($this->getMetadataFactory()->isTransient($class)) {
             return CacheConfiguration::disabled();
         }
 
-        if (!array_key_exists($class, $this->cacheConfigurationCache)) {
-            $this->cacheConfigurationCache[$class] = CacheConfiguration::create($this->cacheConfiguration[$class]);
+        if (array_key_exists($class, $this->cacheConfigurationCache)) {
+            return $this->cacheConfigurationCache[$class];
         }
 
-        return $this->cacheConfigurationCache[$class];
+        if ($this->hasCacheConfigurationFor($class)) {
+            return $this->cacheConfigurationCache[$class] =
+                CacheConfiguration::create($this->cacheConfiguration[$class]);
+        }
+
+        $metadata = $this->getMetadataFactory()->getMetadataFor($class);
+        $parent   = $metadata->getReflectionClass()->getParentClass();
+        while ($parent) {
+            if ($this->hasCacheConfigurationFor($parent->getName())) {
+                return $this->getCacheConfiguration($parent->getName());
+            }
+
+            $parent = $parent->getParentClass();
+        }
+
+        return $this->cacheConfigurationCache[$class] = CacheConfiguration::disabled();
     }
 
     /**
@@ -140,6 +157,11 @@ class Configuration
         if (null === $this->cacheConfiguration[$class]) {
             unset($this->cacheConfiguration[$class]);
         }
+    }
+
+    public function hasCacheConfigurationFor($class)
+    {
+        return array_key_exists($class, $this->cacheConfiguration);
     }
 
     /**
