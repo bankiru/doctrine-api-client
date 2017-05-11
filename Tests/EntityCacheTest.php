@@ -3,6 +3,8 @@
 namespace Bankiru\Api\Doctrine\Tests;
 
 use Bankiru\Api\Doctrine\Test\Entity\CustomEntity;
+use Bankiru\Api\Doctrine\Test\Entity\CustomEntityInheritor;
+use Bankiru\Api\Doctrine\Test\Entity\TestEntity;
 use Prophecy\Argument;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
@@ -32,28 +34,30 @@ final class EntityCacheTest extends AbstractEntityManagerTest
         );
 
         self::assertCount(1, $this->getClient());
-        $repository = $this->getManager()->getRepository(CustomEntity::class);
+        $repository = $this->getManager()->getRepository(CustomEntityInheritor::class);
         /** @var CustomEntity $entity */
         $entity = $repository->find(1);
         self::assertCount(0, $this->getClient());
-        self::assertInstanceOf(CustomEntity::class, $entity);
+        self::assertInstanceOf(CustomEntityInheritor::class, $entity);
         self::assertEquals(1, $entity->getId());
         self::assertInternalType('int', $entity->getId());
         self::assertEquals('test-payload', $entity->getPayload());
 
         $this->createEntityManager($this->getClientNames());
 
-        $repository = $this->getManager()->getRepository(CustomEntity::class);
+        $repository = $this->getManager()->getRepository(CustomEntityInheritor::class);
         /** @var CustomEntity $entity */
         $entity = $repository->find(1);
 
-        self::assertInstanceOf(CustomEntity::class, $entity);
+        self::assertInstanceOf(CustomEntityInheritor::class, $entity);
         self::assertEquals(1, $entity->getId());
         self::assertInternalType('int', $entity->getId());
         self::assertEquals('test-payload', $entity->getPayload());
 
-        $configuration = $this->getManager()->getConfiguration()->getCacheConfiguration(CustomEntity::class);
-        self::assertTrue($configuration->extra('quick_search'));
+        $inheritorConfiguration = $this->getManager()->getConfiguration()->getCacheConfiguration(CustomEntityInheritor::class);
+        self::assertTrue($inheritorConfiguration->extra('quick_search'));
+        $parentConfiguration = $this->getManager()->getConfiguration()->getCacheConfiguration(CustomEntity::class);
+        self::assertSame($inheritorConfiguration, $parentConfiguration);
     }
 
     protected function createConfiguration()

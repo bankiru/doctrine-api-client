@@ -137,7 +137,7 @@ class Configuration
         $parent   = $metadata->getReflectionClass()->getParentClass();
         while ($parent) {
             if ($this->hasCacheConfigurationFor($parent->getName())) {
-                return $this->getCacheConfiguration($parent->getName());
+                return $this->cacheConfigurationCache[$class] = $this->getCacheConfiguration($parent->getName());
             }
 
             $parent = $parent->getParentClass();
