@@ -94,7 +94,7 @@ class EntityManager implements ApiEntityManager
     public function remove($object)
     {
         $this->getUnitOfWork()->getEntityPersister(get_class($object))
-             ->delete($object);
+                ->delete($object);
     }
 
     /** {@inheritdoc} */

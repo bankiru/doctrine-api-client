@@ -14,7 +14,7 @@ final class CustomRepositoryTest extends AbstractEntityManagerTest
         $repository = $this->getManager()->getRepository(CustomEntity::class);
         $this->getClient()->push(
             $this->getResponseMock(true, (object)['customField' => 'custom-response']),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('custom-entity/custom', $request->getMethod());
                 self::assertEquals(
                     ['param1' => 'value1'],

@@ -14,7 +14,7 @@ final class CommitTest extends AbstractEntityManagerTest
 
         $this->getClient('test-reference-client')->push(
             $this->getResponseMock(true, 241),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-reference/create', $request->getMethod());
                 self::assertEquals(
                     [
@@ -41,7 +41,7 @@ final class CommitTest extends AbstractEntityManagerTest
 
         $this->getClient('test-reference-client')->push(
             $this->getResponseMock(true, ['id' => 241]),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-reference/create', $request->getMethod());
                 self::assertEquals(
                     [
@@ -70,7 +70,7 @@ final class CommitTest extends AbstractEntityManagerTest
 
         $this->getClient()->push(
             $this->getResponseMock(true, (object)['id' => 42]),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-entity/create', $request->getMethod());
                 self::assertEquals(
                     [
@@ -86,7 +86,7 @@ final class CommitTest extends AbstractEntityManagerTest
 
         $this->getClient('test-reference-client')->push(
             $this->getResponseMock(true, (object)['id' => 241]),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-reference/create', $request->getMethod());
                 self::assertEquals(
                     [
@@ -123,7 +123,7 @@ final class CommitTest extends AbstractEntityManagerTest
         $newParent = new TestEntity();
         $this->getClient()->push(
             $this->getResponseMock(true, (object)['id' => 17]),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-entity/create', $request->getMethod());
                 self::assertEquals(
                     [
@@ -138,7 +138,7 @@ final class CommitTest extends AbstractEntityManagerTest
         );
         $this->getClient('test-reference-client')->push(
             $this->getResponseMock(true, null),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-reference/patch', $request->getMethod());
                 self::assertEquals(
                     [

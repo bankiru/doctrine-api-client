@@ -19,14 +19,14 @@ class TypeTest extends AbstractEntityManagerTest
         $datetimeU->setTimestamp(self::U_TIMESTAMP);
         $entity->setDatetimeU($datetimeU);
 
-        $datetimeC = \DateTime::createFromFormat('Y.m.d H:i:s',self::CUSTOM_DATETIME);
+        $datetimeC = \DateTime::createFromFormat('Y.m.d H:i:s', self::CUSTOM_DATETIME);
         $entity->setDatetimeC($datetimeC);
 
         $manager->persist($entity);
 
         $this->getClient()->push(
             $this->getResponseMock(true, (object)['id' => 42]),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-entity/create', $request->getMethod());
                 self::assertEquals(
                     [
@@ -56,7 +56,7 @@ class TypeTest extends AbstractEntityManagerTest
                     'datetime_c' => self::CUSTOM_DATETIME,
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-entity/find', $request->getMethod());
                 self::assertEquals(
                     [

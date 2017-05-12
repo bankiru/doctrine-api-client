@@ -78,8 +78,7 @@ class YmlMetadataDriver extends FileDriver
             if (array_key_exists('entityPath', $element['client'])) {
                 $pathSeparator  =
                     array_key_exists('entityPathSeparator', $element['client']) ?
-                        $element['client']['entityPathSeparator'] :
-                        EntityMethodProvider::DEFAULT_PATH_SEPARATOR;
+                        $element['client']['entityPathSeparator'] : EntityMethodProvider::DEFAULT_PATH_SEPARATOR;
                 $methodProvider =
                     new EntityMethodProvider($element['client']['entityPath'], $pathSeparator, $methodProvider);
             }
@@ -143,7 +142,7 @@ class YmlMetadataDriver extends FileDriver
      */
     protected function mapAssociation(EntityMetadata $metadata, $type, $name, $association, $associationIds)
     {
-        $mapping           = $this->fieldToArray($name, $association);
+        $mapping = $this->fieldToArray($name, $association);
         $mapping['targetEntity'] = $association['targetEntity'];
         $mapping['sourceEntity'] = $metadata->getName();
         if (isset($association['fetch'])) {

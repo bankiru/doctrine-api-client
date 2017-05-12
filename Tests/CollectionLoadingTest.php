@@ -36,7 +36,7 @@ final class CollectionLoadingTest extends AbstractEntityManagerTest
                     ],
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-entity/search', $request->getMethod());
                 self::assertEquals(
                     [

@@ -178,7 +178,7 @@ class UnitOfWork implements PropertyChangedListener
     }
 
     /**
-     * @param             $className
+     * @param             string $className
      * @param \stdClass   $data
      *
      * @return ObjectManagerAware|object
@@ -234,7 +234,7 @@ class UnitOfWork implements PropertyChangedListener
      * INTERNAL:
      * Registers an entity as managed.
      *
-     * @param object         $entity The entity.
+     * @param Proxy         $entity The entity.
      * @param array          $id     The identifier values.
      * @param \stdClass|null $data   The original entity data.
      *
@@ -1751,7 +1751,7 @@ class UnitOfWork implements PropertyChangedListener
         $class               = $this->manager->getClassMetadata(get_class($entity));
         $associationMappings = array_filter(
             $class->getAssociationMappings(),
-            function ($assoc) {
+            function($assoc) {
                 return $assoc['isCascadeRefresh'];
             }
         );
@@ -1790,7 +1790,7 @@ class UnitOfWork implements PropertyChangedListener
         $class               = $this->manager->getClassMetadata(get_class($entity));
         $associationMappings = array_filter(
             $class->getAssociationMappings(),
-            function ($assoc) {
+            function($assoc) {
                 return $assoc['isCascadeDetach'];
             }
         );
@@ -1830,7 +1830,7 @@ class UnitOfWork implements PropertyChangedListener
         $class               = $this->manager->getClassMetadata(get_class($entity));
         $associationMappings = array_filter(
             $class->getAssociationMappings(),
-            function ($assoc) {
+            function($assoc) {
                 return $assoc['isCascadeMerge'];
             }
         );
@@ -1868,11 +1868,11 @@ class UnitOfWork implements PropertyChangedListener
         $class               = $this->manager->getClassMetadata(get_class($entity));
         $associationMappings = array_filter(
             $class->getAssociationMappings(),
-            function ($assoc) {
+            function($assoc) {
                 return $assoc['isCascadeRemove'];
             }
         );
-        $entitiesToCascade   = [];
+        $entitiesToCascade = [];
         foreach ($associationMappings as $assoc) {
             if ($entity instanceof Proxy && !$entity->__isInitialized__) {
                 $entity->__load();

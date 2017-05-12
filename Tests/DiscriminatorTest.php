@@ -65,7 +65,7 @@ final class DiscriminatorTest extends AbstractEntityManagerTest
                     ],
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('discriminator/search', $request->getMethod());
                 self::assertEquals(
                     [
@@ -134,7 +134,7 @@ final class DiscriminatorTest extends AbstractEntityManagerTest
                     ],
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('discriminator/search', $request->getMethod());
                 self::assertEquals(
                     [
@@ -177,7 +177,7 @@ final class DiscriminatorTest extends AbstractEntityManagerTest
     {
         $this->getClient()->push(
             $this->getResponseMock(true, ['id_field' => 241]),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('discriminator/create', $request->getMethod());
                 self::assertEquals(
                     [
@@ -199,7 +199,7 @@ final class DiscriminatorTest extends AbstractEntityManagerTest
 
         $this->getClient()->push(
             $this->getResponseMock(true, ['id_field' => 241]),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('discriminator/patch', $request->getMethod());
                 self::assertEquals(
                     [

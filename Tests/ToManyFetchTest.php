@@ -20,7 +20,7 @@ class ToManyFetchTest extends AbstractEntityManagerTest
                     'references'  => [1, 2],
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('array-entity/find', $request->getMethod());
                 self::assertEquals(['id' => 3], $request->getParameters());
 
@@ -42,7 +42,7 @@ class ToManyFetchTest extends AbstractEntityManagerTest
                     ],
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('array-entity/search', $request->getMethod());
                 self::assertEquals(
                     [
