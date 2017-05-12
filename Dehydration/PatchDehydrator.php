@@ -56,7 +56,7 @@ final class PatchDehydrator
                 if (($mapping['type'] & ApiMetadata::TO_MANY) && !$mapping['isOwningSide']) {
                     continue;
                 }
-                $target         = $this->metadata->getAssociationMapping($name)['target'];
+                $target         = $this->metadata->getAssociationMapping($name)['targetEntity'];
                 $targetMetadata = $this->manager->getClassMetadata($target);
                 $value          = $targetMetadata->getIdentifierValues($value);
                 $ids            = [];
@@ -135,7 +135,7 @@ final class PatchDehydrator
                 $newValId = $uow->getEntityIdentifier($newVal);
             }
             $targetClass                                      =
-                $this->manager->getClassMetadata($assoc['target']);
+                $this->manager->getClassMetadata($assoc['targetEntity']);
             $result[$this->metadata->getApiFieldName($field)] = $newValId
                 ? $newValId[$targetClass->getIdentifierFieldNames()[0]]
                 : null;

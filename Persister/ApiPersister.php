@@ -95,7 +95,7 @@ final class ApiPersister implements EntityPersister
     /** {@inheritdoc} */
     public function loadOneToOneEntity(array $assoc, $sourceEntity, array $identifier = [])
     {
-        if (false !== ($foundEntity = $this->manager->getUnitOfWork()->tryGetById($identifier, $assoc['target']))) {
+        if (false !== ($foundEntity = $this->manager->getUnitOfWork()->tryGetById($identifier, $assoc['targetEntity']))) {
             return $foundEntity;
         }
 
@@ -139,7 +139,7 @@ final class ApiPersister implements EntityPersister
             $this->searchDehydrator->transformOrder($orderBy)
         );
 
-        $target = $this->manager->getClassMetadata($assoc['target']);
+        $target = $this->manager->getClassMetadata($assoc['targetEntity']);
 
         foreach ($source as $object) {
             $entity = $this->manager->getUnitOfWork()->getOrCreateEntity($target->getName(), $object);
@@ -159,7 +159,7 @@ final class ApiPersister implements EntityPersister
     /** {@inheritdoc} */
     public function getOneToManyCollection(array $assoc, $sourceEntity, $limit = null, $offset = null)
     {
-        $targetClass = $assoc['target'];
+        $targetClass = $assoc['targetEntity'];
         /** @var EntityMetadata $targetMetadata */
         $targetMetadata = $this->manager->getClassMetadata($targetClass);
 
@@ -183,7 +183,7 @@ final class ApiPersister implements EntityPersister
             $identifiers = $metadata->getIdentifierValues($sourceEntity);
         }
 
-        return $this->manager->getReference($mapping['target'], $identifiers);
+        return $this->manager->getReference($mapping['targetEntity'], $identifiers);
     }
 
     public function pushNewEntity($entity)

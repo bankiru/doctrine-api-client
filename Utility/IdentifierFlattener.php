@@ -69,7 +69,7 @@ final class IdentifierFlattener
             if ($class->hasAssociation($field) && array_key_exists($field, $id) && is_object($id[$field])) {
                 /* @var EntityMetadata $targetClassMetadata */
                 $targetClassMetadata = $this->manager->getClassMetadata(
-                    $class->getAssociationMapping($field)['target']
+                    $class->getAssociationMapping($field)['targetEntity']
                 );
 
                 if ($this->unitOfWork->isInIdentityMap($id[$field])) {

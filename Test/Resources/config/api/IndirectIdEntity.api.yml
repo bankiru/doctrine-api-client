@@ -3,7 +3,7 @@ Bankiru\Api\Doctrine\Test\Entity\IndirectIdEntity:
   id:
     id:
       type: int
-      api_field: some-long-api-field-name
+      apiField: some-long-api-field-name
       generator: {strategy: REMOTE}
   fields:
     payload:

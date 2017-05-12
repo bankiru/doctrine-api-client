@@ -144,7 +144,7 @@ class YmlMetadataDriver extends FileDriver
     protected function mapAssociation(EntityMetadata $metadata, $type, $name, $association, $associationIds)
     {
         $mapping           = $this->fieldToArray($name, $association);
-        $mapping['target'] = $association['target'];
+        $mapping['targetEntity'] = $association['targetEntity'];
         $mapping['sourceEntity'] = $metadata->getName();
         if (isset($association['fetch'])) {
             $mapping['fetch'] = constant(ApiMetadata::class . '::FETCH_' . $association['fetch']);
@@ -185,8 +185,8 @@ class YmlMetadataDriver extends FileDriver
                 break;
             case 'manyToMany':
                 $mapping['type'] = EntityMetadata::MANY_TO_MANY;
-                if (array_key_exists('api_field', $association)) {
-                    $mapping['api_field'] = $association['api_field'];
+                if (array_key_exists('apiField', $association)) {
+                    $mapping['apiField'] = $association['apiField'];
                 }
                 if (array_key_exists('orderBy', $association)) {
                     $mapping['orderBy'] = $association['orderBy'];
@@ -230,8 +230,8 @@ class YmlMetadataDriver extends FileDriver
             $mapping['nullable'] = $source['nullable'];
         }
 
-        if (array_key_exists('api_field', $source)) {
-            $mapping['api_field'] = $source['api_field'];
+        if (array_key_exists('apiField', $source)) {
+            $mapping['apiField'] = $source['apiField'];
         }
 
         if (array_key_exists('options', $source)) {

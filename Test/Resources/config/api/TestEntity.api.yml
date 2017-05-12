@@ -10,11 +10,12 @@ Bankiru\Api\Doctrine\Test\Entity\TestEntity:
 
   oneToMany:
     references:
-      target: Bankiru\Api\Doctrine\Test\Entity\TestReference
+      targetEntity: Bankiru\Api\Doctrine\Test\Entity\TestReference
       mappedBy: owner
+
   manyToOne:
     parent:
-      target: Bankiru\Api\Doctrine\Test\Entity\TestEntity
+      targetEntity: Bankiru\Api\Doctrine\Test\Entity\TestEntity
 
   client:
     name: test-client

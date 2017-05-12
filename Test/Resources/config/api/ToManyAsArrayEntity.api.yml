@@ -7,10 +7,11 @@ Bankiru\Api\Doctrine\Test\Entity\ToManyAsArrayEntity:
         strategy: REMOTE
   fields:
     payload: { type: string }
+
   manyToMany:
     children:
-      target: Bankiru\Api\Doctrine\Test\Entity\ToManyAsArrayEntity
-      api_field: references
+      targetEntity: Bankiru\Api\Doctrine\Test\Entity\ToManyAsArrayEntity
+      apiField: references
 
   client:
     name: test-client

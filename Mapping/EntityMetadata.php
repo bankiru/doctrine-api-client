@@ -199,7 +199,7 @@ class EntityMetadata implements ApiMetadata
     /** {@inheritdoc} */
     public function getAssociationTargetClass($assocName)
     {
-        return $this->associations[$assocName]['target'];
+        return $this->associations[$assocName]['targetEntity'];
     }
 
     /** {@inheritdoc} */
@@ -335,8 +335,8 @@ class EntityMetadata implements ApiMetadata
     public function addInheritedFieldMapping(array $mapping)
     {
         $this->fields[$mapping['field']]         = $mapping;
-        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
-        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
+        $this->apiFieldNames[$mapping['field']]  = $mapping['apiField'];
+        $this->fieldNames[$mapping['apiField']] = $mapping['field'];
     }
 
     /** {@inheritdoc} */
@@ -412,8 +412,8 @@ class EntityMetadata implements ApiMetadata
     public function addInheritedAssociationMapping(array $mapping)
     {
         $this->associations[$mapping['field']]   = $mapping;
-        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
-        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
+        $this->apiFieldNames[$mapping['field']]  = $mapping['apiField'];
+        $this->fieldNames[$mapping['apiField']] = $mapping['field'];
     }
 
     /** {@inheritdoc} */
@@ -664,8 +664,8 @@ class EntityMetadata implements ApiMetadata
      */
     protected function validateAndCompleteAssociationMapping(array $mapping)
     {
-        if (!array_key_exists('api_field', $mapping)) {
-            $mapping['api_field'] = $mapping['field'];
+        if (!array_key_exists('apiField', $mapping)) {
+            $mapping['apiField'] = $mapping['field'];
         }
 
         if (!isset($mapping['mappedBy'])) {
@@ -690,8 +690,8 @@ class EntityMetadata implements ApiMetadata
         // If targetEntity is unqualified, assume it is in the same namespace as
         // the sourceEntity.
         $mapping['source'] = $this->name;
-        if (isset($mapping['target'])) {
-            $mapping['target'] = ltrim($mapping['target'], '\\');
+        if (isset($mapping['targetEntity'])) {
+            $mapping['targetEntity'] = ltrim($mapping['targetEntity'], '\\');
         }
 
         if (($mapping['type'] & self::MANY_TO_ONE) > 0 &&
@@ -760,25 +760,25 @@ class EntityMetadata implements ApiMetadata
     {
         $this->assertFieldNotMapped($mapping['field']);
 
-        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
-        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
+        $this->apiFieldNames[$mapping['field']]  = $mapping['apiField'];
+        $this->fieldNames[$mapping['apiField']] = $mapping['field'];
         $this->associations[$mapping['field']]   = $mapping;
     }
 
     private function validateAndCompleteFieldMapping(array &$mapping)
     {
-        if (!array_key_exists('api_field', $mapping)) {
-            $mapping['api_field'] = $mapping['field']; //todo: invent naming strategy
+        if (!array_key_exists('apiField', $mapping)) {
+            $mapping['apiField'] = $mapping['field']; //todo: invent naming strategy
         }
 
         if (!array_key_exists('options', $mapping)) {
             $mapping['options'] = [];
         }
 
-        $this->apiFieldNames[$mapping['field']]  = $mapping['api_field'];
-        $this->fieldNames[$mapping['api_field']] = $mapping['field'];
+        $this->apiFieldNames[$mapping['field']]  = $mapping['apiField'];
+        $this->fieldNames[$mapping['apiField']] = $mapping['field'];
 
-        //        if (isset($this->fieldNames[$mapping['columnName']]) || ($this->discriminatorField && $this->discriminatorField['name'] === $mapping['api_field'])) {
+        //        if (isset($this->fieldNames[$mapping['columnName']]) || ($this->discriminatorField && $this->discriminatorField['name'] === $mapping['apiField'])) {
         //            throw MappingException::duplicateColumnName($this->name, $mapping['columnName']);
         //        }
 

@@ -107,7 +107,7 @@ final class SearchDehydrator
             if ($this->metadata->hasAssociation($field)) {
                 $mapping = $this->metadata->getAssociationMapping($field);
                 /** @var EntityMetadata $target */
-                $target = $this->manager->getClassMetadata($mapping['target']);
+                $target = $this->manager->getClassMetadata($mapping['targetEntity']);
 
                 $converter = function ($value) use ($target) {
                     if (!is_object($value)) {

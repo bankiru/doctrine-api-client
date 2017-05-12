@@ -92,10 +92,9 @@ final class EntityHydrator implements Hydrator
         $accessor        = new PropertyAccessor();
         $targetClassName = $this->metadata->getAssociationTargetClass($field);
         $mapping         = $this->metadata->getAssociationMapping($field);
-        $mapping         = $mapping;
         $targetPersister = $this->manager->getUnitOfWork()->getEntityPersister($targetClassName);
-        $targetMetadata  = $this->manager->getClassMetadata($mapping['target']);
-        $apiField        = $mapping['api_field'];
+        $targetMetadata  = $this->manager->getClassMetadata($mapping['targetEntity']);
+        $apiField        = $mapping['apiField'];
         $field           = $mapping['field'];
         $oid             = spl_object_hash($entity);
 

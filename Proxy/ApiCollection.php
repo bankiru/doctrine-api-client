@@ -531,7 +531,7 @@ final class ApiCollection extends AbstractLazyCollection implements Selectable
         $expression      = $expression ? $builder->andX($expression, $ownerExpression) : $ownerExpression;
         $criteria        = clone $criteria;
         $criteria->where($expression);
-        $persister = $this->manager->getUnitOfWork()->getEntityPersister($this->association['target']);
+        $persister = $this->manager->getUnitOfWork()->getEntityPersister($this->association['targetEntity']);
 
         return new LazyCriteriaCollection($persister, $criteria);
     }

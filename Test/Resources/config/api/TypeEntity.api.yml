@@ -8,12 +8,12 @@ Bankiru\Api\Doctrine\Test\Entity\TypeEntity:
   fields:
     datetimeU:
       type: datetime
-      api_field: datetime_u
+      apiField: datetime_u
       options:
         format: 'U'
     datetimeC:
       type: datetime
-      api_field: datetime_c
+      apiField: datetime_c
       options:
         format: 'Y.m.d H:i:s'
 

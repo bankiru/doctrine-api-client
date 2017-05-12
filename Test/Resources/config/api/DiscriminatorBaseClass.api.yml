@@ -6,7 +6,7 @@ Bankiru\Api\Doctrine\Test\Entity\DiscriminatorBaseClass:
   id:
     id:
       type: int
-      api_field: id_field
+      apiField: id_field
       generator: {strategy: REMOTE}
   fields:
     base:

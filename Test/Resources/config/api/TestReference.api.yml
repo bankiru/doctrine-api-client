@@ -7,11 +7,11 @@ Bankiru\Api\Doctrine\Test\Entity\TestReference:
   fields:
     referencePayload:
       type: string
-      api_field: reference-payload
+      apiField: reference-payload
 
   manyToOne:
     owner:
-      target: Bankiru\Api\Doctrine\Test\Entity\TestEntity
+      targetEntity: Bankiru\Api\Doctrine\Test\Entity\TestEntity
       inversedBy: references
 
   client:

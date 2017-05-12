@@ -3,8 +3,8 @@ Bankiru\Api\Doctrine\Test\Entity\Sub\SubEntity:
   fields:
     subPayload:
       type: string
-      api_field: sub-payload
+      apiField: sub-payload
     stringPayload:
       type: string
-      api_field: string-payload
+      apiField: string-payload
       nullable: true

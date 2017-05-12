@@ -877,7 +877,7 @@ class UnitOfWork implements PropertyChangedListener
                 // Inject PersistentCollection
                 $value = new ApiCollection(
                     $this->manager,
-                    $this->manager->getClassMetadata($assoc['target']),
+                    $this->manager->getClassMetadata($assoc['targetEntity']),
                     $value
                 );
                 $value->setOwner($entity, $assoc);
@@ -1066,7 +1066,7 @@ class UnitOfWork implements PropertyChangedListener
     public function loadCollection(ApiCollection $collection)
     {
         $assoc     = $collection->getMapping();
-        $persister = $this->getEntityPersister($assoc['target']);
+        $persister = $this->getEntityPersister($assoc['targetEntity']);
         switch ($assoc['type']) {
             case ApiMetadata::ONE_TO_MANY:
                 $persister->loadOneToManyCollection($assoc, $collection->getOwner(), $collection);
@@ -1077,7 +1077,7 @@ class UnitOfWork implements PropertyChangedListener
 
     public function getCollectionPersister($association)
     {
-        $targetMetadata = $this->manager->getClassMetadata($association['target']);
+        $targetMetadata = $this->manager->getClassMetadata($association['targetEntity']);
         $role           = $association['sourceEntity'] . '::' . $association['field'];
 
         if (!array_key_exists($role, $this->collectionPersisters)) {
@@ -1428,7 +1428,7 @@ class UnitOfWork implements PropertyChangedListener
                     }
                     break;
                 case ($relatedEntities !== null):
-                    if (!$relatedEntities instanceof $assoc['target']) {
+                    if (!$relatedEntities instanceof $assoc['targetEntity']) {
                         throw new \InvalidArgumentException('Invalid association for cascade');
                     }
                     $this->doPersist($relatedEntities, $visited);
@@ -1499,7 +1499,7 @@ class UnitOfWork implements PropertyChangedListener
                 if (!($assoc['isOwningSide'] && $assoc['type'] & ApiMetadata::TO_ONE)) {
                     continue;
                 }
-                $targetClass = $this->manager->getClassMetadata($assoc['target']);
+                $targetClass = $this->manager->getClassMetadata($assoc['targetEntity']);
                 if (!$calc->hasNode($targetClass->getName())) {
                     $calc->addNode($targetClass->getName(), $targetClass);
                     $newNodes[] = $targetClass;
@@ -1608,14 +1608,14 @@ class UnitOfWork implements PropertyChangedListener
         // for transient (new) entities, recursively. ("Persistence by reachability")
         // Unwrap. Uninitialized collections will simply be empty.
         $unwrappedValue  = ($assoc['type'] & ApiMetadata::TO_ONE) ? [$value] : $value->unwrap();
-        $targetClass     = $this->manager->getClassMetadata($assoc['target']);
+        $targetClass     = $this->manager->getClassMetadata($assoc['targetEntity']);
         $targetClassName = $targetClass->getName();
         foreach ($unwrappedValue as $key => $entry) {
             if (!($entry instanceof $targetClassName)) {
                 throw new \InvalidArgumentException('Invalid association');
             }
             $state = $this->getEntityState($entry, self::STATE_NEW);
-            if (!($entry instanceof $assoc['target'])) {
+            if (!($entry instanceof $assoc['targetEntity'])) {
                 throw new \UnexpectedValueException('Unexpected association');
             }
             switch ($state) {
@@ -1988,7 +1988,7 @@ class UnitOfWork implements PropertyChangedListener
                     if (!$managedCol) {
                         $managedCol = new ApiCollection(
                             $this->manager,
-                            $this->manager->getClassMetadata($assoc2['target']),
+                            $this->manager->getClassMetadata($assoc2['targetEntity']),
                             new ArrayCollection
                         );
                         $managedCol->setOwner($managedCopy, $assoc2);

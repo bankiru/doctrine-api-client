@@ -3,21 +3,22 @@ Bankiru\Api\Doctrine\Test\Entity\PrefixedEntity:
   id:
     id:
       type: string
-      api_field: prefix_id
+      apiField: prefix_id
       generator: {strategy: REMOTE}
   fields:
     payload:
       type: string
-      api_field: prefix_payload
+      apiField: prefix_payload
 
   oneToMany:
     children:
-      target: Bankiru\Api\Doctrine\Test\Entity\PrefixedEntity
+      targetEntity: Bankiru\Api\Doctrine\Test\Entity\PrefixedEntity
       mappedBy: parent
+
   manyToOne:
     parent:
-      api_field: prefix_parent
-      target: Bankiru\Api\Doctrine\Test\Entity\PrefixedEntity
+      apiField: prefix_parent
+      targetEntity: Bankiru\Api\Doctrine\Test\Entity\PrefixedEntity
       inversedBy: children
 
   client:
