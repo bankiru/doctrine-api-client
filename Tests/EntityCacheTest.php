@@ -25,7 +25,7 @@ final class EntityCacheTest extends AbstractEntityManagerTest
                     'payload' => 'test-payload',
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('custom-entity/find', $request->getMethod());
                 self::assertEquals(['id' => 1], $request->getParameters());
 
@@ -105,7 +105,7 @@ final class EntityCacheTest extends AbstractEntityManagerTest
         $cache = $this->prophesize(CacheItemPoolInterface::class);
         $that  = $this;
         $cache->getItem(Argument::type('string'))->will(
-            function ($args) use (&$items, $that) {
+            function($args) use (&$items, $that) {
                 $key = $args[0];
                 if (!array_key_exists($key, $items)) {
                     $item = $that->prophesize(CacheItemInterface::class);
@@ -113,7 +113,7 @@ final class EntityCacheTest extends AbstractEntityManagerTest
                     $item->isHit()->willReturn(false);
                     $item->get()->willReturn(null);
                     $item->set(Argument::any())->will(
-                        function ($args) use ($item) {
+                        function($args) use ($item) {
                             $item->get()->willReturn($args[0]);
 
                             return $item;
@@ -130,7 +130,7 @@ final class EntityCacheTest extends AbstractEntityManagerTest
             }
         );
         $cache->save(Argument::type(CacheItemInterface::class))->will(
-            function ($args) use (&$items) {
+            function($args) use (&$items) {
                 $item = $args[0];
                 $items[$item->getKey()]->isHit()->willReturn(true);
             }

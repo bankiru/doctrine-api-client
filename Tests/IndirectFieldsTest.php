@@ -18,7 +18,7 @@ final class IndirectFieldsTest extends AbstractEntityManagerTest
                     'payload'                  => 'test',
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('indirect-entity/find', $request->getMethod());
                 self::assertEquals(['some-long-api-field-name' => 241], $request->getParameters());
 

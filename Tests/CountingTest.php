@@ -11,7 +11,7 @@ final class CountingTest extends AbstractEntityManagerTest
     {
         $this->getClient()->push(
             $this->getResponseMock(true, 5),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('prefixed-entity/count', $request->getMethod());
                 self::assertEquals(
                     [

@@ -187,7 +187,7 @@ final class ReferenceLoadingTest extends AbstractEntityManagerTest
                     ],
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertNull($request->getParameters()['criteria']['parent']);
 
                 return true;
@@ -208,7 +208,7 @@ final class ReferenceLoadingTest extends AbstractEntityManagerTest
                     ],
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertNull($request->getParameters()['criteria']['payload']);
 
                 return true;
@@ -232,7 +232,7 @@ final class ReferenceLoadingTest extends AbstractEntityManagerTest
                     'sub-payload' => 'sub-payload',
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-entity/find', $request->getMethod());
                 self::assertEquals(['id' => 1], $request->getParameters());
 
@@ -256,7 +256,7 @@ final class ReferenceLoadingTest extends AbstractEntityManagerTest
                     ],
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-reference/search', $request->getMethod());
                 self::assertEquals(
                     [
@@ -300,7 +300,7 @@ final class ReferenceLoadingTest extends AbstractEntityManagerTest
                     'owner'             => null,
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-reference/find', $request->getMethod());
                 self::assertEquals(['id' => 1], $request->getParameters());
 

@@ -86,7 +86,7 @@ final class ProxyFactory extends AbstractProxyFactory
     {
         $wakeupProxy = $classMetadata->getReflectionClass()->hasMethod('__wakeup');
 
-        return function (Proxy $proxy) use ($classMetadata, $wakeupProxy, $persister) {
+        return function(Proxy $proxy) use ($classMetadata, $wakeupProxy, $persister) {
             $initializer = $proxy->__getInitializer();
             $cloner      = $proxy->__getCloner();
 
@@ -128,7 +128,7 @@ final class ProxyFactory extends AbstractProxyFactory
      */
     private function createCloner(ApiMetadata $classMetadata, ApiPersister $persister)
     {
-        return function (Proxy $proxy) use ($classMetadata, $persister) {
+        return function(Proxy $proxy) use ($classMetadata, $persister) {
             if ($proxy->__isInitialized()) {
                 return;
             }

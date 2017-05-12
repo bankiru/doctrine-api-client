@@ -21,7 +21,7 @@ final class EntityFactoryTest extends AbstractEntityManagerTest
                     'payload' => 'test-payload',
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-entity/find', $request->getMethod());
                 self::assertEquals(['id' => 1], $request->getParameters());
 
@@ -50,7 +50,7 @@ final class EntityFactoryTest extends AbstractEntityManagerTest
                     'sub-payload' => 'sub-payload',
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-entity/find', $request->getMethod());
                 self::assertEquals(['id' => 2], $request->getParameters());
 
@@ -79,7 +79,7 @@ final class EntityFactoryTest extends AbstractEntityManagerTest
                     'payload'    => 'test-payload',
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('composite-key-entity/find', $request->getMethod());
                 self::assertEquals(['first_key' => 2, 'second_key' => 'test'], $request->getParameters());
 

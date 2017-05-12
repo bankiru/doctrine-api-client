@@ -21,7 +21,7 @@ final class ProxyTest extends AbstractEntityManagerTest
                     'sub-payload' => 'sub-payload',
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-entity/find', $request->getMethod());
                 self::assertEquals(['id' => 2], $request->getParameters());
 
@@ -67,7 +67,7 @@ final class ProxyTest extends AbstractEntityManagerTest
                     'sub-payload' => 'sub-payload',
                 ]
             ),
-            function (RpcRequestInterface $request) {
+            function(RpcRequestInterface $request) {
                 self::assertEquals('test-entity/find', $request->getMethod());
                 self::assertEquals(['id' => 2], $request->getParameters());
 

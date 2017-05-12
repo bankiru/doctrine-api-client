@@ -775,7 +775,7 @@ class EntityMetadata implements ApiMetadata
             $mapping['options'] = [];
         }
 
-        $this->apiFieldNames[$mapping['field']]  = $mapping['apiField'];
+        $this->apiFieldNames[$mapping['field']] = $mapping['apiField'];
         $this->fieldNames[$mapping['apiField']] = $mapping['field'];
 
         //        if (isset($this->fieldNames[$mapping['columnName']]) || ($this->discriminatorField && $this->discriminatorField['name'] === $mapping['apiField'])) {

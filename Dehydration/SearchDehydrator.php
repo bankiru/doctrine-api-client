@@ -109,7 +109,7 @@ final class SearchDehydrator
                 /** @var EntityMetadata $target */
                 $target = $this->manager->getClassMetadata($mapping['targetEntity']);
 
-                $converter = function ($value) use ($target) {
+                $converter = function($value) use ($target) {
                     if (!is_object($value)) {
                         return $value;
                     }
@@ -135,7 +135,7 @@ final class SearchDehydrator
                     $values = $converter($values);
                 }
             } else {
-                $caster = function ($value) use ($field) {
+                $caster = function($value) use ($field) {
                     $type = $this->manager
                         ->getConfiguration()
                         ->getTypeRegistry()->get($this->metadata->getTypeOfField($field));

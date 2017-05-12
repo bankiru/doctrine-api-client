@@ -50,7 +50,7 @@ final class ReflectionPropertiesGetter
     }
 
     /**
-     * @param $className
+     * @param string $className
      *
      * @return \ReflectionProperty[] indexed by property internal name
      */
@@ -155,9 +155,9 @@ final class ReflectionPropertiesGetter
         }
 
         if ($property->isProtected()) {
-            return "\0*\0".$propertyName;
+            return "\0*\0" . $propertyName;
         }
 
-        return "\0".$property->getDeclaringClass()->getName()."\0".$propertyName;
+        return "\0" . $property->getDeclaringClass()->getName() . "\0" . $propertyName;
     }
 }

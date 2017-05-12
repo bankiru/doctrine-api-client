@@ -188,6 +188,9 @@ final class ApiCollection extends AbstractLazyCollection implements Selectable
         return $this->snapshot;
     }
 
+    /**
+     * @param boolean $state
+     */
     public function setInitialized($state)
     {
         $this->initialized = (bool)$state;
@@ -204,7 +207,7 @@ final class ApiCollection extends AbstractLazyCollection implements Selectable
         return array_udiff_assoc(
             $this->snapshot,
             $this->collection->toArray(),
-            function ($a, $b) {
+            function($a, $b) {
                 return $a === $b ? 0 : 1;
             }
         );
@@ -221,7 +224,7 @@ final class ApiCollection extends AbstractLazyCollection implements Selectable
         return array_udiff_assoc(
             $this->collection->toArray(),
             $this->snapshot,
-            function ($a, $b) {
+            function($a, $b) {
                 return $a === $b ? 0 : 1;
             }
         );
@@ -452,7 +455,7 @@ final class ApiCollection extends AbstractLazyCollection implements Selectable
      * Internal note: Tried to implement Serializable first but that did not work well
      *                with circular references. This solution seems simpler and works well.
      *
-     * @return array
+     * @return string[]
      */
     public function __sleep()
     {
