@@ -27,6 +27,6 @@ final class IdentifierFixer
             throw MappingException::invalidIdentifierStructure();
         }
 
-        return array_combine($identifiers, (array)$id);
+        return array_combine($identifiers, $id);
     }
 }
