@@ -110,7 +110,7 @@ final class SearchDehydrator
                 $target = $this->manager->getClassMetadata($mapping['targetEntity']);
 
                 $converter = function($value) use ($target) {
-                    if (!is_object($value)) {
+                    if (!is_object($value) && gettype($value) !== 'object') {
                         return $value;
                     }
 
